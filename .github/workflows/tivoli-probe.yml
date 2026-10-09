@@ -1,0 +1,24 @@
+name: tivoli-probe
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: tivoli met gewone browser-user-agent
+        run: |
+          mkdir -p probe
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/154.0 Safari/537.36"
+          curl -sSL -m 40 -A "$UA" -H "Accept-Language: nl-NL,nl;q=0.9" -o probe/tv_list.html -w "list %{http_code} %{size_download}\n" "https://www.tivolivredenburg.nl/agenda?sf_genre=pop" | tee probe/tv_status.txt
+          sleep 3
+          U=$(grep -o 'https\?://www.tivolivredenburg.nl/agenda/[0-9]\+/[a-z0-9-]*' probe/tv_list.html | head -1)
+          [ -z "$U" ] && U=$(grep -o '/agenda/[0-9]\+/[a-z0-9-]*' probe/tv_list.html | head -1 | sed 's#^#https://www.tivolivredenburg.nl#')
+          echo "detail $U" >> probe/tv_status.txt
+          [ -n "$U" ] && curl -sSL -m 40 -A "$UA" -o probe/tv_detail.html -w "detail %{http_code} %{size_download}\n" "$U" | tee -a probe/tv_status.txt
+          head -c 300 probe/tv_list.html >> probe/tv_status.txt
+      - name: commit
+        run: |
+          git config user.name "probe"; git config user.email "probe@users.noreply.github.com"
+          git add -f probe; git commit -m "tivoli probe" || true; git pull --rebase -q origin main; git push

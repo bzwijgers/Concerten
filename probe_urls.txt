@@ -1,5 +1,3 @@
-hedon_main https://www.hedon-zwolle.nl/main-TDQXCVCP.js
-hedon_programma https://www.hedon-zwolle.nl/programma
-hedon_agenda https://www.hedon-zwolle.nl/agenda
-pul_q1 https://www.livepul.com/query.php?source=agenda&agenda_page=true&month=all&search=false&amount_of_events_already_shown=0
-pul_q2 https://www.livepul.com/query.php?source=agenda&agenda_page=true&month=all&search=false&amount_of_events_already_shown=20
+hedon_events1 https://www.hedon-zwolle.nl/api/events
+hedon_events2 https://www.hedon-zwolle.nl/api/voorstellingen
+hedon_events3 https://www.hedon-zwolle.nl/api/agenda

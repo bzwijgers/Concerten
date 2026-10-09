@@ -14,6 +14,12 @@ jobs:
             [ -z "$name" ] && continue
             curl -sSL -m 40 -A "Mozilla/5.0 (compatible; ConcertAgendaBot/1.0)" -o "probe/$name.html" -w "$name %{http_code} %{size_download}\n" "$url" || echo "$name FAIL"
           done < probe_urls.txt | tee probe/_status.txt
+      - name: hedon chunks
+        run: |
+          for c in $(grep -o 'chunk-[A-Z0-9]\{8\}\.js' probe_v1/hedon.html probe/hedon_main.html 2>/dev/null | sed 's/.*://' | sort -u); do
+            curl -sS -m 30 "https://www.hedon-zwolle.nl/$c" | grep -o 'api/[a-zA-Z/_?=&.-]*' | sed "s/^/$c /"
+          done | sort -u > probe/hedon_api.txt || true
+          for c in $(grep -o 'chunk-[A-Z0-9]\{8\}\.js' probe/hedon_main.html | sort -u); do curl -sS -m 30 "https://www.hedon-zwolle.nl/$c" | grep -o 'api/[a-zA-Z/_?=&.-]*' | sed "s/^/$c /"; done | sort -u >> probe/hedon_api.txt || true
       - name: commit
         run: |
           git config user.name "probe"; git config user.email "probe@users.noreply.github.com"

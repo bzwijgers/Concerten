@@ -135,4 +135,5 @@ $("out").addEventListener("click",function(e){var b=e.target.closest(".mk");if(!
 loadMarks();
 fetch("data/events.json",{cache:"no-cache"}).then(function(r){return r.json();}).then(function(d){init(d);if(window.__splashReady)window.__splashReady();}).catch(function(){if(window.__splashReady)window.__splashReady();$("out").innerHTML='<div class="empty"><b>Agenda niet geladen</b>Controleer je verbinding en probeer het opnieuw.</div>';});
 fetch("data/ticketswap.json",{cache:"no-cache"}).then(function(r){return r.ok?r.json():{};}).then(function(j){TS=j||{};render();}).catch(function(){});
+try{if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");}catch(e){}
 })();

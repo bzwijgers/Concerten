@@ -44,14 +44,27 @@ def main():
             status[key] = {"ok": False, "error": str(ex)[:200], "at": status.get(key, {}).get("at"), "count": status.get(key, {}).get("count")}
             print(f"{key}: FAILED {ex}")
             traceback.print_exc()
+    # handmatig bijgehouden zalen (site niet automatisch bereikbaar)
+    mdir = os.path.join(DATA, "manual")
+    if os.path.isdir(mdir):
+        for fn_ in sorted(os.listdir(mdir)):
+            if not fn_.endswith(".json"): continue
+            m = load(os.path.join(mdir, fn_), None)
+            if not m: continue
+            got = [e for e in m["events"] if e["d"] >= today]
+            fresh[m["venue"]] = got
+            status[m["venue"]] = {"ok": True, "manual": True, "count": len(got), "at": now, "checked": m.get("checked"), "note": m.get("note")}
+            print(f"{m['venue']}: {len(got)} (handmatig)")
     # merge: id = venue + date + url (stable); first_seen kept
     for key, got in fresh.items():
         ids = set()
+        had = any(v["v"] == key for v in events.values())
         for e in got:
             eid = f"{e['v']}|{e['d']}|{e['u']}"
             ids.add(eid)
             old = events.get(eid)
-            e["first"] = old["first"] if old else today
+            # eerste keer dat een zaal binnenkomt: geen 'nieuw' (baseline)
+            e["first"] = old["first"] if old else (today if had else "base")
             e["last"] = today
             events[eid] = e
         # events of this venue no longer listed -> drop (cancelled/removed), unless past

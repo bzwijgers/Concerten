@@ -131,7 +131,7 @@ def main():
     # merge: id = venue + date + url (stable); first_seen kept
     for key, got in fresh.items():
         ids = set()
-        had = any(v["v"] == key for v in events.values())
+        had = sum(1 for v in events.values() if v["v"] == key) >= 3
         for e in got:
             eid = f"{e['v']}|{e['d']}|{e['u']}"
             ids.add(eid)

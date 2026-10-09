@@ -72,6 +72,9 @@ def amare(max_pages=70, delay=5.0):
             if not (u and t and st): continue
             genres = [x.strip().lower() for x in re.findall(r'genres__link"[^>]*>([^<]*)<', b)]
             title = clean(re.sub(r"<[^>]+>", " ", t.group(1)))
+            sold = bool(re.search(r"\*?\s*uitverkocht\s*\*?", title, re.I))
+            title = re.sub(r"\*?\s*uitverkocht\s*\*?|[-–]?\s*laatste kaarten\s*[-–]?", " ", title, flags=re.I)
+            title = re.sub(r"\s+", " ", title).strip(" -–")
             if "klassieke muziek" in genres or BAD_TITLE.search(title): continue
             if not (set(genres) & GOOD): continue
             d = _infer(WD.get(st.group(1)), int(st.group(2)), NL_MONTHS.get(st.group(3)))
@@ -80,7 +83,7 @@ def amare(max_pages=70, delay=5.0):
             v = re.search(r'class="venue">\s*(.*?)\s*</div>', b, re.S)
             href = u.group(1)
             out.append(ev("amare", d, title, "https://www.amare.nl" + href if href.startswith("/") else href,
-                          tm.group(1) if tm else "", clean(v.group(1)) if v else ""))
+                          tm.group(1) if tm else "", clean(v.group(1)) if v else "", sold))
         if not new or n >= max_pages: break
         n += 1
         time.sleep(delay)

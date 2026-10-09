@@ -1,0 +1,31 @@
+name: probe3
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: fetch
+        run: |
+          mkdir -p probe3
+          UA="Mozilla/5.0 (compatible; BarrysConcertAgenda/1.0; persoonlijk gebruik)"
+          g() { curl -sSL -m 40 -b probe3/cj -c probe3/cj -A "$UA" -H "Accept-Language: nl" -o "probe3/$1" -w "$1 %{http_code} %{size_download} %{url_effective}\n" "$2" || echo "$1 FAIL"; sleep 2; }
+          { g tolhuistuin_agenda.html https://tolhuistuin.nl/agenda/
+          g tolhuistuin_home.html https://tolhuistuin.nl/
+          g tolhuistuin_robots.txt https://tolhuistuin.nl/robots.txt
+          g tolhuistuin_sitemap.xml https://tolhuistuin.nl/sitemap.xml
+          g amare_robots.txt https://www.amare.nl/robots.txt
+          g amare_home.html https://www.amare.nl/
+          g amare_programma.html https://www.amare.nl/programma
+          g amare_sitemap.xml https://www.amare.nl/sitemap.xml
+          g poort_robots.txt https://ontdekpoort.nl/robots.txt
+          g poort_sitemap.xml https://ontdekpoort.nl/sitemap.xml
+          g poort_home.html https://ontdekpoort.nl/
+          g poort_programma.html https://ontdekpoort.nl/programma/
+          } | tee probe3/_status.txt
+      - name: commit
+        run: |
+          git config user.name "probe"; git config user.email "probe@users.noreply.github.com"
+          git add -f probe3; git commit -m "probe3" || true; git pull --rebase -q origin main; git push

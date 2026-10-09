@@ -1,0 +1,6 @@
+Sitemap: https://tolhuistuin.nl/sitemap.xml
+
+
+User-agent: *
+Disallow: /cpresources/
+

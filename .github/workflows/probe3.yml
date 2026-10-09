@@ -11,15 +11,14 @@ jobs:
         run: |
           mkdir -p probe3
           UA="Mozilla/5.0 (compatible; BarrysConcertAgenda/1.0; persoonlijk gebruik)"
-          g() { curl -sSL -m 40 -b probe3/cj -c probe3/cj -A "$UA" -H "Accept-Language: nl" -o "probe3/$1" -w "$1 %{http_code} %{size_download} %{url_effective}\n" "$2" || echo "$1 FAIL"; sleep 5; }
-          { g amare_agenda1.html https://www.amare.nl/nl/agenda
-          g amare_agenda2.html "https://www.amare.nl/nl/agenda?page=2"
-          g amare_ev1.html https://www.amare.nl/nl/agenda/ladysmith-black-mambazo-y3d1
-          g amare_ev2.html https://www.amare.nl/nl/agenda/dire-straits-experience-the-long-highway-tour-2026-4m56
-          g amare_ev3.html https://www.amare.nl/nl/agenda/dvorak-5-q83j
-          g tolhuistuin_agenda2.html https://tolhuistuin.nl/agenda/
-          } | tee probe3/_status2.txt
+          g() { curl -sSL -m 60 -b probe3/cj -c probe3/cj -A "$UA" -H "Accept-Language: nl" -o "probe3/$1" -w "$1 %{http_code} %{size_download} %{url_effective}\n" "$2" || echo "$1 FAIL"; sleep 5; }
+          { g tolhuistuin_app.js "https://tolhuistuin.nl/js/app.js?id=00d9cfefdfdaa9803454751f7ae6d118"
+          g amare_p2.html "https://www.amare.nl/nl/agenda?p54_page=2"
+          g amare_p40.html "https://www.amare.nl/nl/agenda?p54_page=40"
+          g amare_p80.html "https://www.amare.nl/nl/agenda?p54_page=80"
+          } | tee probe3/_status3.txt
+          grep -o "[A-Za-z0-9_/.:-]*\(api\|json\|events\)[A-Za-z0-9_/.?=&-]*" probe3/tolhuistuin_app.js | sort -u | head -40 > probe3/tolhuistuin_endpoints.txt || true
       - name: commit
         run: |
           git config user.name "probe"; git config user.email "probe@users.noreply.github.com"
-          git add -f probe3; git commit -m "probe3 amare" || true; git pull --rebase -q origin main; git push
+          git add -f probe3; git commit -m "probe3 tolhuistuin amare" || true; git pull --rebase -q origin main; git push

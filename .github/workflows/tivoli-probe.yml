@@ -18,6 +18,18 @@ jobs:
           echo "detail $U" >> probe/tv_status.txt
           [ -n "$U" ] && curl -sSL -m 40 -A "$UA" -o probe/tv_detail.html -w "detail %{http_code} %{size_download}\n" "$U" | tee -a probe/tv_status.txt
           head -c 300 probe/tv_list.html >> probe/tv_status.txt
+      - name: tivoli met Python urllib
+        run: |
+          python3 - <<'PY' | tee -a probe/tv_status.txt
+          import urllib.request, urllib.error
+          H={"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/154.0 Safari/537.36","Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8","Accept-Language":"nl-NL,nl;q=0.9,en;q=0.8","Cache-Control":"no-cache"}
+          try:
+              r=urllib.request.urlopen(urllib.request.Request("https://www.tivolivredenburg.nl/agenda?sf_genre=pop",headers=H),timeout=40)
+              b=r.read().decode("utf-8","replace"); open("probe/tv_list_py.html","w").write(b[:200000])
+              print("urllib", r.status, len(b), "Just a moment" in b[:3000])
+          except urllib.error.HTTPError as e:
+              print("urllib HTTPError", e.code)
+          PY
       - name: commit
         run: |
           git config user.name "probe"; git config user.email "probe@users.noreply.github.com"

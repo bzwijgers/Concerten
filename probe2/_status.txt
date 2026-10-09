@@ -1,0 +1,8 @@
+bolwerk_robots.txt 403 75193
+bolwerk_list.html 403 75193
+bolwerk_list2.html 403 75193
+bolwerk_detail.html 403 75193
+amare_robots.txt 307 20
+amare_robots.txt FAIL
+amare_list.html 307 20
+amare_list.html FAIL

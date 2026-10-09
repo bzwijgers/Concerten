@@ -1,19 +1,5 @@
-baroeg_rss 200 100447
-baroeg_rss2 200 100443
-baroeg_next 200 293954
-pul_js 200 16767
-pul_archief 200 3089910
-tivoli_seo 403 5601
-tivoli_wp 403 5535
-tivoli_index 403 5529
-tivoli_home 403 5457
-dbs1 000 0
-dbs1 FAIL
-dbs2 000 0
-dbs2 FAIL
-dbs_robots 000 0
-dbs_robots FAIL
-mezz_p1 200 609359
-boerderij_event 200 52696
-paradiso_index 200 5103
-hedon_home 200 589048
+hedon_main 200 222331
+hedon_programma 404 148356
+hedon_agenda 404 148374
+pul_q1 200 17922
+pul_q2 200 17627

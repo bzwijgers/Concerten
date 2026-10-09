@@ -4,6 +4,8 @@ on:
     - cron: "0 5 * * *"   # 05:00 UTC = 06:00/07:00 Amsterdam; second run below covers summer/winter shift
     - cron: "0 6 * * *"
   workflow_dispatch:
+  push:
+    paths: ["data/inbox/**"]
 permissions:
   contents: write
 concurrency:
@@ -21,7 +23,7 @@ jobs:
         id: gate
         run: |
           H=$(TZ=Europe/Amsterdam date +%H)
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$H" = "07" ]; then echo run=1 >> $GITHUB_OUTPUT; else echo run=0 >> $GITHUB_OUTPUT; fi
+          if [ "${{ github.event_name }}" != "schedule" ] || [ "$H" = "07" ]; then echo run=1 >> $GITHUB_OUTPUT; else echo run=0 >> $GITHUB_OUTPUT; fi
       - name: Scrape
         if: steps.gate.outputs.run == '1'
         run: python scraper/main.py
@@ -29,7 +31,7 @@ jobs:
         if: steps.gate.outputs.run == '1'
         run: |
           git config user.name "concert-agenda-bot"; git config user.email "bot@users.noreply.github.com"
-          git add data docs/data
+          git add -A data docs/data
           git diff --cached --quiet || git commit -m "Update concerten $(date -u +%F)"
           git pull --rebase -q origin main || true
           git push

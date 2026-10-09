@@ -21,6 +21,41 @@ def load(path, default):
     except Exception:
         return default
 
+def merge_tivoli_inbox():
+    """Verwerk data/inbox/tivoli.json (door de eigenaar van een eigen toestel geüpload) in data/manual/tivoli.json."""
+    ib = os.path.join(DATA, "inbox", "tivoli.json")
+    mp = os.path.join(DATA, "manual", "tivoli.json")
+    if not os.path.exists(ib): return
+    b = load(ib, None); m = load(mp, None)
+    if not b or not m or not b.get("listed"): return
+    known = m.setdefault("known", {})
+    for i, d in (b.get("details") or {}).items():
+        known[i] = "x" if d.get("x") else (",".join(d.get("g") or []) or "?")
+    old = {e["u"].split("/agenda/")[1].split("/")[0]: e for e in m["events"]}
+    out = {}
+    for e in b["listed"]:
+        i = e["id"]
+        if known.get(i) == "x": continue
+        prev = old.get(i, {})
+        det = (b.get("details") or {}).get(i, {})
+        out[i] = {"v": "tivoli", "d": e["d"], "n": prev.get("n") or e["n"], "u": e["u"], "t": "",
+                  "r": prev.get("r", ""), "s": bool(det.get("s", prev.get("s", False))), "c": False}
+    if b.get("complete"):
+        events = list(out.values())
+    else:   # onvolledige lijst: bestaande concerten behouden
+        merged = dict(old); merged.update(out); events = list(merged.values())
+    m["events"] = sorted(events, key=lambda e: (e["d"], e["n"]))
+    m["checked"] = (b.get("fetched") or "")[:10] or m.get("checked")
+    json.dump(m, open(mp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+    smp = b.get("samples") or {}
+    if smp:
+        os.makedirs(os.path.join(DATA, "samples"), exist_ok=True)
+        for k, v in smp.items():
+            if v: open(os.path.join(DATA, "samples", f"tivoli_{k}.html"), "w", encoding="utf-8").write(v)
+    os.remove(ib)
+    print(f"tivoli inbox verwerkt: {len(m['events'])} concerten")
+
+
 def main():
     os.makedirs(DATA, exist_ok=True); os.makedirs(OUT, exist_ok=True)
     only = set(sys.argv[1:])
@@ -44,6 +79,7 @@ def main():
             status[key] = {"ok": False, "error": str(ex)[:200], "at": status.get(key, {}).get("at"), "count": status.get(key, {}).get("count")}
             print(f"{key}: FAILED {ex}")
             traceback.print_exc()
+    merge_tivoli_inbox()
     # handmatig bijgehouden zalen (site niet automatisch bereikbaar)
     mdir = os.path.join(DATA, "manual")
     if os.path.isdir(mdir):

@@ -14,6 +14,12 @@ jobs:
             [ -z "$name" ] && continue
             curl -sSL -m 40 -A "Mozilla/5.0 (compatible; ConcertAgendaBot/1.0)" -o "probe/$name.html" -w "$name %{http_code} %{size_download}\n" "$url" || echo "$name FAIL"
           done < probe_urls.txt | tee probe/_status.txt
+      - name: dbs and tivoli
+        run: |
+          for u in https://dbs-utrecht.nl/robots.txt https://www.dbs-utrecht.nl/robots.txt https://dbs-utrecht.nl/ http://dbs-utrecht.nl/ https://www.tivolivredenburg.nl/robots.txt https://media.tivolivredenburg.nl/ https://tickets.tivolivredenburg.nl/; do
+            echo "=== $u"; curl -sS -v -m 25 -A "Mozilla/5.0 (compatible; BarrysConcertAgenda/1.0)" "$u" 2>&1 | head -c 2500
+          done > probe/dbs_tivoli.txt 2>&1 || true
+          getent hosts dbs-utrecht.nl www.dbs-utrecht.nl >> probe/dbs_tivoli.txt 2>&1 || true
       - name: hedon chunks
         run: |
           for c in $(grep -o 'chunk-[A-Z0-9]\{8\}\.js' probe_v1/hedon.html probe/hedon_main.html 2>/dev/null | sed 's/.*://' | sort -u); do

@@ -1,3 +1,0 @@
-hedon_events1 https://www.hedon-zwolle.nl/api/events
-hedon_events2 https://www.hedon-zwolle.nl/api/voorstellingen
-hedon_events3 https://www.hedon-zwolle.nl/api/agenda

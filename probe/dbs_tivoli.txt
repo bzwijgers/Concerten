@@ -1,196 +1,193 @@
-=== https://dbs-utrecht.nl/robots.txt
-* Could not resolve host: dbs-utrecht.nl
-* Closing connection
-curl: (6) Could not resolve host: dbs-utrecht.nl
-=== https://www.dbs-utrecht.nl/robots.txt
-* Could not resolve host: www.dbs-utrecht.nl
-* Closing connection
-curl: (6) Could not resolve host: www.dbs-utrecht.nl
-=== https://dbs-utrecht.nl/
-* Could not resolve host: dbs-utrecht.nl
-* Closing connection
-curl: (6) Could not resolve host: dbs-utrecht.nl
-=== http://dbs-utrecht.nl/
-* Could not resolve host: dbs-utrecht.nl
-* Closing connection
-curl: (6) Could not resolve host: dbs-utrecht.nl
+=== https://dbstudio.nl/robots.txt
+HTTP/1.1 200 OK
+Date: Fri, 09 Oct 2026 21:33:23 GMT
+Server: Apache
+Last-Modified: Wed, 21 Dec 2022 10:55:11 GMT
+Accept-Ranges: bytes
+Content-Length: 76
+Content-Type: text/plain
+
+User-agent: Googlebot
+Crawl-delay: 300
+Disallow: 
+
+User-agent: *
+Disallow: /
+=== https://www.dbstudio.nl/robots.txt
+HTTP/1.1 200 OK
+Date: Fri, 09 Oct 2026 21:33:24 GMT
+Server: Apache
+Last-Modified: Wed, 21 Dec 2022 10:55:11 GMT
+Accept-Ranges: bytes
+Content-Length: 76
+Content-Type: text/plain
+
+User-agent: Googlebot
+Crawl-delay: 300
+Disallow: 
+
+User-agent: *
+Disallow: /
+=== https://www.dbstudio.nl/
+HTTP/1.1 301 Moved Permanently
+Date: Fri, 09 Oct 2026 21:33:25 GMT
+Server: Apache
+X-Pingback: https://dbstudio.nl/xmlrpc.php
+X-Redirect-By: WordPress
+Location: https://dbstudio.nl/
+Content-Length: 0
+Content-Type: text/html; charset=UTF-8
+
+HTTP/1.1 200 OK
+Date: Fri, 09 Oct 2026 21:33:27 GMT
+Server: Apache
+X-Pingback: https://dbstudio.nl/xmlrpc.php
+Link: <https://dbstudio.nl/wp-json/>; rel="https://api.w.org/", <https://dbstudio.nl/wp-json/wp/v2/pages/40>; rel="alternate"; title="JSON"; type="application/json", <https://dbstudio.nl/>; rel=shortlink
+X-TEC-API-VERSION: v1
+X-TEC-API-ROOT: https://dbstudio.nl/wp-json/tribe/events/v1/
+X-TEC-API-ORIGIN: https://dbstudio.nl
+Transfer-Encoding: chunked
+Content-Type: text/html; charset=UTF-8
+
+<!DOCTYPE html>
+<html class="avada-html-layout-wide avada-html-header-position-top avada-is-100-percent-template avada-header-color-not-opaque" lang="nl-NL" prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb#">
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>dB&#039;s Studio &#8211; Utrechts muzikale broedplaats</title>
+<meta name='robots' content='max-image-preview:large' />
+<link rel="alternate" type="application/rss+xml" title="dB&#039;s Studio &raquo; feed" href="https://dbstudio.nl/feed/" />
+<link rel="alternate" type="application/rss+xml" title="dB&#039;s Studio &raquo; reacties feed" href="https://dbstudio.nl/comments/feed/" />
+<link rel="alternate" type="text/calendar" title="dB&#039;s Studio &raquo; iCal Feed" href="https://dbstudio.nl/events/?ical=1" />
+		
+		
+		
+				<link rel="alternate" type="application/rss+xml" title="dB&#039;s Studio &raquo; Home reacties feed" href="https://dbstudio.nl/home/feed/" />
+<link rel="alternate" title="oEmbed (JSON)" type="application/json+oembed" href="https://dbstudio.nl/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fdbstudio.nl%2F" />
+<link rel="alternate" title="oEmbed (XML)" type="text/xml+oembed" href="https://dbstudio.nl/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fdbstudio.nl%2F&#038;format=xml" />
+					<meta name="description" content="OPENINGSTIJDEN OEFENSTUDIO&#039;S
+MA T/M ZO ELKE DAG GEOPEND  
+OPENINGSTIJDEN OEFENSTUDIO&#039;S
+MA T/M ZO ELKE DAG GEOPEND  
+
+Concerten, evenementen &amp; tickets   
+
+Boek nu een oefenstudio   
+
+Ruim assortiment dranken      
+LAATSTE NIEUWS  meer nieuws     
+PUNK DOG KITCHEN IN"/>
+				
+		<meta property="og:locale" content="nl_NL"/>
+		<meta property="og:type" content="website"/>
+		<meta property="og:site_name" content="dB&#039;s Studio"/>
+		<meta property="og:title" content=""/>
+				<meta property="og:description" content="OPENINGSTIJDEN OEFENSTUDIO&#039;S
+MA T/M ZO ELKE DAG GEOPEND  
+OPENINGSTIJDEN OEFENSTUDIO&#039;S
+MA T/M ZO ELKE DAG GEOPEND  
+
+Concerten, evenementen &amp; tickets   
+
+Boek nu een oefenstudio   
+
+Ruim assortiment dranken
+=== https://www.dbstudio.nl/agenda
+HTTP/1.1 301 Moved Permanently
+Date: Fri, 09 Oct 2026 21:33:30 GMT
+Server: Apache
+X-Redirect-By: WordPress
+Location: https://dbstudio.nl/agenda/
+Content-Length: 0
+Content-Type: text/html; charset=UTF-8
+
+HTTP/1.1 200 OK
+Date: Fri, 09 Oct 2026 21:33:31 GMT
+Server: Apache
+Link: <https://dbstudio.nl/wp-json/>; rel="https://api.w.org/", <https://dbstudio.nl/wp-json/wp/v2/pages/2414>; rel="alternate"; title="JSON"; type="application/json", <https://dbstudio.nl/?p=2414>; rel=shortlink
+X-TEC-API-VERSION: v1
+X-TEC-API-ROOT: https://dbstudio.nl/wp-json/tribe/events/v1/
+X-TEC-API-ORIGIN: https://dbstudio.nl
+Transfer-Encoding: chunked
+Content-Type: text/html; charset=UTF-8
+
+<!DOCTYPE html>
+<html class="avada-html-layout-wide avada-html-header-position-top avada-is-100-percent-template avada-header-color-not-opaque" lang="nl-NL" prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb#">
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Agenda &#8211; dB&#039;s Studio</title>
+<meta name='robots' content='max-image-preview:large' />
+<link rel="alternate" type="application/rss+xml" title="dB&#039;s Studio &raquo; feed" href="https://dbstudio.nl/feed/" />
+<link rel="alternate" type="application/rss+xml" title="dB&#039;s Studio &raquo; reacties feed" href="https://dbstudio.nl/comments/feed/" />
+<link rel="alternate" type="text/calendar" title="dB&#039;s Studio &raquo; iCal Feed" href="https://dbstudio.nl/events/?ical=1" />
+		
+		
+		
+				<link rel="alternate" title="oEmbed (JSON)" type="application/json+oembed" href="https://dbstudio.nl/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fdbstudio.nl%2Fagenda%2F" />
+<link rel="alternate" title="oEmbed (XML)" type="text/xml+oembed" href="https://dbstudio.nl/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fdbstudio.nl%2Fagenda%2F&#038;format=xml" />
+					<meta name="description" content="AGENDA"/>
+				
+		<meta property="og:locale" content="nl_NL"/>
+		<meta property="og:type" content="article"/>
+		<meta property="og:site_name" content="dB&#039;s Studio"/>
+		<meta property="og:title" content="  Agenda"/>
+				<meta property="og:description" content="AGENDA"/>
+				<meta property="og:url" content="https://dbstudio.nl/agenda/"/>
+													<meta property="article:modified_time" content="2025-05-21T18:12:47+02:00"/>
+											<meta property="og:image" content="https://dbstudio.nl/wp-content/uploads/2021/07/DBS_logo_liggend_klein.png"/>
+		<meta property="og:image:width" content="300"/>
+		<meta property="og:image:height" content="63"/>
+		<meta property="og:image:type" content="image/png"/>
+		
+		<style id="wp-img-auto-sizes-contain-inline-css">
+img:is([sizes=auto i],[sizes^="auto," i]){contain-intrinsic-size:3000px 1500px}
+/*# sourceURL=wp-img-auto-sizes-contain-inline-css */
+</style>
+<style id="wp-emoji-styles-inline-css">
+
+	img.wp-smiley, img.emoji {
+		display: 
 === https://www.tivolivredenburg.nl/robots.txt
-* Host www.tivolivredenburg.nl:443 was resolved.
-* IPv6: 2606:4700:20::681a:e7, 2606:4700:20::ac43:44d4, 2606:4700:20::681a:1e7
-* IPv4: 172.67.68.212, 104.26.0.231, 104.26.1.231
-*   Trying 172.67.68.212:443...
-* Connected to www.tivolivredenburg.nl (172.67.68.212) port 443
-* ALPN: curl offers h2,http/1.1
-} [5 bytes data]
-* TLSv1.3 (OUT), TLS handshake, Client hello (1):
-} [512 bytes data]
-*  CAfile: /etc/ssl/certs/ca-certificates.crt
-*  CApath: /etc/ssl/certs
-{ [5 bytes data]
-* TLSv1.3 (IN), TLS handshake, Server hello (2):
-{ [122 bytes data]
-* TLSv1.3 (IN), TLS handshake, Encrypted Extensions (8):
-{ [19 bytes data]
-* TLSv1.3 (IN), TLS handshake, Certificate (11):
-{ [2512 bytes data]
-* TLSv1.3 (IN), TLS handshake, CERT verify (15):
-{ [79 bytes data]
-* TLSv1.3 (IN), TLS handshake, Finished (20):
-{ [52 bytes data]
-* TLSv1.3 (OUT), TLS change cipher, Change cipher spec (1):
-} [1 bytes data]
-* TLSv1.3 (OUT), TLS handshake, Finished (20):
-} [52 bytes data]
-* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384 / X25519 / id-ecPublicKey
-* ALPN: server accepted h2
-* Server certificate:
-*  subject: CN=tivolivredenburg.nl
-*  start date: Aug 13 05:09:35 2026 GMT
-*  expire date: Nov 11 06:09:19 2026 GMT
-*  subjectAltName: host "www.tivolivredenburg.nl" matched cert's "*.tivolivredenburg.nl"
-*  issuer: C=US; O=Google Trust Services; CN=WE1
-*  SSL certificate verify ok.
-*   Certificate level 0: Public key type EC/prime256v1 (256/128 Bits/secBits), signed using ecdsa-with-SHA256
-*   Certificate level 1: Public key type EC/prime256v1 (256/128 Bits/secBits), signed using ecdsa-with-SHA384
-*   Certificate level 2: Public key type EC/secp384r1 (384/192 Bits/secBits), signed using ecdsa-with-SHA384
-} [5 bytes data]
-* using HTTP/2
-* [HTTP/2] [1] OPENED stream for https://www.tivolivredenburg.nl/robots.txt
-* [HTTP/2] [1] [:method: GET]
-* [HTTP/2] [1] [:scheme: https]
-* [HTTP/2] [1] [:authority: www.tivolivredenburg.nl]
-* [HTTP/2] [1] [:path: /robots.txt]
-* [HTTP/2] [1] [user-agent: Mozilla/5.0 (compatible; BarrysConcertAgenda/1.0)]
-* [HTTP/2] [1] [accept: */*]
-} [5 bytes data]
-> GET /robots.txt HTTP/2
-> Host: www.tivolivredenburg.nl
-> User-Agent: Mozilla/5.0 (compatible; BarrysConcertAgenda/1.0)
-> Accept: */*
-> 
-{ [5 bytes data]
-* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
-{ [230 bytes data]
-* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
-{ [230 bytes data]
-* old SSL session ID is stale, removing
-{ [5 bytes data]
-< HTTP/2 200 
-< date: Fri, 09 Oct 2026 21:=== https://media.tivolivredenburg.nl/
-* Host media.tivolivredenburg.nl:443 was resolved.
-* IPv6: 2606:4700:20::681a:1e7, 2606:4700:20::ac43:44d4, 2606:4700:20::681a:e7
-* IPv4: 104.26.1.231, 104.26.0.231, 172.67.68.212
-*   Trying 104.26.1.231:443...
-* Connected to media.tivolivredenburg.nl (104.26.1.231) port 443
-* ALPN: curl offers h2,http/1.1
-} [5 bytes data]
-* TLSv1.3 (OUT), TLS handshake, Client hello (1):
-} [512 bytes data]
-*  CAfile: /etc/ssl/certs/ca-certificates.crt
-*  CApath: /etc/ssl/certs
-{ [5 bytes data]
-* TLSv1.3 (IN), TLS handshake, Server hello (2):
-{ [122 bytes data]
-* TLSv1.3 (IN), TLS handshake, Encrypted Extensions (8):
-{ [19 bytes data]
-* TLSv1.3 (IN), TLS handshake, Certificate (11):
-{ [2512 bytes data]
-* TLSv1.3 (IN), TLS handshake, CERT verify (15):
-{ [78 bytes data]
-* TLSv1.3 (IN), TLS handshake, Finished (20):
-{ [52 bytes data]
-* TLSv1.3 (OUT), TLS change cipher, Change cipher spec (1):
-} [1 bytes data]
-* TLSv1.3 (OUT), TLS handshake, Finished (20):
-} [52 bytes data]
-* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384 / X25519 / id-ecPublicKey
-* ALPN: server accepted h2
-* Server certificate:
-*  subject: CN=tivolivredenburg.nl
-*  start date: Aug 13 05:09:35 2026 GMT
-*  expire date: Nov 11 06:09:19 2026 GMT
-*  subjectAltName: host "media.tivolivredenburg.nl" matched cert's "*.tivolivredenburg.nl"
-*  issuer: C=US; O=Google Trust Services; CN=WE1
-*  SSL certificate verify ok.
-*   Certificate level 0: Public key type EC/prime256v1 (256/128 Bits/secBits), signed using ecdsa-with-SHA256
-*   Certificate level 1: Public key type EC/prime256v1 (256/128 Bits/secBits), signed using ecdsa-with-SHA384
-*   Certificate level 2: Public key type EC/secp384r1 (384/192 Bits/secBits), signed using ecdsa-with-SHA384
-} [5 bytes data]
-* using HTTP/2
-* [HTTP/2] [1] OPENED stream for https://media.tivolivredenburg.nl/
-* [HTTP/2] [1] [:method: GET]
-* [HTTP/2] [1] [:scheme: https]
-* [HTTP/2] [1] [:authority: media.tivolivredenburg.nl]
-* [HTTP/2] [1] [:path: /]
-* [HTTP/2] [1] [user-agent: Mozilla/5.0 (compatible; BarrysConcertAgenda/1.0)]
-* [HTTP/2] [1] [accept: */*]
-} [5 bytes data]
-> GET / HTTP/2
-> Host: media.tivolivredenburg.nl
-> User-Agent: Mozilla/5.0 (compatible; BarrysConcertAgenda/1.0)
-> Accept: */*
-> 
-{ [5 bytes data]
-* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
-{ [230 bytes data]
-* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
-{ [230 bytes data]
-* old SSL session ID is stale, removing
-{ [5 bytes data]
-< HTTP/2 200 
-< date: Fri, 09 Oct 2026 21:31:45 GMT
-< content=== https://tickets.tivolivredenburg.nl/
-* Host tickets.tivolivredenburg.nl:443 was resolved.
-* IPv6: (none)
-* IPv4: 185.109.198.107
-*   Trying 185.109.198.107:443...
-* Connected to tickets.tivolivredenburg.nl (185.109.198.107) port 443
-* ALPN: curl offers h2,http/1.1
-} [5 bytes data]
-* TLSv1.3 (OUT), TLS handshake, Client hello (1):
-} [512 bytes data]
-*  CAfile: /etc/ssl/certs/ca-certificates.crt
-*  CApath: /etc/ssl/certs
-{ [5 bytes data]
-* TLSv1.3 (IN), TLS handshake, Server hello (2):
-{ [95 bytes data]
-* TLSv1.2 (IN), TLS handshake, Certificate (11):
-{ [4346 bytes data]
-* TLSv1.2 (IN), TLS handshake, Server key exchange (12):
-{ [589 bytes data]
-* TLSv1.2 (IN), TLS handshake, Server finished (14):
-{ [4 bytes data]
-* TLSv1.2 (OUT), TLS handshake, Client key exchange (16):
-} [70 bytes data]
-* TLSv1.2 (OUT), TLS change cipher, Change cipher spec (1):
-} [1 bytes data]
-* TLSv1.2 (OUT), TLS handshake, Finished (20):
-} [16 bytes data]
-* TLSv1.2 (IN), TLS handshake, Finished (20):
-{ [16 bytes data]
-* SSL connection using TLSv1.2 / ECDHE-RSA-AES128-GCM-SHA256 / prime256v1 / rsaEncryption
-* ALPN: server did not agree on a protocol. Uses default.
-* Server certificate:
-*  subject: CN=tickets.tivolivredenburg.nl
-*  start date: Oct  5 11:09:16 2026 GMT
-*  expire date: Jan  3 11:09:15 2027 GMT
-*  subjectAltName: host "tickets.tivolivredenburg.nl" matched cert's "tickets.tivolivredenburg.nl"
-*  issuer: C=US; O=Let's Encrypt; CN=YR2
-*  SSL certificate verify ok.
-*   Certificate level 0: Public key type RSA (4096/152 Bits/secBits), signed using sha256WithRSAEncryption
-*   Certificate level 1: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
-*   Certificate level 2: Public key type RSA (4096/152 Bits/secBits), signed using sha256WithRSAEncryption
-*   Certificate level 3: Public key type RSA (4096/152 Bits/secBits), signed using sha256WithRSAEncryption
-* using HTTP/1.x
-} [5 bytes data]
-> GET / HTTP/1.1
-> Host: tickets.tivolivredenburg.nl
-> User-Agent: Mozilla/5.0 (compatible; BarrysConcertAgenda/1.0)
-> Accept: */*
-> 
-* Recv failure: Connection reset by peer
-* OpenSSL SSL_read: Connection reset by peer, errno 104
-* Closing connection
-} [5 bytes data]
-* Send failure: Broken pipe
-curl: (56) Recv failure: Connection reset by peer
+HTTP/2 200 
+date: Fri, 09 Oct 2026 21:33:34 GMT
+content-type: text/plain; charset=utf-8
+x-frame-options: SAMEORIGIN
+permissions-policy: geolocation=(), microphone=(), midi=(), camera=(), magnetometer=()
+x-content-type-options: nosniff
+referrer-policy: strict-origin-when-cross-origin
+cf-edge-cache: cache,platform=wordpress
+cache-control: public, max-age=0, s-maxage=624, max-age=0
+surrogate-control: max-age=624
+x-robots-tag: noindex, follow
+expires: Fri, 09 Oct 2026 21:19:36 GMT
+vary: Accept-Encoding
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+age: 838
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=G3o8t1%2B4CiRP2SFNJ%2FuNIIBbd9d4MqhxwuFYNRhRIeSjby1gbjCz%2FslVDCA4ktldna3JTCGPz%2F2EnAV7SOhfobzEscPxK2zOr6TSPya3aR5Ur7oOctzMlaH%2BsST6xR4ZMKIFezHVICVO"}]}
+x-varnish-cache: HIT
+x-lb-backend: bk_http_cache
+strict-transport-security: max-age=31536000
+x-lb-server: pf221110.savvii.cloud
+x-lb-frontend: fr_http_https
+server-timing: backend;desc=varnish, varnish_cache;desc=, client_recv;dur=0, proxy_queues;dur=0, backend_conn;dur=0, backend_resp;dur=1
+swlh: 1
+last-modified: Fri, 09 Oct 2026 21:33:34 GMT
+cf-cache-status: EXPIRED
+server: cloudflare
+cf-ray: a48081212c74738d-DFW
+
+User-agent: *
+Disallow: /wp/wp-admin/
+Allow: /wp/wp-admin/admin-ajax.php
+
+# START YOAST BLOCK
+# ---------------------------
+User-agent: *
+Disallow:
+
+Sitemap: https://www.tivolivredenburg.nl/sitemap_index.xml
+# ---------------------------
+# END YOAST BLOCK

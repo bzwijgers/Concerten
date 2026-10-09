@@ -24,6 +24,7 @@ var VENUES = {
   bibelot:{label:"Bibelot",home:"https://bibelot.net/programma/"},
   bosuil:{label:"De Bosuil",home:"https://www.debosuil.nl/programma/"},
   bird:{label:"BIRD",home:"https://bird-rotterdam.nl/concerts/"},
+  neushoorn:{label:"Neushoorn",home:"https://www.neushoorn.nl/programma"},
   gebouwt:{label:"Gebouw-T",home:"https://gebouw-t.nl/agenda/"},
   tolhuistuin:{label:"Tolhuistuin",home:"https://tolhuistuin.nl/agenda/"}
 };

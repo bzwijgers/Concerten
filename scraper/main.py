@@ -2,7 +2,7 @@ import json, os, sys, traceback, importlib
 from datetime import date, datetime, timedelta, timezone
 sys.path.insert(0, os.path.dirname(__file__))
 from common import *
-import venues1, venues2, venues3
+import venues1, venues2, venues3, venues4, feedimport
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 DATA = os.path.join(ROOT, "data")
@@ -13,6 +13,9 @@ VENUES = [  # key, label, fn
     ("o13", venues1.o13), ("paard", venues1.paard), ("mezz", venues1.mezz), ("effenaar", venues2.effenaar),
     ("pul", venues3.pul), ("boerderij", venues1.boerderij), ("patronaat", venues2.patronaat),
     ("hedon", venues3.hedon), ("helling", venues1.helling), ("dynamo", venues1.dynamo),
+    ("klokgebouw", venues4.klokgebouw), ("doornroosje", venues4.doornroosje), ("metropool", venues4.metropool),
+    ("spot", venues4.spot), ("bibelot", venues4.bibelot), ("bosuil", venues4.bosuil), ("bird", venues4.bird),
+    ("gebouwt", venues4.gebouwt), ("tolhuistuin", venues4.tolhuistuin),
 ]
 
 def load(path, default):
@@ -79,14 +82,37 @@ def main():
             status[key] = {"ok": False, "error": str(ex)[:200], "at": status.get(key, {}).get("at"), "count": status.get(key, {}).get("count")}
             print(f"{key}: FAILED {ex}")
             traceback.print_exc()
+    feed = feedimport.load()
+    if feed:
+        for src, key, minimum in (("TivoliVredenburg", "tivoli", 50), ("dB's", "dbs", 5)):
+            got = [e for e in feedimport.events_for(feed, src, key) if e["d"] >= today]
+            if len(got) >= minimum:
+                fresh[key] = got
+                status[key] = {"ok": True, "count": len(got), "at": now, "via": "eigen feed"}
+                print(f"{key}: {len(got)} (feed)")
     merge_tivoli_inbox()
+    # Tolhuistuin: alleen concerten die niet al in het programma van Paradiso staan
+    if "tolhuistuin" in fresh:
+        import re as _re
+        norm = lambda t: _re.sub(r"[^a-z0-9]+", "", t.lower())
+        pdi = [e for e in list(events.values()) + fresh.get("paradiso", []) if e["v"] == "paradiso"]
+        have = {(e["d"], norm(e["n"])) for e in pdi}
+        have_d = {}
+        for e in pdi: have_d.setdefault(e["d"], []).append(norm(e["n"]))
+        def dup(e):
+            n = norm(e["n"])
+            if (e["d"], n) in have: return True
+            return any(n and (n in o or o in n) and min(len(n), len(o)) >= 5 for o in have_d.get(e["d"], []))
+        before = len(fresh["tolhuistuin"])
+        fresh["tolhuistuin"] = [e for e in fresh["tolhuistuin"] if not dup(e)]
+        print(f"tolhuistuin: {before} -> {len(fresh['tolhuistuin'])} zonder Paradiso-dubbelen")
     # handmatig bijgehouden zalen (site niet automatisch bereikbaar)
     mdir = os.path.join(DATA, "manual")
     if os.path.isdir(mdir):
         for fn_ in sorted(os.listdir(mdir)):
             if not fn_.endswith(".json"): continue
             m = load(os.path.join(mdir, fn_), None)
-            if not m: continue
+            if not m or m["venue"] in fresh: continue
             got = [e for e in m["events"] if e["d"] >= today]
             fresh[m["venue"]] = got
             status[m["venue"]] = {"ok": True, "manual": True, "count": len(got), "at": now, "checked": m.get("checked"), "note": m.get("note")}
@@ -106,6 +132,7 @@ def main():
         # events of this venue no longer listed -> drop (cancelled/removed), unless past
         for eid in [k for k, v in events.items() if v["v"] == key and k not in ids]:
             del events[eid]
+    if feed: feedimport.attach_ticketswap(events, feed)
     # keep past events one month for the archive
     cutoff = (date.today() - timedelta(days=45)).isoformat()
     for eid in [k for k, v in events.items() if v["d"] < cutoff]:

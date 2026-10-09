@@ -16,7 +16,16 @@ var VENUES = {
   hedon:{label:"Hedon",home:"https://www.hedon-zwolle.nl/"},
   helling:{label:"De Helling",home:"https://dehelling.nl/agenda/"},
   dynamo:{label:"Dynamo",home:"https://www.dynamo-eindhoven.nl/evenementen/"},
-  dbs:{label:"dB's",home:"https://dbstudio.nl/agenda/",linkOnly:true}
+  dbs:{label:"dB's",home:"https://dbstudio.nl/agenda/"},
+  klokgebouw:{label:"Klokgebouw",home:"https://www.klokgebouw.nl/agenda"},
+  doornroosje:{label:"Doornroosje",home:"https://www.doornroosje.nl/"},
+  metropool:{label:"Metropool",home:"https://metropool.nl/agenda"},
+  spot:{label:"SPOT Groningen",home:"https://www.spotgroningen.nl/programma/"},
+  bibelot:{label:"Bibelot",home:"https://bibelot.net/programma/"},
+  bosuil:{label:"De Bosuil",home:"https://www.debosuil.nl/programma/"},
+  bird:{label:"BIRD",home:"https://bird-rotterdam.nl/concerts/"},
+  gebouwt:{label:"Gebouw-T",home:"https://gebouw-t.nl/agenda/"},
+  tolhuistuin:{label:"Tolhuistuin",home:"https://tolhuistuin.nl/agenda/"}
 };
 /* TicketSwap-pagina's van de zaal of stad (gecontroleerd), anders zoekresultaten */
 var TSV = {rotown:"https://www.ticketswap.com/location/rotown/2033", melkweg:"https://www.ticketswap.com/location/melkweg/41", o13:"https://www.ticketswap.com/city/tilburg/12"};
@@ -47,7 +56,7 @@ function dayLabel(d){
   return {base:base,tag:diff===0?"vandaag":diff===1?"morgen":""};
 }
 function isNew(c){return c.first&&c.first!=="base"&&c.first>=WEEK_AGO;}
-function tsLink(c){return TS[c.id]||TSV[c.v]||("https://www.ticketswap.nl/search?q="+encodeURIComponent(c.n.split(" + ")[0].replace(/\s*\(.*?\)\s*/g," ").trim()));}
+function tsLink(c){return c.k||TS[c.id]||TSV[c.v]||("https://www.ticketswap.nl/search?q="+encodeURIComponent(c.n.split(" + ")[0].replace(/\s*\(.*?\)\s*/g," ").trim()));}
 
 function visible(){
   var q=state.q.trim().toLowerCase(), on=Object.keys(state.venues).filter(function(k){return state.venues[k];});
@@ -114,7 +123,7 @@ function init(data){
   var bad=Object.keys(data.status||{}).filter(function(k){return !data.status[k].ok;});
   if(bad.length) $("warn").innerHTML='<div class="warn">Niet alle zalen zijn vandaag gelukt: '+bad.map(function(k){return esc(VENUES[k]?VENUES[k].label:k);}).join(", ")+'. Daarvan staat de laatst bekende lijst erin.</div>';
   var tv=(data.status||{}).tivoli;
-  if(tv&&tv.manual) $("warn").innerHTML+='<div class="warn">TivoliVredenburg: handmatig bijgewerkt op '+esc(tv.checked||"?")+' (hun site blokkeert automatische bezoeken). dB\'s: <a href="https://dbstudio.nl/agenda/" target="_blank" rel="noopener">eigen agenda</a> (mag niet automatisch worden uitgelezen).</div>';
+  if(tv&&tv.manual) $("warn").innerHTML+='<div class="warn">TivoliVredenburg: handmatig bijgewerkt op '+esc(tv.checked||"?")+'.</div>';
   render();
 }
 $("venues").addEventListener("click",function(e){var b=e.target.closest("[data-v]");if(!b)return;var k=b.getAttribute("data-v");state.venues[k]=!state.venues[k];b.setAttribute("aria-pressed",String(!!state.venues[k]));render();});

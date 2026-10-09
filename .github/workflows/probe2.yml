@@ -1,0 +1,25 @@
+name: probe2
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: fetch
+        run: |
+          mkdir -p probe2
+          UA="Mozilla/5.0 (compatible; BarrysConcertAgenda/1.0; persoonlijk gebruik)"
+          g() { curl -sSL -m 40 -A "$UA" -o "probe2/$1" -w "$1 %{http_code} %{size_download}\n" "$2" || echo "$1 FAIL"; sleep 2; }
+          { g bolwerk_robots.txt https://ontdekpoort.nl/robots.txt
+          g bolwerk_list.html https://ontdekpoort.nl/programma/locatie/bolwerk-kerkgracht-8/
+          g bolwerk_list2.html https://ontdekpoort.nl/programma/locatie/bolwerk-kerkgracht-8/?page=2
+          g bolwerk_detail.html https://ontdekpoort.nl/programma/5683/mister-mrs-special-guest-boaz/
+          g amare_robots.txt https://www.amare.nl/robots.txt
+          g amare_list.html https://www.amare.nl/programma
+          } | tee probe2/_status.txt
+      - name: commit
+        run: |
+          git config user.name "probe"; git config user.email "probe@users.noreply.github.com"
+          git add -f probe2; git commit -m "probe2" || true; git pull --rebase -q origin main; git push

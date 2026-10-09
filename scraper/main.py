@@ -73,7 +73,7 @@ def main():
         try:
             got = venues1.paradiso(pcache) if key == "paradiso" else fn()
             got = [e for e in got if e["d"] >= today and e["d"] <= (date.today() + timedelta(days=600)).isoformat()]
-            if len(got) < 3:
+            if len(got) < {"tolhuistuin": 1}.get(key, 3):
                 raise RuntimeError(f"only {len(got)} events")
             fresh[key] = got
             status[key] = {"ok": True, "count": len(got), "at": now}
@@ -91,6 +91,17 @@ def main():
                 status[key] = {"ok": True, "count": len(got), "at": now, "via": "eigen feed"}
                 print(f"{key}: {len(got)} (feed)")
     merge_tivoli_inbox()
+    # aanvullen met de eigen feed (zelfde zaalsites): wat de scraper hier mist, maar de feed wel heeft
+    if feed:
+        for key, src in (("klokgebouw", "Klokgebouw"), ("doornroosje", "Doornroosje"), ("metropool", "Metropool"),
+                         ("spot", "SPOT Groningen"), ("bibelot", "Bibelot"), ("bosuil", "De Bosuil"), ("bird", "BIRD"),
+                         ("gebouwt", "Gebouw-T"), ("neushoorn", "Neushoorn")):
+            if key in fresh:
+                seen = {feedimport.norm_url(e["u"]) for e in fresh[key]}
+                extra = [e for e in feedimport.events_for(feed, src, key) if e["d"] >= today and feedimport.norm_url(e["u"]) not in seen]
+                if extra:
+                    print(f"{key}: +{len(extra)} uit feed")
+                    fresh[key] += extra
     # Tolhuistuin: alleen concerten die niet al in het programma van Paradiso staan
     if "tolhuistuin" in fresh:
         import re as _re

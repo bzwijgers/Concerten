@@ -158,7 +158,7 @@ function row(c) {
   var v = venue(c), m = (marks[c.id] || {}).k || "", open = state.open === c.id;
   var tags = (c.s ? '<span class="tag sold">uitverkocht</span>' : "") + (isNew(c) ? '<span class="tag new">nieuw</span>' : "") +
              (club(c) ? '<span class="tag club">clubcard</span>' : "") + (m === "t" ? '<span class="tag tk">kaartje</span>' : "");
-  var where = esc(v.label) + (v.city ? " · " + esc(v.city) : "") + (c.r && c.r !== v.city && c.r.toLowerCase() !== v.label.toLowerCase() ? " · " + esc(c.r) : "");
+  var where = esc(v.label) + (v.city ? " · " + esc(v.city) : "") + (c.r && c.r.toLowerCase().indexOf(v.label.toLowerCase()) < 0 && c.r.toLowerCase().indexOf((v.city || "~").toLowerCase()) < 0 && v.label.toLowerCase().indexOf(c.r.toLowerCase()) < 0 ? " · " + esc(c.r) : "");
   return '<div class="ev' + (c.s ? " sold" : "") + (m === "t" ? " t" : "") + (open ? " open" : "") + '" data-id="' + esc(c.id) + '">' +
     '<div class="row" data-act="open">' + timeCell(c.t) +
     '<div class="body"><div class="name">' + esc(nice(c.n)) + '</div><div class="sub">' + where + tags + "</div></div>" +
@@ -267,7 +267,7 @@ function init(data) {
   DATA = data;
   var tmv = data.venues || {};
   Object.keys(tmv).forEach(function (k) { if (!VENUES[k]) VENUES[k] = { label: tmv[k].label, home: tmv[k].home, city: tmv[k].city || "", tm: true }; });
-  ALL = data.events.filter(function (e) { return VENUES[e.v]; }).map(function (e) { e.id = eid(e); e.ts = (e.t || "").replace("deuren ", "") || "99"; return e; });
+  ALL = data.events.filter(function (e) { return VENUES[e.v]; }).map(function (e) { e.id = eid(e); e.ts = (e.t || "").replace("deuren ", "") || "99"; if (e.ts < "06") e.ts = "3" + e.ts; return e; });
   ALL.sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : 0; });
   var u = new Date(data.updated);
   $("stamp").textContent = "Bijgewerkt " + u.getDate() + " " + MON[u.getMonth()] + " " + pad(u.getHours()) + ":" + pad(u.getMinutes()) + ".";

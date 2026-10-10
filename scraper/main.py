@@ -129,6 +129,16 @@ def main():
             fresh[m["venue"]] = got
             status[m["venue"]] = {"ok": True, "manual": True, "count": len(got), "at": now, "checked": m.get("checked"), "note": m.get("note")}
             print(f"{m['venue']}: {len(got)} (handmatig)")
+    # geannuleerd / verplaatst (op de oude datum) eruit; 'nieuwe datum' uit de titel halen
+    import re as _re
+    gone = _re.compile(r"^\s*(cancelled|canceled|geannuleerd|afgelast|verplaatst|postponed)\s*[:\-–!]"
+                       r"|[\[(]\s*(cancelled|canceled|geannuleerd|afgelast|verplaatst|postponed)\s*[\])]", _re.I)
+    newdate = _re.compile(r"^\s*nieuwe datum\s*[:\-–]\s*|\s*[\[(]\s*nieuwe datum\s*[\])]", _re.I)
+    for key in fresh:
+        before = len(fresh[key])
+        fresh[key] = [e for e in fresh[key] if not gone.search(e["n"])]
+        for e in fresh[key]: e["n"] = newdate.sub("", e["n"]).strip()
+        if len(fresh[key]) < before: print(f"{key}: {before - len(fresh[key])} geannuleerd/verplaatst weggelaten")
     # merge: id = venue + date + url (stable); first_seen kept
     for key, got in fresh.items():
         ids = set()

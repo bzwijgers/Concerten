@@ -75,13 +75,21 @@ def gebouw_t_parse_event(page, event_url):
     if not any(x in lower for x in music_signals):
         return None
 
+    # De kop van de pagina ('vr 20 november '26') gaat voor: de omschrijving kan andere datums
+    # noemen ('twee shows op 20 en 21 november 2026'), die _detail_date_time() anders als eerste pakt.
+    date_match = re.search(r"\b(?:ma|di|wo|do|vr|za|zo)\s+(\d{1,2})\s+(jan|feb|mrt|apr|mei|jun|jul|aug|sep|okt|nov|dec)[a-z]*\s+[’']?(\d{2}|20\d{2})\b", text, flags=re.I)
     event_date, event_time = _detail_date_time(page)
+    if date_match:
+        rd = int(date_match.group(3))
+        head = date(rd if rd >= 2000 else 2000 + rd, {"jan": 1, "feb": 2, "mrt": 3, "apr": 4, "mei": 5, "jun": 6, "jul": 7, "aug": 8,
+                    "sep": 9, "okt": 10, "nov": 11, "dec": 12}[date_match.group(2).lower()[:3]], int(date_match.group(1))).isoformat()
+        if head != event_date:
+            event_date, event_time = None, ""
     if not event_date:
         months = {
             "jan": 1, "feb": 2, "mrt": 3, "apr": 4, "mei": 5, "jun": 6,
             "jul": 7, "aug": 8, "sep": 9, "okt": 10, "nov": 11, "dec": 12,
         }
-        date_match = re.search(r"\b(?:ma|di|wo|do|vr|za|zo)\s+(\d{1,2})\s+(jan|feb|mrt|apr|mei|jun|jul|aug|sep|okt|nov|dec)[a-z]*\s+[’']?(\d{2}|20\d{2})\b", text, flags=re.I)
         if date_match:
             day = int(date_match.group(1))
             month = months[date_match.group(2).lower()[:3]]

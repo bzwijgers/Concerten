@@ -96,7 +96,15 @@ def melkweg():
 
 # ---------- 013 ----------
 def o13():
-    s = BeautifulSoup(fetch("https://www.013.nl/programma"), "lxml")
+    h = fetch("https://www.013.nl/programma")
+    if "<article" not in h:   # 2026-10-10 een keer een pagina zonder programma gekregen: nog een poging, anders bewaren
+        time.sleep(30)
+        h = fetch("https://www.013.nl/programma")
+        if "<article" not in h:
+            p = os.path.join(os.path.dirname(__file__), "..", "data", "samples")
+            os.makedirs(p, exist_ok=True)
+            open(os.path.join(p, "o13_leeg.html"), "w", encoding="utf-8").write(h)
+    s = BeautifulSoup(h, "lxml")
     out = []
     for art in s.select("article"):
         a = art.select_one('a[href*="/programma/"]'); t = art.select_one("h2"); tm = art.select_one("time")

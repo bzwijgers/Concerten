@@ -27,6 +27,8 @@ jobs:
       - name: Scrape
         if: steps.gate.outputs.run == '1'
         run: python scraper/main.py
+        env:
+          TM_API_KEY: ${{ secrets.TM_API_KEY }}
       - name: Commit data
         if: steps.gate.outputs.run == '1'
         run: |

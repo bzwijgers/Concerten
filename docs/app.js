@@ -28,7 +28,8 @@ var VENUES = {
   neushoorn:{label:"Neushoorn",home:"https://www.neushoorn.nl/programma"},
   gebouwt:{label:"Gebouw-T",home:"https://gebouw-t.nl/agenda/"},
   tolhuistuin:{label:"Tolhuistuin",home:"https://tolhuistuin.nl/agenda/"},
-  bolwerk:{label:"Het Bolwerk",home:"https://ontdekpoort.nl/programma/locatie/bolwerk-kerkgracht-8/"}
+  bolwerk:{label:"Het Bolwerk",home:"https://ontdekpoort.nl/programma/locatie/bolwerk-kerkgracht-8/"},
+  ticketmaster:{label:"Ticketmaster",home:"https://www.ticketmaster.nl/",linkOnly:true}
 };
 /* TicketSwap-pagina's van de zaal of stad (gecontroleerd), anders zoekresultaten */
 var TSV = {rotown:"https://www.ticketswap.com/location/rotown/2033", melkweg:"https://www.ticketswap.com/location/melkweg/41", o13:"https://www.ticketswap.com/city/tilburg/12"};
@@ -118,9 +119,11 @@ function render(){
 }
 function init(data){
   DATA=data;
-  ALL=data.events.map(function(e){e.id=eid(e);return e;});
+  var tmv=data.venues||{};  /* locaties uit Ticketmaster: als zaal toevoegen, achter de eigen zalen */
+  Object.keys(tmv).sort(function(a,b){return tmv[a].label.localeCompare(tmv[b].label);}).forEach(function(k){if(!VENUES[k])VENUES[k]={label:tmv[k].label,home:tmv[k].home,tm:true};});
+  ALL=data.events.filter(function(e){return VENUES[e.v];}).map(function(e){e.id=eid(e);return e;});
   var keys=Object.keys(VENUES).filter(function(k){return !VENUES[k].linkOnly;});
-  $("venues").innerHTML=keys.map(function(k){return '<button class="chip" data-v="'+k+'" aria-pressed="false">'+VENUES[k].label+'</button>';}).join("");
+  $("venues").innerHTML=keys.map(function(k){return (VENUES[k].tm&&!VENUES[keys[keys.indexOf(k)-1]].tm?'<span class="chipsep">Via Ticketmaster:</span>':"")+'<button class="chip" data-v="'+k+'" aria-pressed="false">'+esc(VENUES[k].label)+'</button>';}).join("");
   var u=new Date(data.updated);
   $("stamp").textContent="bijgewerkt "+u.getDate()+" "+MON[u.getMonth()]+" "+pad(u.getHours())+":"+pad(u.getMinutes());
   var bad=Object.keys(data.status||{}).filter(function(k){return !data.status[k].ok;});

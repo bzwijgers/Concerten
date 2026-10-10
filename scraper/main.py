@@ -2,7 +2,7 @@ import json, os, sys, traceback, importlib
 from datetime import date, datetime, timedelta, timezone
 sys.path.insert(0, os.path.dirname(__file__))
 from common import *
-import venues1, venues2, venues3, venues4, venues5, feedimport
+import venues1, venues2, venues3, venues4, venues5, feedimport, ticketmaster
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 DATA = os.path.join(ROOT, "data")
@@ -139,6 +139,28 @@ def main():
         fresh[key] = [e for e in fresh[key] if not gone.search(e["n"])]
         for e in fresh[key]: e["n"] = newdate.sub("", e["n"]).strip()
         if len(fresh[key]) < before: print(f"{key}: {before - len(fresh[key])} geannuleerd/verplaatst weggelaten")
+    # Ticketmaster (officiële API) voor grote zalen en festivals; alleen als de sleutel als GitHub-secret bestaat
+    tm_venues = store.get("venues", {})
+    tm_key = os.environ.get("TM_API_KEY", "").strip()
+    if tm_key and (not only or "ticketmaster" in only):
+        try:
+            raw = ticketmaster.fetch_all(tm_key)
+            have = [e for g in fresh.values() for e in g] + [e for e in events.values() if not e["v"].startswith("tm-") and e["v"] not in fresh]
+            got, info = ticketmaster.convert(raw, [e for e in have if e["d"] >= today])
+            n = sum(len(g) for g in got.values())
+            if n < 20:
+                raise RuntimeError(f"only {n} events")
+            for k in {v["v"] for v in events.values() if v["v"].startswith("tm-")} - set(got):
+                got[k] = []   # locatie staat niet meer bij Ticketmaster: oude concerten opruimen
+            fresh.update(got)
+            tm_venues = {k: v for k, v in tm_venues.items() if k in got and got[k]}
+            tm_venues.update(info)
+            status["ticketmaster"] = {"ok": True, "count": n, "at": now, "venues": len(info)}
+            print(f"ticketmaster: {n} concerten op {len(info)} locaties")
+        except Exception as ex:
+            status["ticketmaster"] = {"ok": False, "error": str(ex)[:200], "at": status.get("ticketmaster", {}).get("at"),
+                                      "count": status.get("ticketmaster", {}).get("count")}
+            print("ticketmaster: FAILED", ex)
     # merge: id = venue + date + url (stable); first_seen kept
     for key, got in fresh.items():
         ids = set()
@@ -159,11 +181,11 @@ def main():
     cutoff = (date.today() - timedelta(days=45)).isoformat()
     for eid in [k for k, v in events.items() if v["d"] < cutoff]:
         del events[eid]
-    store = {"events": events, "status": status, "updated": now}
+    store = {"events": events, "status": status, "updated": now, "venues": tm_venues}
     json.dump(store, open(os.path.join(DATA, "events.json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     json.dump(pcache, open(os.path.join(DATA, "paradiso_cache.json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     pub = sorted(events.values(), key=lambda e: (e["d"], e["v"], e["n"]))
-    json.dump({"updated": now, "status": status, "events": pub}, open(os.path.join(OUT, "events.json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+    json.dump({"updated": now, "status": status, "venues": tm_venues, "events": pub}, open(os.path.join(OUT, "events.json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     print("total", len(pub))
 
 if __name__ == "__main__":

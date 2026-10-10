@@ -119,7 +119,7 @@ def bolwerk(delay=1.0):
             for li in re.findall(r'<li\b[^>]*>(.*?)</li>', (re.search(r'event-shows-list(.*?)</ul>', dh, re.S) or [None, ""])[1], re.S):
                 d = parse_nl_date(re.sub(r"<[^>]+>", " ", li))
                 if not d: continue
-                tm = re.search(r"Aanvang:?\s*(\d{1,2}[:.]\d{2})", li)
+                tm = re.search(r"Aanvang:?\s*(?:om\s*)?(\d{1,2}[:.]\d{2})", li)
                 sold = bool(re.search(r"uitverkocht|sold\s*out", li, re.I))
                 shows.append((d, tm.group(1).replace(".", ":") if tm else "", sold))
         except Exception as ex:

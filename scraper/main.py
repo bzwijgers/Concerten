@@ -1,4 +1,4 @@
-import json, os, sys, traceback, importlib
+import json, os, sys, time, traceback, importlib
 from datetime import date, datetime, timedelta, timezone
 sys.path.insert(0, os.path.dirname(__file__))
 from common import *
@@ -29,6 +29,20 @@ def load(path, default):
         return json.load(open(path, encoding="utf-8"))
     except Exception:
         return default
+
+def merge_pc_inbox(venue):
+    """data/inbox/<zaal>.json (van tools/tivoli_pc.py op de eigen pc) -> data/manual/<zaal>.json, als reserve."""
+    ib = os.path.join(DATA, "inbox", venue + ".json")
+    if not os.path.exists(ib): return
+    b = load(ib, None)
+    if b and b.get("events"):
+        os.makedirs(os.path.join(DATA, "manual"), exist_ok=True)
+        json.dump({"venue": venue, "format": 2, "checked": (b.get("fetched") or "")[:10], "events": b["events"],
+                   "note": "Reservelijst van de eigen pc (de site toont GitHub soms een bot-controle)."},
+                  open(os.path.join(DATA, "manual", venue + ".json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+        print(f"{venue} inbox verwerkt: {len(b['events'])} concerten")
+    os.remove(ib)
+
 
 def merge_tivoli_inbox():
     """Verwerk data/inbox/tivoli.json (door de eigenaar van een eigen toestel geüpload) in data/manual/tivoli.json."""
@@ -100,6 +114,18 @@ def main():
             status[key] = {"ok": False, "error": str(ex)[:200], "at": status.get(key, {}).get("at"), "count": status.get(key, {}).get("count")}
             print(f"{key}: FAILED {ex}")
             traceback.print_exc()
+    # 013 toont GitHub soms een bot-controle: na een pauze nog één keer, anders de lijst van de eigen pc (hieronder)
+    if "o13" not in fresh and (not only or "o13" in only):
+        time.sleep(120)
+        try:
+            got = [e for e in venues1.o13() if today <= e["d"]]
+            if len(got) >= 3:
+                fresh["o13"] = got
+                status["o13"] = {"ok": True, "count": len(got), "at": now}
+                print(f"o13: {len(got)} (tweede poging)")
+        except Exception as ex:
+            print("o13: tweede poging mislukt", ex)
+    merge_pc_inbox("o13")
     merge_tivoli_inbox()
     # Tivoli komt van de eigen pc (data/manual/tivoli.json); is die lijst ouder dan 3 dagen, dan de oude feed
     tv = load(os.path.join(DATA, "manual", "tivoli.json"), {}) or {}
@@ -147,6 +173,8 @@ def main():
             if not fn_.endswith(".json"): continue
             m = load(os.path.join(mdir, fn_), None)
             if not m or m["venue"] in fresh: continue
+            if m["venue"] != "tivoli" and (m.get("checked") or "") < (date.today() - timedelta(days=4)).isoformat():
+                continue   # reservelijst van de pc te oud: dan liever de laatst bekende lijst laten staan
             got = [e for e in m["events"] if e["d"] >= today]
             fresh[m["venue"]] = got
             status[m["venue"]] = {"ok": True, "manual": True, "count": len(got), "at": now, "checked": m.get("checked"), "note": m.get("note")}

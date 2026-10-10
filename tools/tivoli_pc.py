@@ -78,6 +78,24 @@ def detail_time(page):
     return m.group(1) if m else ""
 
 
+def o13_events():
+    """Reserve voor 013: GitHub krijgt daar soms een bot-controle, deze pc niet. Zelfde gegevens als de lijstpagina."""
+    try:
+        h = get("https://www.013.nl/programma")
+    except Exception as ex:
+        print("013 niet gelukt:", ex); return []
+    out = []
+    for art in re.findall(r"<article\b.*?</article>", h, re.S):
+        a = re.search(r'href="(https://www\.013\.nl/programma/[^"]+)"', art)
+        t = re.search(r"<h2[^>]*>(.*?)</h2>", art, re.S)
+        tm = re.search(r'<time[^>]*datetime="(\d{4}-\d\d-\d\d)T(\d\d:\d\d)', art)
+        if a and t and tm:
+            out.append({"v": "o13", "d": tm.group(1), "n": txt(t.group(1)), "u": a.group(1), "t": tm.group(2), "r": "",
+                        "s": "uitverkocht" in art.lower(), "c": False})
+    print(f"013: {len(out)} concerten (reserve)")
+    return out
+
+
 def keep(e):
     if NOT_MUSIC.search(e["n"]): return False
     return any(g in GOOD for g in e["g"])
@@ -144,16 +162,21 @@ def main():
     bundle = {"format": 2, "fetched": time.strftime("%Y-%m-%dT%H:%M:%S"), "complete": complete, "events": out,
               "times": {i: t for i, t in times.items() if i in listed}}
     p = os.path.join(repo, "data", "inbox", "tivoli.json")
+    o13 = o13_events()
+    p13 = os.path.join(repo, "data", "inbox", "o13.json")
 
     def write():
         os.makedirs(os.path.dirname(p), exist_ok=True)
         json.dump(bundle, open(p, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+        if len(o13) >= 20:
+            json.dump({"format": 2, "fetched": bundle["fetched"], "events": o13}, open(p13, "w", encoding="utf-8"),
+                      ensure_ascii=False, separators=(",", ":"))
     if dry:
         write(); print("geschreven naar", p, "(niet gecommit)")
         return
     for attempt in range(4):
         sync(repo); write()          # telkens op de nieuwste stand van GitHub, dan pas ons bestand erbij
-        git(repo, "add", "data/inbox/tivoli.json")
+        git(repo, "add", "data/inbox/tivoli.json", "data/inbox/o13.json")
         git(repo, "-c", "user.name=Barry (pc)", "-c", "user.email=bot@users.noreply.github.com",
             "commit", "-q", "-m", f"Tivoli-programma van eigen pc ({len(out)} concerten)")
         r = git(repo, "push", "-q", "origin", "main")

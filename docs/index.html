@@ -30,6 +30,9 @@ button{font:inherit;color:inherit}
 .wrap{max-width:720px;margin:0 auto;padding:0 16px 60px}
 header{position:sticky;top:0;z-index:6;background:var(--bg);margin:0 -16px;padding:calc(env(safe-area-inset-top,0px) + 10px) 16px 0;border-bottom:1px solid var(--line)}
 .top{display:flex;align-items:center;gap:10px}
+.tt{flex:1;min-width:0}
+.tt h1{display:block}
+.stamp{font:400 11px var(--f-mono);color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 h1{font-family:var(--f-display);font-weight:700;font-size:20px;letter-spacing:-.02em;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ib{appearance:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;width:34px;height:34px;display:grid;place-items:center;cursor:pointer;color:var(--fg);text-decoration:none;flex:none}
 .ib svg{width:17px;height:17px}
@@ -125,7 +128,7 @@ h1{font-family:var(--f-display);font-weight:700;font-size:20px;letter-spacing:-.
 <div class="wrap">
   <header id="hdr">
     <div class="top">
-      <h1>Barry's concert agenda</h1>
+      <div class="tt"><h1>Barry's concert agenda</h1><div class="stamp"><span id="stamp"></span> · versie 2.2</div></div>
       <button class="ib" id="sbtn" aria-label="Zoeken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
       <a class="ib" href="info.html" aria-label="Info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></a>
     </div>
@@ -152,7 +155,7 @@ h1{font-family:var(--f-display);font-weight:700;font-size:20px;letter-spacing:-.
   </header>
   <div id="warn"></div>
   <main id="out" aria-live="polite"><div class="empty"><b>Laden…</b>De agenda wordt opgehaald.</div></main>
-  <div class="foot">Gegevens van de websites van de zalen zelf (en Ticketmaster voor grote zalen), elke ochtend rond 07:00 bijgewerkt. <span id="stamp"></span> · <a href="info.html">Info</a> · <a href="v1/">vorige versie</a> · versie 2.1</div>
+  <div class="foot">Gegevens van de websites van de zalen zelf (en Ticketmaster voor grote zalen), elke ochtend rond 07:00 bijgewerkt. <a href="info.html">Info</a> · <a href="v1/">vorige versie</a></div>
 </div>
 <div class="sheet" id="sheet" aria-hidden="true">
   <div class="back" data-close></div>
@@ -171,5 +174,5 @@ function hide(){if(done)return;done=true;sp.classList.add("gone");setTimeout(fun
 window.__splashReady=function(){setTimeout(hide,Math.max(0,1400-(Date.now()-t0)));};
 sp.addEventListener("click",hide);setTimeout(hide,6000);})();
 </script>
-<script src="app.js?v=6"></script>
+<script src="app.js?v=7"></script>
 </body></html>

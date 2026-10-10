@@ -284,7 +284,7 @@ function init(data) {
   ALL = data.events.filter(function (e) { return VENUES[e.v]; }).map(function (e) { e.id = eid(e); e.ts = (e.t || "").replace("deuren ", "") || "99"; if (e.ts < "06") e.ts = "3" + e.ts; return e; });
   ALL.sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : 0; });
   var u = new Date(data.updated);
-  $("stamp").textContent = "Bijgewerkt " + u.getDate() + " " + MON[u.getMonth()] + " " + pad(u.getHours()) + ":" + pad(u.getMinutes()) + ".";
+  $("stamp").textContent = "bijgewerkt " + u.getDate() + " " + MON[u.getMonth()] + " " + pad(u.getHours()) + ":" + pad(u.getMinutes());
   var bad = Object.keys(data.status || {}).filter(function (k) { return !data.status[k].ok; });
   if (bad.length) $("warn").innerHTML = '<div class="warn">Niet gelukt vandaag: ' + bad.map(function (k) { return esc((VENUES[k] || {}).label || k); }).join(", ") + ". Daarvan staat de laatst bekende lijst erin.</div>";
   render(); sizeHeader();

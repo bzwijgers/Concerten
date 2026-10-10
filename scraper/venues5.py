@@ -110,6 +110,10 @@ def bolwerk(delay=1.0):
     h = fetch("https://ontdekpoort.nl/programma/locatie/bolwerk-kerkgracht-8/", headers=hdr)
     m = re.search(r'id="Navbar_Search_Events">(.*?)</script>', h, re.S)
     if not m:
+        import os
+        p = os.path.join(os.path.dirname(__file__), "..", "data", "samples")
+        os.makedirs(p, exist_ok=True)
+        open(os.path.join(p, "bolwerk_leeg.html"), "w", encoding="utf-8").write(h[:200000])   # om te zien wat Poort teruggaf
         raise RuntimeError("bolwerk: geen zoekindex gevonden")
     items = [x for x in json.loads(m.group(1)) if (x.get("meta") or "").startswith("Bolwerk")]
     out = []

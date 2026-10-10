@@ -129,7 +129,7 @@ def main():
                     print(f"{key}: {len(got)} (tweede poging)")
             except Exception as ex:
                 print(f"{key}: tweede poging mislukt", ex)
-    merge_pc_inbox("o13")
+    merge_pc_inbox("o13"); merge_pc_inbox("bolwerk")
     merge_tivoli_inbox()
     # Tivoli komt van de eigen pc (data/manual/tivoli.json); is die lijst ouder dan 3 dagen, dan de oude feed
     tv = load(os.path.join(DATA, "manual", "tivoli.json"), {}) or {}

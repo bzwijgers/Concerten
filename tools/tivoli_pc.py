@@ -162,21 +162,31 @@ def main():
     bundle = {"format": 2, "fetched": time.strftime("%Y-%m-%dT%H:%M:%S"), "complete": complete, "events": out,
               "times": {i: t for i, t in times.items() if i in listed}}
     p = os.path.join(repo, "data", "inbox", "tivoli.json")
-    o13 = o13_events()
-    p13 = os.path.join(repo, "data", "inbox", "o13.json")
+    # reserves voor zalen die GitHub soms weigeren: 013 (eigen parser) en Het Bolwerk (de scraper uit de repo zelf)
+    spare = {"o13": o13_events()}
+    try:
+        sys.path.insert(0, os.path.join(repo, "scraper"))
+        import venues5
+        spare["bolwerk"] = venues5.bolwerk()
+    except Exception as ex:
+        print("bolwerk niet gelukt:", ex)
 
     def write():
         os.makedirs(os.path.dirname(p), exist_ok=True)
         json.dump(bundle, open(p, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
-        if len(o13) >= 20:
-            json.dump({"format": 2, "fetched": bundle["fetched"], "events": o13}, open(p13, "w", encoding="utf-8"),
-                      ensure_ascii=False, separators=(",", ":"))
+        for k, evs in spare.items():
+            if evs and len(evs) >= 10:
+                json.dump({"format": 2, "fetched": bundle["fetched"], "events": evs},
+                          open(os.path.join(repo, "data", "inbox", k + ".json"), "w", encoding="utf-8"),
+                          ensure_ascii=False, separators=(",", ":"))
     if dry:
         write(); print("geschreven naar", p, "(niet gecommit)")
         return
     for attempt in range(4):
         sync(repo); write()          # telkens op de nieuwste stand van GitHub, dan pas ons bestand erbij
-        git(repo, "add", "data/inbox/tivoli.json", "data/inbox/o13.json")
+        for f in ("data/inbox/tivoli.json", "data/inbox/o13.json", "data/inbox/bolwerk.json", "data/bolwerk_cache.json"):
+            if os.path.exists(os.path.join(repo, f)):
+                git(repo, "add", f)
         git(repo, "-c", "user.name=Barry (pc)", "-c", "user.email=bot@users.noreply.github.com",
             "commit", "-q", "-m", f"Tivoli-programma van eigen pc ({len(out)} concerten)")
         r = git(repo, "push", "-q", "origin", "main")

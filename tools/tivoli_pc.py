@@ -16,9 +16,12 @@ BASE = "https://www.tivolivredenburg.nl"
 UA = "BarrysConcertAgenda/1.0 (persoonlijk gebruik; programma-overzicht)"
 DELAY = 1.5
 MAX_PAGES = 80
-MAX_DETAIL = 150   # tijden van nieuwe concerten per run; de rest volgt de volgende dag
+MAX_DETAIL = 600   # tijden van nieuwe concerten per run (alleen nieuwe; bekende tijden worden onthouden)
 
-# geen klassiek, jazz, dance; ook geen familievoorstellingen
+# alleen popgenres (genrelijst van Tivoli zelf); geen klassiek, jazz, dance, talks of comedy
+GOOD = {"pop", "rock", "pop-rock", "indie", "singer-songwriter", "roots-blues-americana", "metal-punk-heavy",
+        "metal", "punk", "hiphop-rb-1", "hiphop-rb-soul", "classic-pop-60s-90s", "nederlands", "global-1-pop-rock",
+        "reggae-ska", "indie-pop-alternative"}
 BAD = {"klassiek", "kamermuziek", "symfonisch", "oude-muziek", "strijkkwartet", "vocaal", "piano", "orgel",
        "viool-altviool-cello", "blaasinstrumenten", "minimal-music", "filmmuziek", "nieuwe-muziek", "hedendaags",
        "jazz", "soul-funk-jazz", "dance-by-night", "house-techno", "electronic", "electronic-1", "drum-n-bass-trap",
@@ -77,8 +80,7 @@ def detail_time(page):
 
 def keep(e):
     if NOT_MUSIC.search(e["n"]): return False
-    if not e["g"]: return False
-    return any(g not in BAD for g in e["g"])
+    return any(g in GOOD for g in e["g"])
 
 
 def git(repo, *args):
@@ -127,7 +129,7 @@ def main():
         sys.exit(f"Gestopt: {ex}. Tivoli laat deze verbinding nu niet door; er is niets veranderd.")
     complete = pages >= 2 and len(listed) >= 100
     out = [{"v": "tivoli", "d": e["d"], "n": e["n"], "u": e["u"], "t": times.get(e["id"], ""), "r": e["r"],
-            "s": e["s"], "c": False} for e in sorted(events, key=lambda e: (e["d"], e["n"]))]
+            "s": e["s"], "c": False, "g": e["g"]} for e in sorted(events, key=lambda e: (e["d"], e["n"]))]
     print(f"{len(listed)} items op de site, {len(out)} concerten na filter, {len(todo)} tijden opgehaald, volledig={complete}")
     if len(out) < 20:
         sys.exit("Te weinig concerten gevonden; niets gedaan.")

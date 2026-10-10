@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import date, timedelta
 from common import fetch
 
-VENUES = ("melkweg", "effenaar", "hedon", "mezz", "patronaat", "pul", "dynamo", "boerderij", "gebouwt", "amare")
+VENUES = ("melkweg", "effenaar", "hedon", "mezz", "patronaat", "pul", "dynamo", "boerderij", "gebouwt", "amare", "nobel")
 PER_VENUE = 120     # nieuwe pagina's per zaal per run
 RETRY_DAYS = 14     # niets gevonden: na zoveel dagen opnieuw proberen (tijd kan later bekend worden)
 
@@ -26,8 +26,17 @@ def _hm(h, m):
 
 def find_time(page):
     """'20:30' voor een aanvangstijd, 'deuren 19:30' als alleen de deurtijd betrouwbaar is, anders ''."""
-    for sd in re.findall(r'"startDate"\s*:\s*"(\d{4}-\d\d-\d\d)[T ](\d\d):(\d\d)', page)[:1]:
-        if sd[1:] != ("00", "00"):
+    t0 = _text(page)[:12000]
+    m = re.search(r"(?i)geopend:?\s*\|\s*aanvang:?\s*\|\s*(\d{1,2})[:.](\d{2})\s*(?:uur)?\s*\|\s*(\d{1,2})[:.](\d{2})", t0)
+    if m:   # Burgerweeshuis: twee labels, daarna twee tijden (open, aanvang)
+        return _hm(m.group(3), m.group(4))
+    for sd in re.findall(r'"startDate"\s*:\s*"(\d{4}-\d\d-\d\d)[T ](\d\d):(\d\d)(?::\d\d(?:\.\d+)?)?(Z?)', page)[:1]:
+        if sd[3] == "Z":        # echte UTC (bv. Burgerweeshuis): omrekenen
+            from datetime import datetime
+            from zoneinfo import ZoneInfo
+            dt = datetime.fromisoformat(f"{sd[0]}T{sd[1]}:{sd[2]}+00:00").astimezone(ZoneInfo("Europe/Amsterdam"))
+            return dt.strftime("%H:%M")
+        if sd[1:3] != ("00", "00"):
             return f"{sd[1]}:{sd[2]}"          # zoals de zaal het schrijft (geen tijdzone-omrekening)
     m = re.search(r'class="[^"]*date__time[^"]*">\s*(\d{1,2}):(\d{2})\s*<', page)   # Melkweg: tijd in de paginakop
     if m and _hm(m.group(1), m.group(2)):

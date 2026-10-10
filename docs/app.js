@@ -29,6 +29,17 @@ var VENUES = {
   gebouwt:{label:"Gebouw-T",home:"https://gebouw-t.nl/agenda/"},
   tolhuistuin:{label:"Tolhuistuin",home:"https://tolhuistuin.nl/agenda/"},
   bolwerk:{label:"Het Bolwerk",home:"https://ontdekpoort.nl/programma/locatie/bolwerk-kerkgracht-8/"},
+  burgerweeshuis:{label:"Burgerweeshuis",home:"https://www.burgerweeshuis.nl/programma"},
+  ekko:{label:"EKKO",home:"https://ekko.nl/agenda/"},
+  nobel:{label:"Gebr. de Nobel",home:"https://nobel.nl/agenda"},
+  grenswerk:{label:"Grenswerk",home:"https://www.grenswerk.nl/agenda/"},
+  iduna:{label:"Iduna",home:"https://iduna.nl/agenda/"},
+  musicon:{label:"Musicon",home:"https://musicon.nl/programma/"},
+  qfactory:{label:"Q-Factory",home:"https://q-factory.com/nl"},
+  simplon:{label:"Simplon",home:"https://simplon.nl/programma/"},
+  sounddog:{label:"Sound Dog",home:"https://sounddogbreda.nl/"},
+  vera:{label:"VERA",home:"https://www.vera-groningen.nl/programma/"},
+  victorie:{label:"Victorie",home:"https://www.podiumvictorie.nl/programma/"},
   ticketmaster:{label:"Ticketmaster",home:"https://www.ticketmaster.nl/",linkOnly:true},
   ticketswap:{label:"TicketSwap-links",home:"https://www.ticketswap.nl/",linkOnly:true}
 };

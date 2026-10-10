@@ -2,7 +2,7 @@ import json, os, sys, traceback, importlib
 from datetime import date, datetime, timedelta, timezone
 sys.path.insert(0, os.path.dirname(__file__))
 from common import *
-import venues1, venues2, venues3, venues4, venues5, feedimport, ticketmaster, tsmap, times
+import venues1, venues2, venues3, venues4, venues5, venues6, feedimport, ticketmaster, tsmap, times
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 DATA = os.path.join(ROOT, "data")
@@ -17,6 +17,8 @@ VENUES = [  # key, label, fn
     ("spot", venues4.spot), ("bibelot", venues4.bibelot), ("bosuil", venues4.bosuil), ("bird", venues4.bird),
     ("gebouwt", venues4.gebouwt), ("neushoorn", venues4.neushoorn), ("amare", venues5.amare), ("tolhuistuin", venues5.tolhuistuin),
     ("bolwerk", venues5.bolwerk), ("dbs", venues5.dbs),
+    ("burgerweeshuis", venues6.burgerweeshuis), ("ekko", venues6.ekko), ("nobel", venues6.nobel), ("grenswerk", venues6.grenswerk), ("iduna", venues6.iduna), ("musicon", venues6.musicon),
+    ("qfactory", venues6.qfactory), ("simplon", venues6.simplon), ("sounddog", venues6.sounddog), ("vera", venues6.vera), ("victorie", venues6.victorie),
 ]
 
 def load(path, default):

@@ -16,7 +16,7 @@ OWN = ["paradiso", "melkweg", "013", "tivolivredenburg", "tivoli", "effenaar", "
 # horeca/arrangementen bij grote zalen: geen aparte zaal
 HOSPITALITY = re.compile(r"\b(loge|lounge|skybox|hospitality)\b|ziggo\s*dome\s*club", re.I)
 # geen klassiek, jazz of dance (zelfde regel als bij Tivoli)
-SKIP_GENRES = {"classical", "jazz", "dance/electronic", "opera"}
+SKIP_GENRES = re.compile(r"\bclassical\b|\bklassiek\b|\bjazz\b|\bdance\b|electronic|elektronisch|\bopera\b|\bkinder|\bchildren", re.I)
 JUNK = re.compile(r"\b(parkeren|parkeer\w*|parking|upgrade|vip[\s-]*(package|pakket|ticket|upgrade|experience)|hospitality|"
                   r"locker|kluisje|camping|shuttle|busreis|bustickets?|garderobe|cadeaukaart|gift\s*card|voucher|"
                   r"meet\s*(&|and|en)\s*greet|skybox|arrangement|fan\s*pakket|early\s*entry|packages?)\b", re.I)
@@ -103,8 +103,9 @@ def convert(raw, have):
         if (v.get("country") or {}).get("countryCode", "NL") != "NL" or not d or not name: continue
         if st in ("cancelled", "postponed"): skipped["geannuleerd"] += 1; continue
         if JUNK.search(name): skipped["geen concert"] += 1; continue
-        genre = (((x.get("classifications") or [{}])[0].get("genre") or {}).get("name") or "").lower()
-        if genre in SKIP_GENRES: skipped["genre"] = skipped.get("genre", 0) + 1; continue
+        cl = (x.get("classifications") or [{}])[0]
+        genre = " / ".join(n for n in ((cl.get("genre") or {}).get("name", ""), (cl.get("subGenre") or {}).get("name", "")) if n and n != "Undefined")
+        if SKIP_GENRES.search(genre): skipped["genre"] = skipped.get("genre", 0) + 1; continue
         vname = (v.get("name") or "").strip() or "Onbekende locatie"
         city = ((v.get("city") or {}).get("name") or "").strip()
         vn = norm(vname)
@@ -117,7 +118,7 @@ def convert(raw, have):
         key = "tm-" + slug(vname)
         venues[key] = {"label": vname, "city": city, "home": v.get("url") or "", "src": "ticketmaster"}
         out.setdefault(key, []).append({"v": key, "d": d, "n": re.sub(r"\s+", " ", name), "u": x.get("url") or "",
-                                        "t": (start.get("localTime") or "")[:5], "r": city, "s": False, "c": False})
+                                        "t": (start.get("localTime") or "")[:5], "r": city, "s": False, "c": False, "g": genre})
         by_day.setdefault(d, []).append(norm(name))
     print("ticketmaster overgeslagen:", skipped)
     return out, venues

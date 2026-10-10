@@ -14,7 +14,9 @@ VENUE_HINT = {"paradiso": "paradiso", "melkweg": "melkweg", "tivoli": "tivolivre
               "hedon": "hedon", "helling": "helling", "dynamo": "dynamo", "klokgebouw": "klokgebouw", "doornroosje": "doornroosje",
               "metropool": "metropool", "spot": "oosterpoort", "bibelot": "bibelot", "bosuil": "bosuil", "bird": "bird",
               "gebouwt": "gebouwt", "neushoorn": "neushoorn", "amare": "amare", "tolhuistuin": "tolhuistuin", "rotown": "rotown",
-              "baroeg": "baroeg", "dbs": "dbs", "bolwerk": "bolwerk"}
+              "baroeg": "baroeg", "dbs": "dbs", "bolwerk": "bolwerk",
+              "burgerweeshuis": "burgerweeshuis", "ekko": "ekko", "nobel": "nobel", "grenswerk": "grenswerk", "iduna": "iduna", "musicon": "musicon",
+              "qfactory": "qfactory", "simplon": "simplon", "sounddog": "sounddog", "vera": "vera", "victorie": "victorie"}
 
 
 CITY = {"paradiso": "amsterdam", "melkweg": "amsterdam", "tolhuistuin": "amsterdam", "tivoli": "utrecht", "helling": "utrecht",
@@ -22,7 +24,8 @@ CITY = {"paradiso": "amsterdam", "melkweg": "amsterdam", "tolhuistuin": "amsterd
         "dynamo": "eindhoven", "klokgebouw": "eindhoven", "pul": "uden", "boerderij": "zoetermeer", "patronaat": "haarlem",
         "hedon": "zwolle", "doornroosje": "nijmegen", "metropool": "", "spot": "groningen", "bibelot": "dordrecht",
         "bosuil": "weert", "bird": "rotterdam", "rotown": "rotterdam", "baroeg": "rotterdam", "gebouwt": "bergenopzoom",
-        "neushoorn": "leeuwarden", "bolwerk": "sneek"}
+        "neushoorn": "leeuwarden", "bolwerk": "sneek",
+        "burgerweeshuis": "deventer", "ekko": "utrecht", "nobel": "leiden", "grenswerk": "venlo", "iduna": "drachten", "musicon": "denhaag", "qfactory": "amsterdam", "simplon": "groningen", "sounddog": "breda", "vera": "groningen", "victorie": "alkmaar"}
 ART = re.compile(r"<loc>(https://www\.ticketswap\.com/artist/([a-z0-9-]+)-tickets-[A-Za-z0-9]+)</loc>")
 
 

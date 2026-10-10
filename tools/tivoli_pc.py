@@ -99,7 +99,12 @@ def main():
     listed, url, pages = {}, BASE + "/agenda/", 0
     try:
         while url and pages < MAX_PAGES:
-            evs, nxt = parse_list(get(url))
+            try:
+                page = get(url)
+            except urllib.error.HTTPError as ex:
+                if ex.code == 404 and pages: break      # voorbij de laatste pagina
+                raise
+            evs, nxt = parse_list(page)
             new = [e for e in evs if e["id"] not in listed]
             for e in evs: listed.setdefault(e["id"], e)
             pages += 1
@@ -148,4 +153,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except SystemExit:
+        raise
+    except Exception:
+        import traceback; traceback.print_exc(); sys.exit(1)

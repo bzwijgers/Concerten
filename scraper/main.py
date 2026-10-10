@@ -2,7 +2,7 @@ import json, os, sys, traceback, importlib
 from datetime import date, datetime, timedelta, timezone
 sys.path.insert(0, os.path.dirname(__file__))
 from common import *
-import venues1, venues2, venues3, venues4, venues5, feedimport, ticketmaster, tsmap
+import venues1, venues2, venues3, venues4, venues5, feedimport, ticketmaster, tsmap, times
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 DATA = os.path.join(ROOT, "data")
@@ -156,6 +156,23 @@ def main():
         fresh[key] = [e for e in fresh[key] if not gone.search(e["n"])]
         for e in fresh[key]: e["n"] = newdate.sub("", e["n"]).strip()
         if len(fresh[key]) < before: print(f"{key}: {before - len(fresh[key])} geannuleerd/verplaatst weggelaten")
+    # aanvangstijden aanvullen van de eigen detailpagina's (eenmalig per concert, onthouden in data/times.json)
+    try:
+        times.fill(fresh, DATA)
+    except Exception as ex:
+        print("tijden aanvullen mislukt:", ex)
+    # geen concert: quizzen, workshops, kindervoorstellingen, platenbeurs e.d. (lijst nagelopen op 2026-10-10)
+    nonc = _re.compile(r"\b(pop\s*quiz|quiz|platenbeurs|jukebox|luistersessies?|workshops?|masterclass|lezing|expositie|"
+                       r"rondleiding|yoga|boekenclub|podcast|science\s*caf[eé]|comedy(?!\s+of\s+errors)|stand-?up|cabaret|"
+                       r"indie\s*disco|silent\s*disco|kinderdisco|discozwemmen|feestfabriek|dutchtuber|dikkie\s*dik|"
+                       r"ernst,?\s*bobbie|de\s*betovering|backstage\s*&\s*blik|open\s*mic|markt)\b|^opening:|\(\d{1,2}\+\)", _re.I)
+    for key in fresh:
+        drop = [e["n"] for e in fresh[key] if nonc.search(e["n"])]
+        if drop:
+            fresh[key] = [e for e in fresh[key] if not nonc.search(e["n"])]
+            print(f"{key}: geen concert weggelaten: {sorted(set(drop))[:8]}")
+        for e in fresh[key]:   # 00:00 en xx:59 zijn bij de zalen 'tijd onbekend' of nachtprogramma, geen aanvangstijd
+            if e.get("t") == "00:00" or (e.get("t") or "").endswith(":59"): e["t"] = ""
     # zelfde concert bij twee zalen: de leidende zaal houdt het (BIRD/Rotown -> Rotown, De Helling/Tivoli -> Tivoli)
     tnorm = lambda t: _re.sub(r"[^a-z0-9]+", "", t.lower().split(" + ")[0].split(":")[0].split(" (")[0])
     for loser, leader in (("bird", "rotown"), ("helling", "tivoli")):

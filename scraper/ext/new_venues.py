@@ -100,10 +100,12 @@ def json_events(html):
         try: yield from walk(json.loads(unescape(blob)))
         except (ValueError,TypeError):pass
 
-def iso_date_time(s):
+def iso_date_time(s, local=False):
+    """local=True: de tijd staat er al in Nederlandse tijd, ook al zegt de site +00:00 (Doornroosje)."""
     if not s:return None
     try:
         v=str(s).strip().replace("Z","+00:00")
+        if local:v=re.sub(r"(?:[+-]\d\d:?\d\d)$","",v)
         if re.match(r"^\d{4}-\d\d-\d\d$",v):return (date.fromisoformat(v).isoformat(),"")
         dt=datetime.fromisoformat(v)
         if dt.tzinfo:dt=dt.astimezone(ZoneInfo("Europe/Amsterdam"))
@@ -227,7 +229,7 @@ def parse_event(html, url, name, city):
         if event.get("eventStatus","").lower().endswith("eventcancelled"):return None
         event_name=event.get("name","")
         if event_name and title[:12].lower() not in str(event_name).lower():continue
-        parsed=iso_date_time(event.get("startDate"))
+        parsed=iso_date_time(event.get("startDate"), local=(name=="Doornroosje"))
         if parsed:break
     # Hedon's own primary date block is yearless; derive the correct year
     # using its printed weekday rather than nearby recommended events.

@@ -34,7 +34,7 @@ var VENUES = {
 };
 /* TicketSwap-pagina's van de zaal of stad (gecontroleerd), anders zoekresultaten */
 var TSV = {rotown:"https://www.ticketswap.com/location/rotown/2033", melkweg:"https://www.ticketswap.com/location/melkweg/41", o13:"https://www.ticketswap.com/city/tilburg/12"};
-var TS = {};   // directe evenementlinks: wordt gevuld uit data/ticketswap.json
+var TS = {};   // (oud) directe links staan nu in de data zelf: c.k / c.ka
 
 var DOW=["zo","ma","di","wo","do","vr","za"], MON=["jan","feb","mrt","apr","mei","jun","jul","aug","sep","okt","nov","dec"];
 function pad(n){return (n<10?"0":"")+n;}
@@ -140,6 +140,5 @@ $("hideSold").addEventListener("change",function(e){state.hideSold=e.target.chec
 $("out").addEventListener("click",function(e){var b=e.target.closest(".mk");if(!b)return;toggle(b.getAttribute("data-id"),b.getAttribute("data-act"));});
 loadMarks();
 fetch("data/events.json",{cache:"no-cache"}).then(function(r){return r.json();}).then(function(d){init(d);if(window.__splashReady)window.__splashReady();}).catch(function(){if(window.__splashReady)window.__splashReady();$("out").innerHTML='<div class="empty"><b>Agenda niet geladen</b>Controleer je verbinding en probeer het opnieuw.</div>';});
-fetch("data/ticketswap.json",{cache:"no-cache"}).then(function(r){return r.ok?r.json():{};}).then(function(j){TS=j||{};render();}).catch(function(){});
 try{if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");}catch(e){}
 })();

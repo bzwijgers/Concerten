@@ -114,17 +114,21 @@ def main():
             status[key] = {"ok": False, "error": str(ex)[:200], "at": status.get(key, {}).get("at"), "count": status.get(key, {}).get("count")}
             print(f"{key}: FAILED {ex}")
             traceback.print_exc()
-    # 013 toont GitHub soms een bot-controle: na een pauze nog één keer, anders de lijst van de eigen pc (hieronder)
-    if "o13" not in fresh and (not only or "o13" in only):
+    # mislukte zalen (tijdelijke storing, drukte, bot-controle bij 013): na een pauze nog één keer;
+    # lukt dat ook niet, dan blijft de laatst bekende lijst staan (of de reservelijst van de eigen pc)
+    failed = [(k, fn) for k, fn in VENUES if fn and k not in fresh and (not only or k in only)]
+    if failed:
+        print("tweede poging over 2 minuten:", [k for k, _ in failed])
         time.sleep(120)
-        try:
-            got = [e for e in venues1.o13() if today <= e["d"]]
-            if len(got) >= 3:
-                fresh["o13"] = got
-                status["o13"] = {"ok": True, "count": len(got), "at": now}
-                print(f"o13: {len(got)} (tweede poging)")
-        except Exception as ex:
-            print("o13: tweede poging mislukt", ex)
+        for key, fn in failed:
+            try:
+                got = [e for e in fn() if today <= e["d"] <= (date.today() + timedelta(days=600)).isoformat()]
+                if len(got) >= {"tolhuistuin": 1}.get(key, 3):
+                    fresh[key] = got
+                    status[key] = {"ok": True, "count": len(got), "at": now}
+                    print(f"{key}: {len(got)} (tweede poging)")
+            except Exception as ex:
+                print(f"{key}: tweede poging mislukt", ex)
     merge_pc_inbox("o13")
     merge_tivoli_inbox()
     # Tivoli komt van de eigen pc (data/manual/tivoli.json); is die lijst ouder dan 3 dagen, dan de oude feed

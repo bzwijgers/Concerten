@@ -113,29 +113,44 @@ def bolwerk(delay=1.0):
         raise RuntimeError("bolwerk: geen zoekindex gevonden")
     items = [x for x in json.loads(m.group(1)) if (x.get("meta") or "").startswith("Bolwerk")]
     out = []
+    import os
+    cpath = os.path.join(os.path.dirname(__file__), "..", "data", "bolwerk_cache.json")
+    try:
+        cache = json.load(open(cpath, encoding="utf-8"))
+    except Exception:
+        cache = {}
+    week_ago = (date.today() - timedelta(days=7)).isoformat()
     for x in items:
         st = (x.get("search_text") or "").lower()
         tail = st.rsplit("bolwerk - kerkgracht 8", 1)[-1].split()
         if "muziek" not in tail: continue          # categorie staat achteraan, bv. 'muziek rock', 'heavy muziek'
         title, url = clean(x["title"]), x["url"]
-        shows = []
-        try:
-            time.sleep(delay)
-            dh = fetch(url, headers=hdr)
-            for li in re.findall(r'<li\b[^>]*>(.*?)</li>', (re.search(r'event-shows-list(.*?)</ul>', dh, re.S) or [None, ""])[1], re.S):
-                d = parse_nl_date(re.sub(r"<[^>]+>", " ", li))
-                if not d: continue
-                tm = re.search(r"Aanvang:?\s*(?:om\s*)?(\d{1,2}[:.]\d{2})", li)
-                sold = bool(re.search(r"uitverkocht|sold\s*out", li, re.I))
-                shows.append((d, tm.group(1).replace(".", ":") if tm else "", sold))
-        except Exception as ex:
-            print("bolwerk: detail mislukt", url, ex)
+        c = cache.get(url)
+        if c and c.get("at", "") >= week_ago and c.get("shows"):   # pagina deze week al gelezen
+            shows = [tuple(s) for s in c["shows"]]
+        else:
+            shows = []
+            try:
+                time.sleep(delay)
+                dh = fetch(url, headers=hdr)
+                for li in re.findall(r'<li\b[^>]*>(.*?)</li>', (re.search(r'event-shows-list(.*?)</ul>', dh, re.S) or [None, ""])[1], re.S):
+                    d = parse_nl_date(re.sub(r"<[^>]+>", " ", li))
+                    if not d: continue
+                    tm = re.search(r"Aanvang:?\s*(?:om\s*)?(\d{1,2}[:.]\d{2})", li)
+                    sold = bool(re.search(r"uitverkocht|sold\s*out", li, re.I))
+                    shows.append((d, tm.group(1).replace(".", ":") if tm else "", sold))
+                if shows: cache[url] = {"at": date.today().isoformat(), "shows": shows}
+            except Exception as ex:
+                print("bolwerk: detail mislukt", url, ex)
+                if c and c.get("shows"): shows = [tuple(s) for s in c["shows"]]
         if not shows:   # terugval: datum uit de index, jaar via de weekdag
             dm = re.match(r"([a-z]{2})\s+(\d{1,2})\s+([a-z]+)", (x.get("lines") or [""])[0].lower())
             d = dm and NL_MONTHS.get(dm.group(3)) and _infer(_DOW.get(dm.group(1)), int(dm.group(2)), NL_MONTHS[dm.group(3)])
             if d: shows.append((d, "", False))
         for d, t, sold in shows:
             out.append(ev("bolwerk", d, title, url, t, "", sold))
+    live = {x["url"] for x in items}
+    json.dump({u: c for u, c in cache.items() if u in live}, open(cpath, "w", encoding="utf-8"), separators=(",", ":"))
     print(f"bolwerk: {len(items)} items in het Bolwerk, {len(out)} concerten")
     return out
 

@@ -38,7 +38,10 @@ def vorstin(): return _site("vorstin")
 def p3(): return _site("p3")
 def meester(): return _site("meester")
 def occii(): return _site("occii")
-def cinetol(): return _site("cinetol")
+def cinetol():   # 'UITVERKOCHT' staat op elke Cinetol-pagina als vaste knoptekst: niet bruikbaar
+    out = _site("cinetol")
+    for e in out: e["s"] = False
+    return out
 def engel(): return _site("engel")
 def bridges(): return _site("bridges")
 

@@ -42,7 +42,14 @@ def find_time(page):
     if m and _hm(m.group(1), m.group(2)):
         return _hm(m.group(1), m.group(2))
     t = _text(page)[:12000]
-    lab = r"(?i)\b(" + START + "|" + DOOR + r")\b\s*:?\s*\|?\s*(?:om\s*)?(\d{1,2})[:.](\d{2})"
+    # Gebr. de Nobel: tijdschema 'HH:MM - Label' (tijd vóór het label)
+    pairs = re.findall(r"(?i)\b(\d{1,2})[:.](\d{2})\s*[-–]\s*(aanvang|start|show|begin|deuren open|zaal open|doors)\b", t)
+    if pairs:
+        st = [_hm(h, m) for h, m, l in pairs if re.match(START, l, re.I)]
+        dr = [_hm(h, m) for h, m, l in pairs if not re.match(START, l, re.I)]
+        if st and st[0]: return st[0]
+        if dr and dr[0]: return "deuren " + dr[0]
+    lab =r"(?i)\b(" + START + "|" + DOOR + r")\b\s*:?\s*\|?\s*(?:om\s*)?(\d{1,2})[:.](\d{2})"
     start = door = None
     for m in re.finditer(lab, t):
         v = _hm(m.group(2), m.group(3))

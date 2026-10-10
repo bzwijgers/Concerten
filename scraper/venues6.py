@@ -72,6 +72,14 @@ def page_date(page):
     return None
 
 
+def url_date(url):
+    """Datum in het adres (De Vorstin: '-17-10-2026/', 'wende-06112026/'): betrouwbaarder dan de paginatekst."""
+    m = re.search(r"-(\d{1,2})-(\d{1,2})-(20\d\d)/?$", url) or re.search(r"-(\d{2})(\d{2})(20\d\d)/?$", url)
+    if m and 1 <= int(m.group(2)) <= 12 and 1 <= int(m.group(1)) <= 31:
+        return f"{m.group(3)}-{int(m.group(2)):02d}-{int(m.group(1)):02d}"
+    return None
+
+
 def page_title(page, strip=""):
     m = re.search(r'<meta[^>]+property="og:title"[^>]+content="([^"]+)"', page) or re.search(r"<h1[^>]*>(.*?)</h1>", page, re.S)
     t = clean(re.sub(r"<[^>]+>", " ", m.group(1))) if m else ""
@@ -92,16 +100,19 @@ class Details:
     def get(self, url, strip="", budget=None):
         today = date.today().isoformat()
         x = self.c.get(url)
-        fresh = x and (x.get("d") and x["d"] < today or x.get("at", "") >= (date.today() - timedelta(days=7)).isoformat())
+        fresh = x and x.get("v") == 2 and (x.get("d") and x["d"] < today or x.get("at", "") >= (date.today() - timedelta(days=7)).isoformat())
         if fresh or (budget is not None and budget[0] <= 0):
             return x
         if budget is not None: budget[0] -= 1
         try:
             p = fetch(url, tries=2, timeout=30)
-            x = {"d": page_date(p), "n": page_title(p, strip), "t": _times.find_time(p), "at": today,
-                 "s": bool(re.search(r"\buitverkocht\b|\bsold\s*out\b", _text(p)[:4000], re.I))}
-            zm = (re.search(r"\bZaal\s*:?\s*\|\s*([^|]{2,40})\|", _text(p))
-                  or re.search(r"\b(?:Locatie|Location)\s*:?\s*\|\s*([^|]{2,40})\|", _text(p)))
+            title = page_title(p, strip)
+            t = _text(p)
+            i = t.find(title[:30]) if title else -1    # 'uitverkocht' alleen als het bij de titel staat
+            sold = i >= 0 and bool(re.search(r"\buitverkocht\b|\bsold\s*out\b", t[max(0, i - 120):i + 250], re.I))
+            x = {"d": url_date(url) or page_date(p), "n": title, "t": _times.find_time(p), "at": today, "s": sold, "v": 2}
+            zm = (re.search(r"\bZaal\s*:?\s*\|\s*([^|:]{2,40})\|", t)
+                  or re.search(r"\b(?:Locatie|Location)\s*:?\s*\|\s*([^|:]{2,40})\|", t))
             if zm: x["r"] = zm.group(1).strip()
         except Exception as ex:
             print("detail mislukt:", url, ex)

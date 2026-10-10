@@ -170,8 +170,12 @@ def main():
     nonc = _re.compile(r"\b(pop\s*quiz|quiz|platenbeurs|jukebox|luistersessies?|workshops?|masterclass|lezing|expositie|"
                        r"rondleiding|yoga|boekenclub|podcast|science\s*caf[eé]|comedy(?!\s+of\s+errors)|stand-?up|cabaret|"
                        r"indie\s*disco|silent\s*disco|kinderdisco|discozwemmen|feestfabriek|dutchtuber|dikkie\s*dik|"
-                       r"ernst,?\s*bobbie|de\s*betovering|backstage\s*&\s*blik|open\s*mic|markt)\b|^opening:|\(\d{1,2}\+\)", _re.I)
+                       r"ernst,?\s*bobbie|de\s*betovering|backstage\s*&\s*blik|open\s*mic|markt|bingo(?!\s+players)|subsidie\w*)\b"
+                       r"|^opening:|\(\d{1,2}\+\)|pub\s*quiz|\bcomedy(?!\s+of\s+errors)\w*|\bfilmclub|science\s*&\s*cocktails", _re.I)
     for key in fresh:
+        for e in fresh[key]:
+            e["n"] = _re.sub(r"\s+", " ", e["n"]).strip()
+            if ":" in (e.get("r") or ""): e["r"] = ""      # een label ('doors:') is geen zaalnaam
         drop = [e["n"] for e in fresh[key] if nonc.search(e["n"])]
         if drop:
             fresh[key] = [e for e in fresh[key] if not nonc.search(e["n"])]
@@ -216,6 +220,16 @@ def main():
             status["ticketmaster"] = {"ok": False, "error": str(ex)[:200], "at": status.get("ticketmaster", {}).get("at"),
                                       "count": status.get("ticketmaster", {}).get("count")}
             print("ticketmaster: FAILED", ex)
+    # eenmalig (2026-10-10): de uitbreiding met 28 zalen en de datumcorrecties zijn geen 'nieuwe' concerten
+    if "baseline-2026-10-10" not in store.get("migrations", []):
+        n0 = 0
+        for e in events.values():
+            if e.get("first") and e["first"] != "base" and e["first"] >= "2026-10-09":
+                e["first"] = "base"; n0 += 1
+        for g in fresh.values():
+            for e in g: e["_base"] = True
+        store.setdefault("migrations", []).append("baseline-2026-10-10")
+        print("eenmalige basislijn:", n0, "concerten niet meer als nieuw")
     # merge: id = venue + date + url (stable); first_seen kept
     for key, got in fresh.items():
         ids = set()
@@ -225,7 +239,8 @@ def main():
             ids.add(eid)
             old = events.get(eid)
             # eerste keer dat een zaal binnenkomt: geen 'nieuw' (baseline)
-            e["first"] = old["first"] if old else (today if had else "base")
+            e["first"] = old["first"] if old else ("base" if e.pop("_base", False) or not had else today)
+            e.pop("_base", None)
             e["last"] = today
             events[eid] = e
         # events of this venue no longer listed -> drop (cancelled/removed), unless past
@@ -244,7 +259,7 @@ def main():
     cutoff = (date.today() - timedelta(days=45)).isoformat()
     for eid in [k for k, v in events.items() if v["d"] < cutoff]:
         del events[eid]
-    store = {"events": events, "status": status, "updated": now, "venues": tm_venues}
+    store = {"events": events, "status": status, "updated": now, "venues": tm_venues, "migrations": store.get("migrations", [])}
     json.dump(store, open(os.path.join(DATA, "events.json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     json.dump(pcache, open(os.path.join(DATA, "paradiso_cache.json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     pub = sorted(events.values(), key=lambda e: (e["d"], e["v"], e["n"]))

@@ -87,13 +87,21 @@ def git(repo, *args):
     return subprocess.run(["git", "-C", repo, *args], capture_output=True, text=True)
 
 
+def sync(repo):
+    """Deze kopie is alleen voor dit script: altijd precies gelijk aan GitHub zetten (geen merge-conflicten)."""
+    git(repo, "rebase", "--abort"); git(repo, "merge", "--abort")
+    git(repo, "fetch", "-q", "origin")
+    git(repo, "checkout", "-q", "-f", "main")
+    r = git(repo, "reset", "-q", "--hard", "origin/main")
+    if r.returncode: print("git reset mislukt:", r.stderr.strip())
+
+
 def main():
     dry = "--dry-run" in sys.argv
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     repo = os.path.abspath(args[0] if args else os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
     if not dry:
-        r = git(repo, "pull", "-q", "--rebase", "origin", "main")
-        if r.returncode: print("git pull mislukt:", r.stderr.strip())
+        sync(repo)
     try:
         times = json.load(open(os.path.join(repo, "data", "manual", "tivoli.json"), encoding="utf-8")).get("times", {})
     except Exception:
@@ -136,21 +144,23 @@ def main():
     bundle = {"format": 2, "fetched": time.strftime("%Y-%m-%dT%H:%M:%S"), "complete": complete, "events": out,
               "times": {i: t for i, t in times.items() if i in listed}}
     p = os.path.join(repo, "data", "inbox", "tivoli.json")
-    os.makedirs(os.path.dirname(p), exist_ok=True)
-    json.dump(bundle, open(p, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+
+    def write():
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        json.dump(bundle, open(p, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     if dry:
-        print("geschreven naar", p, "(niet gecommit)")
+        write(); print("geschreven naar", p, "(niet gecommit)")
         return
-    git(repo, "add", "data/inbox/tivoli.json")
-    r = git(repo, "-c", "user.name=Barry (pc)", "-c", "user.email=bot@users.noreply.github.com",
+    for attempt in range(4):
+        sync(repo); write()          # telkens op de nieuwste stand van GitHub, dan pas ons bestand erbij
+        git(repo, "add", "data/inbox/tivoli.json")
+        git(repo, "-c", "user.name=Barry (pc)", "-c", "user.email=bot@users.noreply.github.com",
             "commit", "-q", "-m", f"Tivoli-programma van eigen pc ({len(out)} concerten)")
-    if r.returncode:
-        print("niets te committen"); return
-    for _ in range(3):
         r = git(repo, "push", "-q", "origin", "main")
         if not r.returncode:
             print("Gepusht; GitHub verwerkt het meteen."); return
-        git(repo, "pull", "-q", "--rebase", "origin", "main")
+        print("push geweigerd, opnieuw:", r.stderr.strip()[:200])
+        time.sleep(20 * (attempt + 1))
     sys.exit("push mislukt: " + r.stderr.strip())
 
 

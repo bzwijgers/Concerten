@@ -11,10 +11,15 @@ MUSIC = "KZFzniwnSyZfZ7v7nJ"   # segment Music
 OWN = ["paradiso", "melkweg", "013", "tivolivredenburg", "tivoli", "effenaar", "doornroosje", "paard", "mezz",
        "depul", "boerderij", "patronaat", "hedon", "dehelling", "dynamo", "klokgebouw", "metropool", "spotgroningen",
        "oosterpoort", "bibelot", "bosuil", "birdrotterdam", "gebouwt", "neushoorn", "amare", "tolhuistuin", "rotown",
-       "baroeg", "dbs", "bolwerk", "ontdekpoort"]
+       "baroeg", "dbs", "bolwerk", "ontdekpoort", "burgerweeshuis", "ekko", "nobel", "grenswerk", "iduna", "musicon",
+       "qfactory", "simplon", "sounddog", "vera", "victorie"]
+# horeca/arrangementen bij grote zalen: geen aparte zaal
+HOSPITALITY = re.compile(r"\b(loge|lounge|skybox|hospitality)\b|ziggo\s*dome\s*club", re.I)
+# geen klassiek, jazz of dance (zelfde regel als bij Tivoli)
+SKIP_GENRES = {"classical", "jazz", "dance/electronic", "opera"}
 JUNK = re.compile(r"\b(parkeren|parkeer\w*|parking|upgrade|vip[\s-]*(package|pakket|ticket|upgrade|experience)|hospitality|"
                   r"locker|kluisje|camping|shuttle|busreis|bustickets?|garderobe|cadeaukaart|gift\s*card|voucher|"
-                  r"meet\s*(&|and|en)\s*greet|skybox|arrangement|fan\s*pakket|early\s*entry)\b", re.I)
+                  r"meet\s*(&|and|en)\s*greet|skybox|arrangement|fan\s*pakket|early\s*entry|packages?)\b", re.I)
 
 
 def norm(s):
@@ -98,9 +103,12 @@ def convert(raw, have):
         if (v.get("country") or {}).get("countryCode", "NL") != "NL" or not d or not name: continue
         if st in ("cancelled", "postponed"): skipped["geannuleerd"] += 1; continue
         if JUNK.search(name): skipped["geen concert"] += 1; continue
+        genre = (((x.get("classifications") or [{}])[0].get("genre") or {}).get("name") or "").lower()
+        if genre in SKIP_GENRES: skipped["genre"] = skipped.get("genre", 0) + 1; continue
         vname = (v.get("name") or "").strip() or "Onbekende locatie"
         city = ((v.get("city") or {}).get("name") or "").strip()
         vn = norm(vname)
+        if HOSPITALITY.search(vname): skipped["geen concert"] += 1; continue
         if any(o in vn for o in OWN): skipped["eigen zaal"] += 1; continue
         k = (vn, d, norm(name))
         if k in seen: continue

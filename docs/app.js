@@ -125,7 +125,7 @@ function render(){
   if(!DATA) return;
   var all=visible(), arch=archive();
   var nT=ALL.filter(function(c){return c.d>=TODAY&&marks[c.id]&&marks[c.id].k==="t";}).length;
-  var nI=ALL.filter(function(c){return c.d>=TODAY&&marks[c.id]&&marks[c.id].k==="i";}).length;
+  var nI=ALL.filter(function(c){return c.d>=TODAY&&marks[c.id]&&(marks[c.id].k==="i"||marks[c.id].k==="t");}).length;
   $("n-all").textContent=all.length;
   $("n-new").textContent=all.filter(isNew).length;
   $("n-t").textContent=nT;$("n-i").textContent=nI;
@@ -139,7 +139,7 @@ function render(){
   shown=all;
   if(state.tab==="new") shown=all.filter(isNew);
   else if(state.tab==="c") shown=all.filter(function(c){return c.c&&c.v==="rotown";});
-  else if(state.tab==="t"||state.tab==="i") shown=all.filter(function(c){return marks[c.id]&&marks[c.id].k===state.tab;});
+  else if(state.tab==="t"||state.tab==="i") shown=all.filter(function(c){var k=marks[c.id]&&marks[c.id].k;return state.tab==="i"?(k==="i"||k==="t"):k==="t";});
   if(!shown.length){
     var t=state.tab==="t"?["Nog geen kaartjes","Tik bij een concert op Kaartje als je een ticket hebt."]:state.tab==="i"?["Nog geen interesse gemarkeerd","Tik bij een concert op Interesse."]:state.tab==="new"?["Niets nieuws in de laatste 7 dagen","Hier staan concerten die de afgelopen week aan een zaalprogramma zijn toegevoegd."]:state.tab==="c"?["Geen Rotown clubconcerten","Hier staan Rotown-concerten waar Clubcard-houders gratis naar binnen kunnen."]:["Geen concerten gevonden","Pas je zoekopdracht of de zaalfilter aan."];
     out.innerHTML='<div class="empty"><b>'+t[0]+'</b>'+t[1]+'</div>';return;

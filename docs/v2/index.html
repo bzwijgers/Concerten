@@ -50,6 +50,17 @@ h1{font-family:var(--f-display);font-weight:700;font-size:20px;letter-spacing:-.
 .dz.we b{color:var(--accent)}
 .dz:hover{background:var(--hover)}
 .dz.cur{background:var(--fg)}.dz.cur,.dz.cur b,.dz.cur i{color:var(--bg)}
+.dm{flex:none;align-self:center;font:600 11px var(--f-mono);text-transform:uppercase;letter-spacing:.05em;color:var(--accent);padding:0 4px 0 8px;border-left:1px solid var(--line);margin-left:2px}
+.dm:first-child{border-left:0;padding-left:0;margin-left:0}
+.daterow{display:none;padding:0 0 10px}
+.daterow.on{display:block}
+.dr{display:flex;gap:10px;flex-wrap:wrap}
+.dr label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);flex:1;min-width:140px}
+.dr input{font:400 15px var(--f-body);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.presets{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:8px -16px 0;padding:0 16px}.presets::-webkit-scrollbar{display:none}
+.resinfo{margin:14px 0 0;font-size:13px;color:var(--muted)}
+.resinfo b{color:var(--fg)}
+.lnk{appearance:none;border:0;background:none;color:var(--accent);font:500 13px var(--f-body);cursor:pointer;padding:0 0 0 6px}
 .warn{border:1px solid var(--star);border-radius:10px;padding:9px 12px;font-size:13px;margin-top:12px}
 .dayhead{position:sticky;top:var(--hh,150px);z-index:4;background:var(--bg);display:flex;align-items:baseline;gap:8px;padding:14px 0 6px;font-family:var(--f-display);font-weight:700;font-size:15px}
 .dayhead small{font:400 11px var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
@@ -124,7 +135,12 @@ h1{font-family:var(--f-display);font-weight:700;font-size:20px;letter-spacing:-.
     <div class="filters" id="filters">
       <button class="chip" id="f-mine" aria-pressed="false">Mijn zalen</button>
       <button class="chip" id="f-weekend" aria-pressed="false">Dit weekend</button>
+      <button class="chip" id="f-date" aria-pressed="false">Datum <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg></button>
       <button class="chip" id="f-zalen" aria-pressed="false">Zalen en regio <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg></button>
+    </div>
+    <div class="daterow" id="daterow">
+      <div class="dr"><label>Van <input type="date" id="dfrom"></label><label>Tot en met <input type="date" id="dto"></label></div>
+      <div class="presets"><button class="chip" data-preset="today">Vandaag</button><button class="chip" data-preset="tomorrow">Morgen</button><button class="chip" data-preset="week">Komende 7 dagen</button><button class="chip" data-preset="month">Rest van deze maand</button><button class="chip" data-preset="next">Volgende maand</button><button class="chip" data-preset="clear">Alle datums</button></div>
     </div>
     <div class="days" id="days"></div>
   </header>
@@ -144,5 +160,5 @@ h1{font-family:var(--f-display);font-weight:700;font-size:20px;letter-spacing:-.
     <div class="pf"><label><input type="checkbox" id="hideSold"> Verberg uitverkocht</label><button class="btn" id="clearsel">Alles</button><button class="btn primary" id="saveMine">Bewaar als mijn zalen</button></div>
   </div>
 </div>
-<script src="app.js?v=3"></script>
+<script src="app.js?v=4"></script>
 </body></html>

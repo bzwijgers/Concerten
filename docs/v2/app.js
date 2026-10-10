@@ -95,7 +95,7 @@ function nice(t) {
 }
 
 var ALL = [], DATA = null, marks = load("ca-marks", {}), mine = load("ca-mine", []);
-var state = { tab: "all", q: "", hideSold: load("ca-hidesold", false), useMine: mine.length > 0, weekend: false, sel: [], regions: [], limit: 300, open: null };
+var state = { tab: "all", q: "", hideSold: load("ca-hidesold", false), useMine: mine.length > 0, from: "", to: "", sel: [], regions: [], limit: 300, open: null, showDate: false };
 
 function venue(c) { return VENUES[c.v] || { label: c.v, city: "" }; }
 function eid(c) { return c.v + "|" + c.d + "|" + c.u; }
@@ -111,13 +111,14 @@ function weekendRange() {
   return [iso(fri) < TODAY ? TODAY : iso(fri), iso(sun)];
 }
 
-function baseFilter(c, ignoreTab) {
+function baseFilter(c, noDates) {
   var v = venue(c);
   if (state.useMine && mine.length) { if (mine.indexOf(c.v) < 0) return false; }
   else if (state.sel.length && state.sel.indexOf(c.v) < 0) return false;
   if (state.regions.length && state.regions.indexOf(regionOf(v.city)) < 0) return false;
   if (state.hideSold && c.s) return false;
-  if (state.weekend) { var w = weekendRange(); if (c.d < w[0] || c.d > w[1]) return false; }
+  if (!noDates && state.from && c.d < state.from) return false;
+  if (!noDates && state.to && c.d > state.to) return false;
   var q = state.q.trim().toLowerCase();
   if (q && (c.n + " " + v.label + " " + v.city + " " + (c.r || "")).toLowerCase().indexOf(q) < 0) return false;
   return true;
@@ -125,7 +126,7 @@ function baseFilter(c, ignoreTab) {
 function tabFilter(c, tab) {
   var m = (marks[c.id] || {}).k;
   if (tab === "new") return isNew(c);
-  if (tab === "i") return m === "i";
+  if (tab === "i") return m === "i" || m === "t";   // een kaartje is ook interesse
   if (tab === "t") return m === "t";
   if (tab === "c") return club(c);
   return true;
@@ -162,7 +163,7 @@ function row(c) {
   return '<div class="ev' + (c.s ? " sold" : "") + (m === "t" ? " t" : "") + (open ? " open" : "") + '" data-id="' + esc(c.id) + '">' +
     '<div class="row" data-act="open">' + timeCell(c.t) +
     '<div class="body"><div class="name">' + esc(nice(c.n)) + '</div><div class="sub">' + where + tags + "</div></div>" +
-    '<button class="star" data-act="i" aria-pressed="' + (m === "i") + '" aria-label="Interesse"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z" stroke-linejoin="round"/></svg></button></div>' +
+    '<button class="star" data-act="i" aria-pressed="' + (m === "i" || m === "t") + '" aria-label="Interesse"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z" stroke-linejoin="round"/></svg></button></div>' +
     '<div class="more"><button class="btn" data-act="t" aria-pressed="' + (m === "t") + '">' + (m === "t" ? "Kaartje gekocht" : "Ik heb een kaartje") + "</button>" +
     '<a class="btn link" href="' + esc(c.u) + '" target="_blank" rel="noopener">Zaal ↗</a>' +
     '<a class="btn link" href="' + esc(tsLink(c)) + '" target="_blank" rel="noopener">TicketSwap ↗</a></div></div>';
@@ -175,15 +176,20 @@ function archive() {
 }
 
 function renderDays(list) {
-  var cnt = {}; list.forEach(function (c) { cnt[c.d] = (cnt[c.d] || 0) + 1; });
-  var html = "", d = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate());
-  for (var i = 0; i < 21; i++) {
+  var cnt = {}, last = TODAY; list.forEach(function (c) { cnt[c.d] = (cnt[c.d] || 0) + 1; if (c.d > last) last = c.d; });
+  var html = "", d = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate()), one = state.from && state.from === state.to ? state.from : "";
+  for (var i = 0; i < 450; i++) {
     var k = iso(d), wd = d.getDay();
-    html += '<button class="dz' + (wd === 5 || wd === 6 || wd === 0 ? " we" : "") + '" data-day="' + k + '">' + DOW[wd] + "<b>" + d.getDate() + "</b><i>" + (cnt[k] || "–") + "</i></button>";
+    if (k > last) break;
+    if (i === 0 || d.getDate() === 1) html += '<span class="dm">' + MON[d.getMonth()] + (d.getFullYear() !== NOW.getFullYear() ? " " + String(d.getFullYear()).slice(2) : "") + "</span>";
+    html += '<button class="dz' + (wd === 5 || wd === 6 || wd === 0 ? " we" : "") + (k === one ? " cur" : "") + '" data-day="' + k + '">' + DOW[wd] + "<b>" + d.getDate() + "</b><i>" + (cnt[k] || "–") + "</i></button>";
     d.setDate(d.getDate() + 1);
   }
   $("days").innerHTML = html;
+  var cur = $("days").querySelector(".cur"); if (cur) cur.scrollIntoView({ inline: "center", block: "nearest" });
 }
+function fmt(k) { var d = parse(k); return DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()]; }
+function setRange(a, b) { state.from = a || ""; state.to = b || a || ""; state.limit = 300; $("dfrom").value = state.from; $("dto").value = state.to; render(); window.scrollTo(0, 0); }
 
 function render(keepScroll) {
   if (!DATA) return;
@@ -193,11 +199,14 @@ function render(keepScroll) {
   var arch = archive(); $("n-a").textContent = arch.length || "";
   $("f-mine").setAttribute("aria-pressed", String(state.useMine && mine.length > 0));
   $("f-mine").textContent = mine.length ? "Mijn zalen (" + mine.length + ")" : "Mijn zalen";
-  $("f-weekend").setAttribute("aria-pressed", String(state.weekend));
+  var w = weekendRange();
+  $("f-weekend").setAttribute("aria-pressed", String(state.from === w[0] && state.to === w[1]));
+  $("f-date").setAttribute("aria-pressed", String(!!state.from));
+  $("f-date").firstChild.textContent = state.from ? (state.from === state.to ? fmt(state.from) : fmt(state.from) + " – " + (state.to ? fmt(state.to) : "…")) + " " : "Datum ";
   var nz = state.sel.length + state.regions.length;
   $("f-zalen").setAttribute("aria-pressed", String(nz > 0));
   $("f-zalen").firstChild.textContent = nz ? "Zalen en regio (" + nz + ") " : "Zalen en regio ";
-  renderDays(state.tab === "a" ? [] : all);
+  renderDays(state.tab === "a" ? [] : ALL.filter(function (c) { return c.d >= TODAY && baseFilter(c, true) && tabFilter(c, state.tab); }));
   var out = $("out");
   if (state.tab === "a") {
     out.innerHTML = arch.length ? '<div class="list">' + arch.map(function (s) {
@@ -213,6 +222,9 @@ function render(keepScroll) {
     out.innerHTML = '<div class="empty"><b>' + msg[0] + "</b>" + msg[1] + "</div>"; return;
   }
   var y = window.scrollY, html = "", cur = "", n = 0, perDay = {};
+  if (state.q.trim() || state.from) html += '<div class="resinfo"><b>' + all.length + "</b> concert" + (all.length === 1 ? "" : "en") +
+    (state.q.trim() ? " voor ‘" + esc(state.q.trim()) + "’" : "") + (state.from ? (state.from === state.to ? " op " + fmt(state.from) : " van " + fmt(state.from) + (state.to ? " t/m " + fmt(state.to) : "")) : "") +
+    ' <button class="lnk" id="clearall">wissen</button></div>';
   all.forEach(function (c) { perDay[c.d] = (perDay[c.d] || 0) + 1; });
   for (var i = 0; i < all.length && n < state.limit; i++, n++) {
     var c = all[i];
@@ -288,18 +300,28 @@ $("f-mine").addEventListener("click", function () {
   if (!mine.length) { openSheet(); return; }
   state.useMine = !state.useMine; if (state.useMine) state.sel = []; render();
 });
-$("f-weekend").addEventListener("click", function () { state.weekend = !state.weekend; render(); window.scrollTo(0, 0); });
+$("f-weekend").addEventListener("click", function () { var w = weekendRange(); if (state.from === w[0] && state.to === w[1]) setRange("", ""); else setRange(w[0], w[1]); });
+$("f-date").addEventListener("click", function () { state.showDate = !state.showDate; $("daterow").classList.toggle("on", state.showDate); sizeHeader(); });
+$("daterow").addEventListener("change", function () { var a = $("dfrom").value, b = $("dto").value; if (b && a && b < a) b = a; setRange(a, b); });
+$("daterow").addEventListener("click", function (e) {
+  var p = e.target.closest("[data-preset]"); if (!p) return;
+  var t = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate()), k = p.getAttribute("data-preset"), e2 = new Date(t);
+  if (k === "today") setRange(TODAY, TODAY);
+  else if (k === "tomorrow") { e2.setDate(t.getDate() + 1); setRange(iso(e2), iso(e2)); }
+  else if (k === "week") { e2.setDate(t.getDate() + 6); setRange(TODAY, iso(e2)); }
+  else if (k === "month") { setRange(TODAY, iso(new Date(t.getFullYear(), t.getMonth() + 1, 0))); }
+  else if (k === "next") { setRange(iso(new Date(t.getFullYear(), t.getMonth() + 1, 1)), iso(new Date(t.getFullYear(), t.getMonth() + 2, 0))); }
+  else setRange("", "");
+});
 $("f-zalen").addEventListener("click", openSheet);
 $("days").addEventListener("click", function (e) {
   var b = e.target.closest("[data-day]"); if (!b) return;
-  var d = b.getAttribute("data-day"), all = visible(), idx = all.findIndex(function (c) { return c.d >= d; });
-  if (idx < 0) return;
-  if (idx + 50 > state.limit) { state.limit = idx + 300; render(); }
-  var h = document.getElementById("d-" + all[idx].d);
-  if (h) window.scrollTo(0, h.getBoundingClientRect().top + window.scrollY - $("hdr").offsetHeight + 1);
+  var d = b.getAttribute("data-day");
+  if (state.from === d && state.to === d) setRange("", ""); else setRange(d, d);   // tik = alleen die dag, nog eens = alles
 });
 $("out").addEventListener("click", function (e) {
   if (e.target.id === "more") { state.limit += 400; render(true); return; }
+  if (e.target.id === "clearall") { state.q = ""; $("q").value = ""; setRange("", ""); return; }
   var a = e.target.closest("[data-act]"); if (!a) return;
   var ev = a.closest(".ev"), id = ev && ev.getAttribute("data-id"), act = a.getAttribute("data-act");
   if (!id) return;

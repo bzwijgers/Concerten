@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="nl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0E1117">
+<title>Concert agenda</title>
+<link rel="icon" href="../img/icon-192.png"><link rel="apple-touch-icon" href="../img/icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#EEF0F3; --surface:#FFFFFF; --fg:#14171F; --muted:#5B6270; --faint:#8A91A0; --line:#D8DCE3; --hover:#F4F5F8;
+  --accent:#3341E8; --accent-fg:#FFFFFF; --accent-soft:#E4E7FD; --ticket:#0B7F52; --star:#C27A00; --sold:#A23B3B;
+  --f-display:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Instrument Sans","Helvetica Neue",Arial,sans-serif;
+  --f-mono:"DM Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1117; --surface:#171B24; --fg:#EEF0F4; --muted:#98A0AE; --faint:#6C7380; --line:#2A303C; --hover:#1D222C;
+    --accent:#8F9BFF; --accent-fg:#0E1117; --accent-soft:#252B4A; --ticket:#3DD598; --star:#F2B84B; --sold:#F08A8A; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1117; --surface:#171B24; --fg:#EEF0F4; --muted:#98A0AE; --faint:#6C7380; --line:#2A303C; --hover:#1D222C;
+  --accent:#8F9BFF; --accent-fg:#0E1117; --accent-soft:#252B4A; --ticket:#3DD598; --star:#F2B84B; --sold:#F08A8A; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.35}
+button{font:inherit;color:inherit}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px 60px}
+header{position:sticky;top:0;z-index:6;background:var(--bg);margin:0 -16px;padding:calc(env(safe-area-inset-top,0px) + 10px) 16px 0;border-bottom:1px solid var(--line)}
+.top{display:flex;align-items:center;gap:10px}
+h1{font-family:var(--f-display);font-weight:700;font-size:20px;letter-spacing:-.02em;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ib{appearance:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;width:34px;height:34px;display:grid;place-items:center;cursor:pointer;color:var(--fg);text-decoration:none;flex:none}
+.ib svg{width:17px;height:17px}
+.search{display:none;width:100%;margin-top:10px;font:400 15px var(--f-body);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 12px}
+.search.on{display:block}
+.tabs{display:flex;gap:2px;margin:8px -16px 0;padding:0 16px;overflow-x:auto;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
+.tab{appearance:none;background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);font:600 13px var(--f-body);padding:8px 8px 7px;cursor:pointer;white-space:nowrap;display:flex;gap:5px;align-items:center}
+.tab[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent)}
+.tab .n{font:500 11px var(--f-mono);color:var(--muted)}
+.tab[aria-selected="true"] .n{color:var(--accent)}
+.filters{display:flex;gap:6px;padding:10px 0 8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding-inline:16px}.filters::-webkit-scrollbar{display:none}
+.chip{flex:none;appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:500 13px var(--f-body);border-radius:999px;padding:6px 11px;cursor:pointer;display:flex;gap:4px;align-items:center}
+.chip[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.chip svg{width:13px;height:13px}
+.days{display:flex;gap:4px;padding:0 0 10px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding-inline:16px}.days::-webkit-scrollbar{display:none}
+.dz{flex:none;appearance:none;border:0;background:none;width:44px;border-radius:8px;padding:4px 0;cursor:pointer;text-align:center;color:var(--muted)}
+.dz b{display:block;font:600 15px var(--f-display);color:var(--fg)}
+.dz i{display:block;font:400 10px var(--f-mono);font-style:normal;color:var(--faint)}
+.dz.we b{color:var(--accent)}
+.dz:hover{background:var(--hover)}
+.dz.cur{background:var(--fg)}.dz.cur,.dz.cur b,.dz.cur i{color:var(--bg)}
+.warn{border:1px solid var(--star);border-radius:10px;padding:9px 12px;font-size:13px;margin-top:12px}
+.dayhead{position:sticky;top:var(--hh,150px);z-index:4;background:var(--bg);display:flex;align-items:baseline;gap:8px;padding:14px 0 6px;font-family:var(--f-display);font-weight:700;font-size:15px}
+.dayhead small{font:400 11px var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.dayhead .cnt{margin-left:auto;font:400 11px var(--f-mono);color:var(--faint)}
+.list{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.ev{border-top:1px solid var(--line)}
+.ev:first-child{border-top:0}
+.row{display:flex;gap:10px;align-items:center;padding:8px 6px 8px 12px;cursor:pointer;min-height:52px}
+.row:hover{background:var(--hover)}
+.tm{flex:none;width:40px;font:500 12px var(--f-mono);color:var(--muted)}
+.tm.d{font-size:10px;line-height:1.1}
+.body{flex:1;min-width:0}
+.name{font-weight:600;font-size:15px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev.open .name{white-space:normal}
+.sub{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.sub .tag{font:500 10px var(--f-mono);text-transform:uppercase;letter-spacing:.05em;margin-left:4px}
+.tag.sold{color:var(--sold)}.tag.new{color:var(--accent)}.tag.club{color:var(--ticket)}.tag.tk{color:var(--ticket)}
+.ev.sold .name{color:var(--muted)}
+.ev.t{box-shadow:inset 3px 0 0 var(--ticket)}
+.star{flex:none;appearance:none;border:0;background:none;width:40px;height:40px;display:grid;place-items:center;cursor:pointer;color:var(--faint);border-radius:999px}
+.star svg{width:21px;height:21px}
+.star[aria-pressed="true"]{color:var(--star)}
+.star[aria-pressed="true"] svg path{fill:currentColor}
+.more{display:none;gap:8px;flex-wrap:wrap;padding:0 12px 12px 62px}
+.ev.open .more{display:flex}
+.btn{appearance:none;border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:7px 11px;font:600 13px var(--f-body);cursor:pointer;color:var(--fg);text-decoration:none}
+.btn[aria-pressed="true"]{background:var(--ticket);border-color:var(--ticket);color:var(--surface)}
+.btn.link{color:var(--accent)}
+.empty{border:1px dashed var(--line);border-radius:10px;padding:28px 18px;text-align:center;color:var(--muted);margin-top:20px}
+.empty b{display:block;font-family:var(--f-display);font-size:17px;color:var(--fg);margin-bottom:4px}
+.loadmore{display:block;margin:18px auto;}
+.foot{margin-top:28px;font-size:12px;color:var(--muted)}
+.foot a{color:var(--accent)}
+/* zalen-paneel */
+.sheet{position:fixed;inset:0;z-index:20;display:none}
+.sheet.on{display:block}
+.sheet .back{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+.panel{position:absolute;left:0;right:0;bottom:0;max-height:88vh;display:flex;flex-direction:column;background:var(--surface);border-radius:16px 16px 0 0;max-width:720px;margin:0 auto}
+.ph{display:flex;align-items:center;gap:8px;padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.ph h2{font-family:var(--f-display);font-size:18px;margin:0;flex:1}
+.pb{overflow:auto;padding:6px 16px 16px}
+.reg{display:flex;gap:6px;flex-wrap:wrap;padding:10px 0}
+.city{margin-top:10px}
+.city h3{font:600 12px var(--f-mono);text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:0 0 4px;display:flex;gap:8px;align-items:center}
+.city h3 button{appearance:none;border:0;background:none;color:var(--accent);font:500 12px var(--f-body);cursor:pointer;padding:0}
+.vl{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px 10px}
+.vl label{display:flex;gap:8px;align-items:center;padding:6px 0;font-size:14px;cursor:pointer}
+.vl input{width:18px;height:18px;accent-color:var(--accent)}
+.vl .c{margin-left:auto;font:400 11px var(--f-mono);color:var(--faint)}
+.pf{display:flex;gap:8px;align-items:center;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}
+.pf label{flex:1;font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center}
+.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.v2note{font-size:12px;color:var(--muted);background:var(--accent-soft);border-radius:8px;padding:8px 10px;margin-top:10px}
+.v2note a{color:var(--accent)}
+</style></head><body>
+<div class="wrap">
+  <header id="hdr">
+    <div class="top">
+      <h1>Concert agenda</h1>
+      <button class="ib" id="sbtn" aria-label="Zoeken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+      <a class="ib" href="../info.html" aria-label="Info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></a>
+    </div>
+    <input class="search" id="q" type="search" placeholder="Artiest, zaal of stad" autocomplete="off">
+    <div class="tabs" role="tablist" id="tabs">
+      <button class="tab" role="tab" data-tab="all" aria-selected="true">Alles <span class="n" id="n-all"></span></button>
+      <button class="tab" role="tab" data-tab="new" aria-selected="false">Nieuw <span class="n" id="n-new"></span></button>
+      <button class="tab" role="tab" data-tab="i" aria-selected="false">Interesse <span class="n" id="n-i"></span></button>
+      <button class="tab" role="tab" data-tab="t" aria-selected="false">Kaartjes <span class="n" id="n-t"></span></button>
+      <button class="tab" role="tab" data-tab="c" aria-selected="false">Rotown club <span class="n" id="n-c"></span></button>
+      <button class="tab" role="tab" data-tab="a" aria-selected="false">Archief <span class="n" id="n-a"></span></button>
+    </div>
+    <div class="filters" id="filters">
+      <button class="chip" id="f-mine" aria-pressed="false">Mijn zalen</button>
+      <button class="chip" id="f-weekend" aria-pressed="false">Dit weekend</button>
+      <button class="chip" id="f-zalen" aria-pressed="false">Zalen en regio <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg></button>
+    </div>
+    <div class="days" id="days"></div>
+  </header>
+  <div class="v2note">Nieuwe opzet (proef). Je markeringen zijn dezelfde als in de <a href="../">huidige app</a>.</div>
+  <div id="warn"></div>
+  <main id="out" aria-live="polite"><div class="empty"><b>Laden…</b>De agenda wordt opgehaald.</div></main>
+  <div class="foot">Gegevens van de websites van de zalen zelf (en Ticketmaster voor grote zalen), elke ochtend rond 07:00 bijgewerkt. <span id="stamp"></span> · <a href="../info.html">Info</a></div>
+</div>
+<div class="sheet" id="sheet" aria-hidden="true">
+  <div class="back" data-close></div>
+  <div class="panel" role="dialog" aria-label="Zalen kiezen">
+    <div class="ph"><h2>Zalen en regio</h2><button class="btn" data-close>Sluiten</button></div>
+    <div class="pb">
+      <div class="reg" id="regions"></div>
+      <div id="cities"></div>
+    </div>
+    <div class="pf"><label><input type="checkbox" id="hideSold"> Verberg uitverkocht</label><button class="btn" id="clearsel">Alles</button><button class="btn primary" id="saveMine">Bewaar als mijn zalen</button></div>
+  </div>
+</div>
+<script src="app.js"></script>
+</body></html>

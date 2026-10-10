@@ -21,7 +21,7 @@ VENUES = [  # key, label, fn
     ("qfactory", venues6.qfactory), ("simplon", venues6.simplon), ("sounddog", venues6.sounddog), ("vera", venues6.vera), ("victorie", venues6.victorie),
     ("luxor", venues7.luxor), ("w2", venues7.w2), ("gigant", venues7.gigant), ("fluor", venues7.fluor), ("vorstin", venues7.vorstin), ("p3", venues7.p3),
     ("meester", venues7.meester), ("occii", venues7.occii), ("cinetol", venues7.cinetol), ("engel", venues7.engel), ("bridges", venues7.bridges), ("muziekgieterij", venues7.muziekgieterij),
-    ("volt", venues7.volt), ("kade", venues7.kade), ("nor", venues7.nor), ("annabel", venues7.annabel),
+    ("volt", venues7.volt), ("kade", venues7.kade), ("nor", venues7.nor), ("annabel", venues7.annabel), ("hof", venues7.hof),
 ]
 
 def load(path, default):

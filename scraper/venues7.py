@@ -132,3 +132,8 @@ def annabel():
         seen.add(url)
         out.append(ev("annabel", d, clean(re.sub(r"<[^>]+>", " ", tm.group(1))), url, "", "", "uitverkocht" in block.lower()))
     return out
+
+
+# ---------- Hall of Fame (Tilburg): het programma op hall-fame.nl is hun eigen Stager-winkel ----------
+def hof():
+    return stager("hof", "hall-fame.stager.co", "Tilburg")

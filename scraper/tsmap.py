@@ -17,7 +17,7 @@ VENUE_HINT = {"paradiso": "paradiso", "melkweg": "melkweg", "tivoli": "tivolivre
               "baroeg": "baroeg", "dbs": "dbs", "bolwerk": "bolwerk",
               "burgerweeshuis": "burgerweeshuis", "ekko": "ekko", "nobel": "nobel", "grenswerk": "grenswerk", "iduna": "iduna", "musicon": "musicon",
               "qfactory": "qfactory", "simplon": "simplon", "sounddog": "sounddog", "vera": "vera", "victorie": "victorie",
-              "luxor": "luxor", "w2": "willem", "gigant": "gigant", "fluor": "fluor", "vorstin": "vorstin", "p3": "p3", "meester": "meester", "occii": "occii", "cinetol": "cinetol", "engel": "groeneengel", "bridges": "backstage", "muziekgieterij": "muziekgieterij", "volt": "volt", "kade": "kade", "nor": "nieuwenor", "annabel": "annabel"}
+              "luxor": "luxor", "w2": "willem", "gigant": "gigant", "fluor": "fluor", "vorstin": "vorstin", "p3": "p3", "meester": "meester", "occii": "occii", "cinetol": "cinetol", "engel": "groeneengel", "bridges": "backstage", "muziekgieterij": "muziekgieterij", "volt": "volt", "kade": "kade", "nor": "nieuwenor", "annabel": "annabel", "hof": "halloffame"}
 
 
 CITY = {"paradiso": "amsterdam", "melkweg": "amsterdam", "tolhuistuin": "amsterdam", "tivoli": "utrecht", "helling": "utrecht",
@@ -27,7 +27,7 @@ CITY = {"paradiso": "amsterdam", "melkweg": "amsterdam", "tolhuistuin": "amsterd
         "bosuil": "weert", "bird": "rotterdam", "rotown": "rotterdam", "baroeg": "rotterdam", "gebouwt": "bergenopzoom",
         "neushoorn": "leeuwarden", "bolwerk": "sneek",
         "burgerweeshuis": "deventer", "ekko": "utrecht", "nobel": "leiden", "grenswerk": "venlo", "iduna": "drachten", "musicon": "denhaag", "qfactory": "amsterdam", "simplon": "groningen", "sounddog": "breda", "vera": "groningen", "victorie": "alkmaar",
-        "luxor": "arnhem", "w2": "denbosch", "gigant": "apeldoorn", "fluor": "amersfoort", "vorstin": "hilversum", "p3": "purmerend", "meester": "almere", "occii": "amsterdam", "cinetol": "amsterdam", "engel": "oss", "bridges": "tilburg", "muziekgieterij": "maastricht", "volt": "sittard", "kade": "zaandam", "nor": "heerlen", "annabel": "rotterdam"}
+        "luxor": "arnhem", "w2": "denbosch", "gigant": "apeldoorn", "fluor": "amersfoort", "vorstin": "hilversum", "p3": "purmerend", "meester": "almere", "occii": "amsterdam", "cinetol": "amsterdam", "engel": "oss", "bridges": "tilburg", "muziekgieterij": "maastricht", "volt": "sittard", "kade": "zaandam", "nor": "heerlen", "annabel": "rotterdam", "hof": "tilburg"}
 ART = re.compile(r"<loc>(https://www\.ticketswap\.com/artist/([a-z0-9-]+)-tickets-[A-Za-z0-9]+)</loc>")
 
 

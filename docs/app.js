@@ -56,6 +56,7 @@ var VENUES = {
   kade:{label:"De Kade",home:"https://dekadezaandam.nl/agenda/"},
   nor:{label:"Nieuwe Nor",home:"https://nieuwenor.nl/programma"},
   annabel:{label:"Annabel",home:"https://annabel.nu/agenda/"},
+  hof:{label:"Hall of Fame",home:"https://hall-fame.nl/programma"},
   ticketmaster:{label:"Ticketmaster",home:"https://www.ticketmaster.nl/",linkOnly:true},
   ticketswap:{label:"TicketSwap-links",home:"https://www.ticketswap.nl/",linkOnly:true}
 };

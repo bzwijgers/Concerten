@@ -2,7 +2,7 @@ import json, os, sys, traceback, importlib
 from datetime import date, datetime, timedelta, timezone
 sys.path.insert(0, os.path.dirname(__file__))
 from common import *
-import venues1, venues2, venues3, venues4, venues5, venues6, feedimport, ticketmaster, tsmap, times
+import venues1, venues2, venues3, venues4, venues5, venues6, venues7, feedimport, ticketmaster, tsmap, times
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 DATA = os.path.join(ROOT, "data")
@@ -19,6 +19,9 @@ VENUES = [  # key, label, fn
     ("bolwerk", venues5.bolwerk), ("dbs", venues5.dbs),
     ("burgerweeshuis", venues6.burgerweeshuis), ("ekko", venues6.ekko), ("nobel", venues6.nobel), ("grenswerk", venues6.grenswerk), ("iduna", venues6.iduna), ("musicon", venues6.musicon),
     ("qfactory", venues6.qfactory), ("simplon", venues6.simplon), ("sounddog", venues6.sounddog), ("vera", venues6.vera), ("victorie", venues6.victorie),
+    ("luxor", venues7.luxor), ("w2", venues7.w2), ("gigant", venues7.gigant), ("fluor", venues7.fluor), ("vorstin", venues7.vorstin), ("p3", venues7.p3),
+    ("meester", venues7.meester), ("occii", venues7.occii), ("cinetol", venues7.cinetol), ("engel", venues7.engel), ("bridges", venues7.bridges), ("muziekgieterij", venues7.muziekgieterij),
+    ("volt", venues7.volt), ("kade", venues7.kade), ("nor", venues7.nor), ("annabel", venues7.annabel),
 ]
 
 def load(path, default):
@@ -177,7 +180,7 @@ def main():
             if e.get("t") == "00:00" or (e.get("t") or "").endswith(":59"): e["t"] = ""
     # zelfde concert bij twee zalen: de leidende zaal houdt het (BIRD/Rotown -> Rotown, De Helling/Tivoli -> Tivoli)
     tnorm = lambda t: _re.sub(r"[^a-z0-9]+", "", t.lower().split(" + ")[0].split(":")[0].split(" (")[0])
-    for loser, leader in (("bird", "rotown"), ("helling", "tivoli")):
+    for loser, leader in (("bird", "rotown"), ("annabel", "rotown"), ("helling", "tivoli")):
         if loser not in fresh: continue
         lead = fresh.get(leader) or [e for e in events.values() if e["v"] == leader]
         have = {}

@@ -54,7 +54,13 @@ def _get(url):
 
 def amare(max_pages=70, delay=5.0):
     out, seen = [], set()
+    global _opener
     first = _get("https://www.amare.nl/nl/agenda")
+    for wait in (60, 180):   # Amare heeft bij drukte een wachtrij (/csq/): later gewoon opnieuw
+        if "data-entry-id=" in first or FIXTURES: break
+        print(f"amare: geen programma (wachtrij?), over {wait} s opnieuw")
+        time.sleep(wait); _opener = None
+        first = _get("https://www.amare.nl/nl/agenda")
     pm = re.search(r"\?(p\d+)_page=\d+", first)
     pname = pm.group(1) if pm else "p54"
     page, n = first, 1

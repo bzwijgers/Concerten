@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import date, timedelta
 from common import fetch
 
-VENUES = ("melkweg", "effenaar", "hedon", "mezz", "patronaat", "pul", "dynamo", "boerderij", "gebouwt", "amare", "nobel")
+VENUES = ("melkweg", "effenaar", "hedon", "mezz", "patronaat", "pul", "dynamo", "boerderij", "gebouwt", "amare", "nobel", "annabel")
 PER_VENUE = 120     # nieuwe pagina's per zaal per run
 RETRY_DAYS = 14     # niets gevonden: na zoveel dagen opnieuw proberen (tijd kan later bekend worden)
 
@@ -56,6 +56,12 @@ def find_time(page):
         return start
     if door:
         return "deuren " + door
+    m = re.search(r"(?i)\b\d{1,2}\s+[a-z]{3,9}\.?\s+20\d\d\s*\|\s*(\d{1,2})[:.](\d{2})\b", t)   # De Meester: 'za 10 okt 2026 | 20:00'
+    if m and _hm(m.group(1), m.group(2)):
+        return _hm(m.group(1), m.group(2))
+    m = re.search(r"(?i)\bTijd\s*:?\s*\|\s*(\d{1,2})[:.](\d{2})\b", t)   # Willem Twee: 'Tijd | 17:00'
+    if m and _hm(m.group(1), m.group(2)):
+        return _hm(m.group(1), m.group(2))
     return ""
 
 

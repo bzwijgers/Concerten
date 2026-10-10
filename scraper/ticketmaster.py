@@ -12,7 +12,8 @@ OWN = ["paradiso", "melkweg", "013", "tivolivredenburg", "tivoli", "effenaar", "
        "depul", "boerderij", "patronaat", "hedon", "dehelling", "dynamo", "klokgebouw", "metropool", "spotgroningen",
        "oosterpoort", "bibelot", "bosuil", "birdrotterdam", "gebouwt", "neushoorn", "amare", "tolhuistuin", "rotown",
        "baroeg", "dbs", "bolwerk", "ontdekpoort", "burgerweeshuis", "ekko", "nobel", "grenswerk", "iduna", "musicon",
-       "qfactory", "simplon", "sounddog", "vera", "victorie"]
+       "qfactory", "simplon", "sounddog", "vera", "victorie",
+       "luxorlive", "willemtwee", "gigant", "fluor", "vorstin", "p3purmerend", "demeester", "occii", "cinetol", "groeneengel", "backstagebridges", "muziekgieterij", "poppodiumvolt", "dekade", "nieuwenor", "annabel"]
 # horeca/arrangementen bij grote zalen: geen aparte zaal
 HOSPITALITY = re.compile(r"\b(loge|lounge|skybox|hospitality)\b|ziggo\s*dome\s*club", re.I)
 # geen klassiek, jazz of dance (zelfde regel als bij Tivoli)

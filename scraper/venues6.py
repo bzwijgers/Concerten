@@ -46,6 +46,14 @@ def page_date(page):
     if m and 1 <= int(m.group(3)) <= 12:
         d = _infer(WEEKDAYS[m.group(1).lower()], int(m.group(2)), int(m.group(3)))
         if d: return d
+    m = re.search(r"\b(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{1,2}),?\s+(20\d\d)\b", t, re.I)
+    if m:   # OCCII: 'Sunday, October 11, 2026'
+        return f"{m.group(3)}-{EN_MONTHS[m.group(1).lower()[:3]]:02d}-{int(m.group(2)):02d}"
+    m = re.search(r"\bDatum\s*:?\s*\|?\s*(\d{1,2})-(\d{1,2})(?:-(20\d\d))?\b", t)   # Willem Twee: 'Datum | 14-08'
+    if m and 1 <= int(m.group(2)) <= 12:
+        if m.group(3): return f"{m.group(3)}-{int(m.group(2)):02d}-{int(m.group(1)):02d}"
+        d = _infer(None, int(m.group(1)), int(m.group(2)))
+        if d: return d
     m = re.search(r"\b(\d{1,2})\s+([a-z]{3,10})\.?\s+(20\d\d)\b", t, re.I)
     if m and MONTHS.get(m.group(2).lower()[:3] if m.group(2).lower()[:3] != "maa" else "maa"):
         mon = MONTHS.get(m.group(2).lower()) or MONTHS.get(m.group(2).lower()[:3])
@@ -56,6 +64,11 @@ def page_date(page):
         mon = MONTHS.get(m.group(3).lower()) or MONTHS.get(m.group(3).lower()[:3])
         if mon:
             return _infer(WEEKDAYS.get(m.group(1).lower()[:2]), int(m.group(2)), mon)
+    m = re.search(r"\b(\d{1,2})\s*\|?\s*(january|february|march|april|may|june|july|august|september|october|november|december|"
+                  r"januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december)\b", t[:3000], re.I)
+    if m:   # Cinetol: '20 | October' (geen jaar, geen weekdag): eerstvolgende
+        mon = MONTHS.get(m.group(2).lower()) or MONTHS.get(m.group(2).lower()[:3])
+        if mon: return _infer(None, int(m.group(1)), mon)
     return None
 
 
@@ -87,6 +100,9 @@ class Details:
             p = fetch(url, tries=2, timeout=30)
             x = {"d": page_date(p), "n": page_title(p, strip), "t": _times.find_time(p), "at": today,
                  "s": bool(re.search(r"\buitverkocht\b|\bsold\s*out\b", _text(p)[:4000], re.I))}
+            zm = (re.search(r"\bZaal\s*:?\s*\|\s*([^|]{2,40})\|", _text(p))
+                  or re.search(r"\b(?:Locatie|Location)\s*:?\s*\|\s*([^|]{2,40})\|", _text(p)))
+            if zm: x["r"] = zm.group(1).strip()
         except Exception as ex:
             print("detail mislukt:", url, ex)
             x = x or {"d": None, "n": "", "t": "", "at": today}
@@ -106,14 +122,14 @@ def _from_urls(key, urls, strip, limit=150):
     for u in urls:
         x = DET.get(u, strip, budget)
         if x and x.get("d") and x.get("n"):
-            out.append(ev(key, x["d"], x["n"], u, x.get("t", ""), "", x.get("s", False)))
+            out.append(ev(key, x["d"], x["n"], u, x.get("t", ""), x.get("r", ""), x.get("s", False)))
     DET.save()
     return out
 
 
 def _links(page, base, pattern):
     seen, out = set(), []
-    for href in re.findall(r'href="([^"#?]+)"', page):
+    for href in re.findall(r'href="([^"#?]+)[^"]*"', page):
         u = href if href.startswith("http") else base + href
         u = u.rstrip("/") + "/" if u.endswith("/") else u
         if re.search(pattern, u) and u not in seen:

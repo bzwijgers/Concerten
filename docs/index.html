@@ -1,112 +1,169 @@
 <!doctype html>
 <html lang="nl"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0a0a12"><meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0E1117">
 <title>Barry's concert agenda</title>
-<link rel="manifest" href="manifest.webmanifest">
+<link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes">
+<link rel="icon" href="img/icon-192.png"><link rel="apple-touch-icon" href="img/icon-192.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: sticky header with three tabs, venue filter strip, then a day-grouped list of concert rows with mark buttons and two outbound links. */
 :root{
-  --bg:#EEF0F3; --surface:#FFFFFF; --fg:#14171F; --muted:#5B6270; --line:#D8DCE3;
-  --accent:#3341E8; --accent-fg:#FFFFFF; --ticket:#0B7F52; --interest:#9A5B00; --sold:#8A91A0;
+  --bg:#EEF0F3; --surface:#FFFFFF; --fg:#14171F; --muted:#5B6270; --faint:#8A91A0; --line:#D8DCE3; --hover:#F4F5F8;
+  --accent:#3341E8; --accent-fg:#FFFFFF; --accent-soft:#E4E7FD; --ticket:#0B7F52; --star:#C27A00; --sold:#A23B3B;
   --f-display:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;
   --f-body:"Instrument Sans","Helvetica Neue",Arial,sans-serif;
   --f-mono:"DM Mono",ui-monospace,Menlo,monospace;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#0E1117; --surface:#171B24; --fg:#EEF0F4; --muted:#98A0AE; --line:#2A303C;
-    --accent:#8F9BFF; --accent-fg:#0E1117; --ticket:#3DD598; --interest:#F2B84B; --sold:#6C7380;
-    color-scheme:dark;
+    --bg:#0E1117; --surface:#171B24; --fg:#EEF0F4; --muted:#98A0AE; --faint:#6C7380; --line:#2A303C; --hover:#1D222C;
+    --accent:#8F9BFF; --accent-fg:#0E1117; --accent-soft:#252B4A; --ticket:#3DD598; --star:#F2B84B; --sold:#F08A8A; color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#0E1117; --surface:#171B24; --fg:#EEF0F4; --muted:#98A0AE; --line:#2A303C;
-  --accent:#8F9BFF; --accent-fg:#0E1117; --ticket:#3DD598; --interest:#F2B84B; --sold:#6C7380;
-  color-scheme:dark;
+  --bg:#0E1117; --surface:#171B24; --fg:#EEF0F4; --muted:#98A0AE; --faint:#6C7380; --line:#2A303C; --hover:#1D222C;
+  --accent:#8F9BFF; --accent-fg:#0E1117; --accent-soft:#252B4A; --ticket:#3DD598; --star:#F2B84B; --sold:#F08A8A; color-scheme:dark;
 }
-body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.4;padding-inline:16px}
 *{box-sizing:border-box}
-.wrap{max-width:720px;margin:0 auto;padding-block:0 40px}
-header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:14px 0;margin-inline:-16px;padding-inline:16px;border-bottom:1px solid var(--line)}
-.top{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
-h1{font-family:var(--f-display);font-weight:700;font-size:26px;letter-spacing:-.02em;margin:0;text-wrap:balance}
-.stamp{font-family:var(--f-mono);font-size:11px;color:var(--muted);white-space:nowrap}
-.tabs{display:flex;gap:2px;margin-top:10px;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding-inline:16px}.tabs::-webkit-scrollbar{display:none}
-.tab{flex:1 0 auto;white-space:nowrap;padding-inline:10px!important;appearance:none;background:none;border:0;border-bottom:3px solid transparent;color:var(--muted);font:600 13px var(--f-body);padding:10px 2px 9px;cursor:pointer;display:flex;gap:4px;align-items:center;justify-content:center;flex-wrap:wrap}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.35}
+button{font:inherit;color:inherit}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px 60px}
+header{position:sticky;top:0;z-index:6;background:var(--bg);margin:0 -16px;padding:calc(env(safe-area-inset-top,0px) + 10px) 16px 0;border-bottom:1px solid var(--line)}
+.top{display:flex;align-items:center;gap:10px}
+h1{font-family:var(--f-display);font-weight:700;font-size:20px;letter-spacing:-.02em;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ib{appearance:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;width:34px;height:34px;display:grid;place-items:center;cursor:pointer;color:var(--fg);text-decoration:none;flex:none}
+.ib svg{width:17px;height:17px}
+.search{display:none;width:100%;margin-top:10px;font:400 15px var(--f-body);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 12px}
+.search.on{display:block}
+.tabs{display:flex;gap:2px;margin:8px -16px 0;padding:0 16px;overflow-x:auto;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
+.tab{appearance:none;background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);font:600 13px var(--f-body);padding:8px 8px 7px;cursor:pointer;white-space:nowrap;display:flex;gap:5px;align-items:center}
 .tab[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent)}
-.tab .n{font-family:var(--f-mono);font-size:11px;font-weight:500;background:var(--line);color:var(--fg);border-radius:9px;padding:1px 6px}
-.tab[aria-selected="true"] .n{background:var(--accent);color:var(--accent-fg)}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.tools{display:flex;flex-direction:column;gap:10px;padding-block:12px}
-.search{width:100%;font:400 15px var(--f-body);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
-.search::placeholder{color:var(--muted)}
-.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;margin-inline:-16px;padding-inline:16px}
-.chips::-webkit-scrollbar{display:none}
-.chip{flex:none;appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:500 13px var(--f-body);border-radius:999px;padding:6px 12px;cursor:pointer}
-.chip[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
-.chipsep{flex:none;align-self:center;font:500 12px var(--f-body);color:var(--muted,var(--fg));opacity:.7;padding-left:8px}
-.row2{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:13px;color:var(--muted)}
-.row2 label{display:flex;gap:6px;align-items:center;cursor:pointer}
-.sub{display:flex;gap:6px}
-.day{position:sticky;top:calc(env(safe-area-inset-top,0px) + 96px);display:none}
-.dayhead{font-family:var(--f-display);font-weight:700;font-size:15px;letter-spacing:-.01em;margin:22px 0 8px;display:flex;gap:10px;align-items:baseline}
-.dayhead small{font-family:var(--f-mono);font-weight:400;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
-.list{display:flex;flex-direction:column;gap:8px}
-.ev{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;min-width:0}
-.ev.t{border-color:var(--ticket)}
-.name{font-family:var(--f-display);font-weight:500;font-size:17px;line-height:1.2;overflow-wrap:anywhere}
-.meta{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;font-size:13px;color:var(--muted)}
-.venue{font-weight:600;color:var(--fg)}
-.badge{font-family:var(--f-mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;border-radius:4px;padding:2px 6px;border:1px solid currentColor}
-.badge.new{color:var(--accent)}
-.badge.sold{color:var(--sold)}
-.acts{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-.mk{appearance:none;font:600 13px var(--f-body);border:1px solid var(--line);background:none;color:var(--fg);border-radius:7px;padding:7px 11px;cursor:pointer}
-.mk[aria-pressed="true"][data-act="t"]{background:var(--ticket);border-color:var(--ticket);color:var(--surface)}
-.mk[aria-pressed="true"][data-act="i"]{background:var(--interest);border-color:var(--interest);color:var(--surface)}
-.lk{font-size:13px;font-weight:600;color:var(--accent);text-decoration:none;padding:7px 4px}
-.lk:hover{text-decoration:underline}
-.lk.first{margin-left:auto}
-.empty{border:1px dashed var(--line);border-radius:10px;padding:28px 18px;text-align:center;color:var(--muted);margin-top:22px}
+.tab .n{font:500 11px var(--f-mono);color:var(--muted)}
+.tab[aria-selected="true"] .n{color:var(--accent)}
+.filters{display:flex;gap:6px;padding:10px 0 8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding-inline:16px}.filters::-webkit-scrollbar{display:none}
+.chip{flex:none;appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:500 13px var(--f-body);border-radius:999px;padding:6px 11px;cursor:pointer;display:flex;gap:4px;align-items:center}
+.chip[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.chip svg{width:13px;height:13px}
+.days{display:flex;gap:4px;padding:0 0 10px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding-inline:16px}.days::-webkit-scrollbar{display:none}
+.dz{flex:none;appearance:none;border:0;background:none;width:44px;border-radius:8px;padding:4px 0;cursor:pointer;text-align:center;color:var(--muted)}
+.dz b{display:block;font:600 15px var(--f-display);color:var(--fg)}
+.dz i{display:block;font:400 10px var(--f-mono);font-style:normal;color:var(--faint)}
+.dz.we b{color:var(--accent)}
+.dz:hover{background:var(--hover)}
+.dz.cur{background:var(--fg)}.dz.cur,.dz.cur b,.dz.cur i{color:var(--bg)}
+.dm{flex:none;align-self:center;font:600 11px var(--f-mono);text-transform:uppercase;letter-spacing:.05em;color:var(--accent);padding:0 4px 0 8px;border-left:1px solid var(--line);margin-left:2px}
+.dm:first-child{border-left:0;padding-left:0;margin-left:0}
+.daterow{display:none;padding:0 0 10px}
+.daterow.on{display:block}
+.dr{display:flex;gap:10px;flex-wrap:wrap}
+.dr label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);flex:1;min-width:140px}
+.dr input{font:400 15px var(--f-body);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.presets{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:8px -16px 0;padding:0 16px}.presets::-webkit-scrollbar{display:none}
+.resinfo{margin:14px 0 0;font-size:13px;color:var(--muted)}
+.resinfo b{color:var(--fg)}
+.lnk{appearance:none;border:0;background:none;color:var(--accent);font:500 13px var(--f-body);cursor:pointer;padding:0 0 0 6px}
+.warn{border:1px solid var(--star);border-radius:10px;padding:9px 12px;font-size:13px;margin-top:12px}
+.dayhead{position:sticky;top:var(--hh,150px);z-index:4;background:var(--bg);display:flex;align-items:baseline;gap:8px;padding:14px 0 6px;font-family:var(--f-display);font-weight:700;font-size:15px}
+.dayhead small{font:400 11px var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.dayhead .cnt{margin-left:auto;font:400 11px var(--f-mono);color:var(--faint)}
+.list{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.ev{border-top:1px solid var(--line)}
+.ev:first-child{border-top:0}
+.row{display:flex;gap:10px;align-items:center;padding:8px 6px 8px 12px;cursor:pointer;min-height:52px}
+.row:hover{background:var(--hover)}
+.tm{flex:none;width:40px;font:500 12px var(--f-mono);color:var(--muted)}
+.tm.d{font-size:10px;line-height:1.1}
+.body{flex:1;min-width:0}
+.name{font-weight:600;font-size:15px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev.open .name{white-space:normal}
+.sub{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.sub .tag{font:500 10px var(--f-mono);text-transform:uppercase;letter-spacing:.05em;margin-left:4px}
+.tag.sold{color:var(--sold)}.tag.new{color:var(--accent)}.tag.club{color:var(--ticket)}.tag.tk{color:var(--ticket)}
+.ev.sold .name{color:var(--muted)}
+.ev.t{box-shadow:inset 3px 0 0 var(--ticket)}
+.star{flex:none;appearance:none;border:0;background:none;width:40px;height:40px;display:grid;place-items:center;cursor:pointer;color:var(--faint);border-radius:999px}
+.star svg{width:21px;height:21px}
+.star[aria-pressed="true"]{color:var(--star)}
+.star[aria-pressed="true"] svg path{fill:currentColor}
+.more{display:none;gap:8px;flex-wrap:wrap;padding:0 12px 12px 62px}
+.ev.open .more{display:flex}
+.btn{appearance:none;border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:7px 11px;font:600 13px var(--f-body);cursor:pointer;color:var(--fg);text-decoration:none}
+.btn[aria-pressed="true"]{background:var(--ticket);border-color:var(--ticket);color:var(--surface)}
+.btn.link{color:var(--accent)}
+.empty{border:1px dashed var(--line);border-radius:10px;padding:28px 18px;text-align:center;color:var(--muted);margin-top:20px}
 .empty b{display:block;font-family:var(--f-display);font-size:17px;color:var(--fg);margin-bottom:4px}
-.foot{margin-top:30px;font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
-.zl{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 4px}.zl a{color:var(--accent,inherit);text-decoration:underline;font-size:13px}.foot summary{cursor:pointer;color:var(--text,inherit);font-weight:600;font-size:13px}.foot code{font-family:var(--f-mono)}
-@media (min-width:560px){.acts{flex-wrap:nowrap}}
-@media (prefers-reduced-motion:no-preference){.mk,.chip{transition:background .12s,border-color .12s}}
-
-.top a.info{font:600 13px var(--f-body);color:var(--accent);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:5px 11px;white-space:nowrap}
-.warn{border:1px solid var(--interest);border-radius:10px;padding:10px 12px;font-size:13px;margin-top:12px;color:var(--fg)}
-.badge.club{color:var(--ticket)}
-.src{font-size:12px;color:var(--muted)}
-
-#splash{position:fixed;inset:0;z-index:99;background:#0a0a12 url(img/splash.jpg) center/cover no-repeat;transition:opacity .5s ease;display:flex;align-items:flex-end;justify-content:center;padding-bottom:max(48px,env(safe-area-inset-bottom))}
+.loadmore{display:block;margin:18px auto;}
+.foot{margin-top:28px;font-size:12px;color:var(--muted)}
+.foot a{color:var(--accent)}
+/* zalen-paneel */
+.sheet{position:fixed;inset:0;z-index:20;display:none}
+.sheet.on{display:block}
+.sheet .back{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+.panel{position:absolute;left:0;right:0;bottom:0;max-height:88vh;display:flex;flex-direction:column;background:var(--surface);border-radius:16px 16px 0 0;max-width:720px;margin:0 auto}
+.ph{display:flex;align-items:center;gap:8px;padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.ph h2{font-family:var(--f-display);font-size:18px;margin:0;flex:1}
+.pb{overflow:auto;padding:6px 16px 16px}
+.reg{display:flex;gap:6px;flex-wrap:wrap;padding:10px 0}
+.city{margin-top:10px}
+.city h3{font:600 12px var(--f-mono);text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:0 0 4px;display:flex;gap:8px;align-items:center}
+.city h3 button{appearance:none;border:0;background:none;color:var(--accent);font:500 12px var(--f-body);cursor:pointer;padding:0}
+.vl{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px 10px}
+.vl label{display:flex;gap:8px;align-items:center;padding:6px 0;font-size:14px;cursor:pointer}
+.vl input{width:18px;height:18px;accent-color:var(--accent)}
+.vl .c{margin-left:auto;font:400 11px var(--f-mono);color:var(--faint)}
+.pf{display:flex;gap:8px;align-items:center;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}
+.pf label{flex:1;font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center}
+.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.v2note{font-size:12px;color:var(--muted);background:var(--accent-soft);border-radius:8px;padding:8px 10px;margin-top:10px}
+.v2note a{color:var(--accent)}
+#splash{position:fixed;inset:0;z-index:99;background:#0a0a12 url(../img/splash.jpg) center/cover no-repeat;transition:opacity .5s ease;display:flex;align-items:flex-end;justify-content:center;padding-bottom:max(48px,env(safe-area-inset-bottom))}
 #splash.gone{opacity:0;pointer-events:none}
 #splash span{color:#fff;opacity:.75;font:500 13px var(--f-body);letter-spacing:.08em;text-transform:uppercase}
 @media (prefers-reduced-motion:reduce){#splash{transition:none}}
-</style><link rel="icon" href="img/icon-192.png"><link rel="apple-touch-icon" href="img/icon-192.png"></head><body>
+</style></head><body>
 <div id="splash" role="img" aria-label="Barry's concerten"><span>Programma laden…</span></div>
 <div class="wrap">
-  <header>
-    <div class="top"><h1>Barry's concert agenda</h1><a class="info" href="info.html">Info</a></div>
-    <div class="tabs" role="tablist" id="tabs">
-      <button class="tab" role="tab" data-tab="all" aria-selected="true">Alles <span class="n" id="n-all">0</span></button>
-      <button class="tab" role="tab" data-tab="new" aria-selected="false">Nieuw <span class="n" id="n-new">0</span></button>
-      <button class="tab" role="tab" data-tab="t" aria-selected="false">Ticket <span class="n" id="n-t">0</span></button>
-      <button class="tab" role="tab" data-tab="i" aria-selected="false">Interesse <span class="n" id="n-i">0</span></button>
-      <button class="tab" role="tab" data-tab="c" aria-selected="false">Rotown club <span class="n" id="n-c">0</span></button>
-      <button class="tab" role="tab" data-tab="a" aria-selected="false">Archief <span class="n" id="n-a">0</span></button>
+  <header id="hdr">
+    <div class="top">
+      <h1>Barry's concert agenda</h1>
+      <button class="ib" id="sbtn" aria-label="Zoeken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+      <a class="ib" href="info.html" aria-label="Info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></a>
     </div>
+    <input class="search" id="q" type="search" placeholder="Artiest, zaal of stad" autocomplete="off">
+    <div class="tabs" role="tablist" id="tabs">
+      <button class="tab" role="tab" data-tab="all" aria-selected="true">Alles <span class="n" id="n-all"></span></button>
+      <button class="tab" role="tab" data-tab="new" aria-selected="false">Nieuw <span class="n" id="n-new"></span></button>
+      <button class="tab" role="tab" data-tab="i" aria-selected="false">Interesse <span class="n" id="n-i"></span></button>
+      <button class="tab" role="tab" data-tab="t" aria-selected="false">Kaartjes <span class="n" id="n-t"></span></button>
+      <button class="tab" role="tab" data-tab="c" aria-selected="false">Rotown club <span class="n" id="n-c"></span></button>
+      <button class="tab" role="tab" data-tab="a" aria-selected="false">Archief <span class="n" id="n-a"></span></button>
+    </div>
+    <div class="filters" id="filters">
+      <button class="chip" id="f-mine" aria-pressed="false">Mijn zalen</button>
+      <button class="chip" id="f-weekend" aria-pressed="false">Dit weekend</button>
+      <button class="chip" id="f-date" aria-pressed="false">Datum <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button class="chip" id="f-zalen" aria-pressed="false">Zalen en regio <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg></button>
+    </div>
+    <div class="daterow" id="daterow">
+      <div class="dr"><label>Van <input type="date" id="dfrom"></label><label>Tot en met <input type="date" id="dto"></label></div>
+      <div class="presets"><button class="chip" data-preset="today">Vandaag</button><button class="chip" data-preset="tomorrow">Morgen</button><button class="chip" data-preset="week">Komende 7 dagen</button><button class="chip" data-preset="month">Rest van deze maand</button><button class="chip" data-preset="next">Volgende maand</button><button class="chip" data-preset="clear">Alle datums</button></div>
+    </div>
+    <div class="days" id="days"></div>
   </header>
-  <div class="tools">
-    <input class="search" id="q" type="search" placeholder="Zoek artiest of zaal" autocomplete="off">
-    <div class="chips" id="venues"></div>
-    <div class="row2"><label for="hideSold"><input type="checkbox" id="hideSold"> Verberg uitverkocht</label><span class="src" id="stamp"></span></div>
-  </div>
   <div id="warn"></div>
   <main id="out" aria-live="polite"><div class="empty"><b>Laden…</b>De agenda wordt opgehaald.</div></main>
-  <div class="foot"><span>Gegevens komen van de websites van de zalen zelf en worden elke ochtend rond 07:00 bijgewerkt. Meer uitleg staat op de <a href="info.html">infopagina</a>.</span></div>
+  <div class="foot">Gegevens van de websites van de zalen zelf (en Ticketmaster voor grote zalen), elke ochtend rond 07:00 bijgewerkt. <span id="stamp"></span> · <a href="info.html">Info</a> · <a href="v1/">vorige versie</a></div>
+</div>
+<div class="sheet" id="sheet" aria-hidden="true">
+  <div class="back" data-close></div>
+  <div class="panel" role="dialog" aria-label="Zalen kiezen">
+    <div class="ph"><h2>Zalen en regio</h2><button class="btn" data-close>Sluiten</button></div>
+    <div class="pb">
+      <div class="reg" id="regions"></div>
+      <div id="cities"></div>
+    </div>
+    <div class="pf"><label><input type="checkbox" id="hideSold"> Verberg uitverkocht</label><button class="btn" id="clearsel">Alles</button><button class="btn primary" id="saveMine">Bewaar als mijn zalen</button></div>
+  </div>
 </div>
 <script>
 (function(){var sp=document.getElementById("splash"),t0=Date.now(),done=false;
@@ -114,5 +171,5 @@ function hide(){if(done)return;done=true;sp.classList.add("gone");setTimeout(fun
 window.__splashReady=function(){setTimeout(hide,Math.max(0,1400-(Date.now()-t0)));};
 sp.addEventListener("click",hide);setTimeout(hide,6000);})();
 </script>
-<script src="app.js"></script>
+<script src="app.js?v=6"></script>
 </body></html>

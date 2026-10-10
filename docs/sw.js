@@ -1,5 +1,5 @@
 /* Service worker: maakt installeren als app mogelijk en toont de laatst bekende agenda zonder verbinding. */
-const CACHE = "ca-v1";
+const CACHE = "ca-v2";
 const SHELL = ["./", "index.html", "info.html", "app.js", "manifest.webmanifest", "img/icon-192.png", "img/icon-512.png", "img/splash.jpg"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });

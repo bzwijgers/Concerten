@@ -77,7 +77,7 @@ function row(c){
   var m=(marks[c.id]||{}).k||"", v=VENUES[c.v];
   var place=c.r?esc(v.label)+" · "+esc(c.r):esc(v.label);
   return '<article class="ev'+(m==="t"?" t":"")+'"><div class="name">'+esc(c.n)+'</div><div class="meta"><span class="venue">'+place+'</span>'
-   +(isNew(c)?'<span class="badge new">nieuw</span>':'')+(c.s?'<span class="badge sold">uitverkocht</span>':'')+(c.c?'<span class="badge club">clubcard</span>':'')+(c.t?'<span>'+esc(c.t)+'</span>':'')
+   +(isNew(c)?'<span class="badge new">nieuw</span>':'')+(c.s?'<span class="badge sold">uitverkocht</span>':'')+(c.c&&c.v==="rotown"?'<span class="badge club">clubcard</span>':'')+(c.t?'<span>'+esc(c.t)+'</span>':'')
    +'</div><div class="acts"><button class="mk" data-act="t" data-id="'+esc(c.id)+'" aria-pressed="'+(m==="t")+'">Kaartje</button>'
    +'<button class="mk" data-act="i" data-id="'+esc(c.id)+'" aria-pressed="'+(m==="i")+'">Interesse</button>'
    +'<a class="lk first" href="'+esc(c.u)+'" target="_blank" rel="noopener">Zaal ↗</a>'
@@ -101,7 +101,7 @@ function render(){
   $("n-all").textContent=all.length;
   $("n-new").textContent=all.filter(isNew).length;
   $("n-t").textContent=nT;$("n-i").textContent=nI;
-  $("n-c").textContent=all.filter(function(c){return c.c;}).length;$("n-a").textContent=arch.length;
+  $("n-c").textContent=all.filter(function(c){return c.c&&c.v==="rotown";}).length;$("n-a").textContent=arch.length;
   var out=$("out"),shown;
   if(state.tab==="a"){
     if(!arch.length){out.innerHTML='<div class="empty"><b>Nog niets in het archief</b>Concerten waarvoor je een kaartje had komen hier na de concertdatum en blijven hier staan.</div>';return;}
@@ -110,7 +110,7 @@ function render(){
   }
   shown=all;
   if(state.tab==="new") shown=all.filter(isNew);
-  else if(state.tab==="c") shown=all.filter(function(c){return c.c;});
+  else if(state.tab==="c") shown=all.filter(function(c){return c.c&&c.v==="rotown";});
   else if(state.tab==="t"||state.tab==="i") shown=all.filter(function(c){return marks[c.id]&&marks[c.id].k===state.tab;});
   if(!shown.length){
     var t=state.tab==="t"?["Nog geen kaartjes","Tik bij een concert op Kaartje als je een ticket hebt."]:state.tab==="i"?["Nog geen interesse gemarkeerd","Tik bij een concert op Interesse."]:state.tab==="new"?["Niets nieuws in de laatste 7 dagen","Hier staan concerten die de afgelopen week aan een zaalprogramma zijn toegevoegd."]:state.tab==="c"?["Geen Rotown clubconcerten","Hier staan Rotown-concerten waar Clubcard-houders gratis naar binnen kunnen."]:["Geen concerten gevonden","Pas je zoekopdracht of de zaalfilter aan."];

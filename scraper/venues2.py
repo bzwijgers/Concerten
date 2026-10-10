@@ -25,7 +25,7 @@ def effenaar():
             continue
         room = ", ".join(l.get("title", "") for l in (e.get("locations") or []))
         out.append(ev("effenaar", d, e["title"], "https://www.effenaar.nl" + e["slug"], "", room,
-                      st == "sold_out", bool(e.get("club_card_event"))))
+                      st == "sold_out"))   # Effenaars eigen club_card_event is niet de Rotown Clubcard
     return out
 
 # ---------- Patronaat ----------

@@ -16,6 +16,7 @@ VENUES = [  # key, label, fn
     ("klokgebouw", venues4.klokgebouw), ("doornroosje", venues4.doornroosje), ("metropool", venues4.metropool),
     ("spot", venues4.spot), ("bibelot", venues4.bibelot), ("bosuil", venues4.bosuil), ("bird", venues4.bird),
     ("gebouwt", venues4.gebouwt), ("neushoorn", venues4.neushoorn), ("amare", venues5.amare), ("tolhuistuin", venues5.tolhuistuin),
+    ("bolwerk", venues5.bolwerk),
 ]
 
 def load(path, default):

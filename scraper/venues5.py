@@ -1,4 +1,4 @@
-"""Tolhuistuin (eigen programma) en Amare (Den Haag)."""
+"""Tolhuistuin (eigen programma), Amare (Den Haag) en Het Bolwerk (Sneek)."""
 import html as _html, json, re, time, urllib.request, http.cookiejar
 from datetime import date, timedelta
 from common import *
@@ -89,4 +89,46 @@ def amare(max_pages=70, delay=5.0):
         time.sleep(delay)
         page = _get(f"https://www.amare.nl/nl/agenda?{pname}_page={n}")
     print(f"amare: {n} pagina's, {len(seen)} items, {len(out)} concerten")
+    return out
+
+# ---------- Het Bolwerk (Sneek), onderdeel van Poort: ontdekpoort.nl ----------
+# Elke pagina bevat de zoekindex van het hele programma (JSON). Daaruit de muziek in het Bolwerk;
+# per concert levert de eigen detailpagina datum mét jaartal, aanvang en status.
+# De site weigert user-agents die zich als 'Mozilla/5.0 (compatible; ...)' voordoen; daarom hier de
+# naam van de agenda zonder dat voorvoegsel. robots.txt staat alles toe.
+POORT_UA = "BarrysConcertAgenda/1.0 (+https://github.com/bzwijgers/Concerten)"
+_DOW = {"ma": 0, "di": 1, "wo": 2, "do": 3, "vr": 4, "za": 5, "zo": 6}
+
+def bolwerk(delay=1.0):
+    hdr = {"User-Agent": POORT_UA}
+    h = fetch("https://ontdekpoort.nl/programma/locatie/bolwerk-kerkgracht-8/", headers=hdr)
+    m = re.search(r'id="Navbar_Search_Events">(.*?)</script>', h, re.S)
+    if not m:
+        raise RuntimeError("bolwerk: geen zoekindex gevonden")
+    items = [x for x in json.loads(m.group(1)) if (x.get("meta") or "").startswith("Bolwerk")]
+    out = []
+    for x in items:
+        st = (x.get("search_text") or "").lower()
+        tail = st.rsplit("bolwerk - kerkgracht 8", 1)[-1].split()
+        if "muziek" not in tail: continue          # categorie staat achteraan, bv. 'muziek rock', 'heavy muziek'
+        title, url = clean(x["title"]), x["url"]
+        shows = []
+        try:
+            time.sleep(delay)
+            dh = fetch(url, headers=hdr)
+            for li in re.findall(r'<li\b[^>]*>(.*?)</li>', (re.search(r'event-shows-list(.*?)</ul>', dh, re.S) or [None, ""])[1], re.S):
+                d = parse_nl_date(re.sub(r"<[^>]+>", " ", li))
+                if not d: continue
+                tm = re.search(r"Aanvang:?\s*(\d{1,2}[:.]\d{2})", li)
+                sold = bool(re.search(r"uitverkocht|sold\s*out", li, re.I))
+                shows.append((d, tm.group(1).replace(".", ":") if tm else "", sold))
+        except Exception as ex:
+            print("bolwerk: detail mislukt", url, ex)
+        if not shows:   # terugval: datum uit de index, jaar via de weekdag
+            dm = re.match(r"([a-z]{2})\s+(\d{1,2})\s+([a-z]+)", (x.get("lines") or [""])[0].lower())
+            d = dm and NL_MONTHS.get(dm.group(3)) and _infer(_DOW.get(dm.group(1)), int(dm.group(2)), NL_MONTHS[dm.group(3)])
+            if d: shows.append((d, "", False))
+        for d, t, sold in shows:
+            out.append(ev("bolwerk", d, title, url, t, "", sold))
+    print(f"bolwerk: {len(items)} items in het Bolwerk, {len(out)} concerten")
     return out

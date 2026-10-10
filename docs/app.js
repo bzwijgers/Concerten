@@ -27,7 +27,8 @@ var VENUES = {
   amare:{label:"Amare",home:"https://www.amare.nl/nl/agenda"},
   neushoorn:{label:"Neushoorn",home:"https://www.neushoorn.nl/programma"},
   gebouwt:{label:"Gebouw-T",home:"https://gebouw-t.nl/agenda/"},
-  tolhuistuin:{label:"Tolhuistuin",home:"https://tolhuistuin.nl/agenda/"}
+  tolhuistuin:{label:"Tolhuistuin",home:"https://tolhuistuin.nl/agenda/"},
+  bolwerk:{label:"Het Bolwerk",home:"https://ontdekpoort.nl/programma/locatie/bolwerk-kerkgracht-8/"}
 };
 /* TicketSwap-pagina's van de zaal of stad (gecontroleerd), anders zoekresultaten */
 var TSV = {rotown:"https://www.ticketswap.com/location/rotown/2033", melkweg:"https://www.ticketswap.com/location/melkweg/41", o13:"https://www.ticketswap.com/city/tilburg/12"};

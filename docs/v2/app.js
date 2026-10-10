@@ -95,6 +95,8 @@ function nice(t) {
 }
 
 var ALL = [], DATA = null, marks = load("ca-marks", {}), mine = load("ca-mine", []);
+Object.keys(marks).forEach(function (id) { var m = marks[id]; if (m && m.k) { m[m.k] = true; delete m.k; } });   /* oud formaat */
+function has(id, f) { return !!(marks[id] && marks[id][f]); }
 var state = { tab: "all", q: "", hideSold: load("ca-hidesold", false), useMine: mine.length > 0, from: "", to: "", sel: [], regions: [], limit: 300, open: null, showDate: false };
 
 function venue(c) { return VENUES[c.v] || { label: c.v, city: "" }; }
@@ -124,10 +126,9 @@ function baseFilter(c, noDates) {
   return true;
 }
 function tabFilter(c, tab) {
-  var m = (marks[c.id] || {}).k;
   if (tab === "new") return isNew(c);
-  if (tab === "i") return m === "i" || m === "t";   // een kaartje is ook interesse
-  if (tab === "t") return m === "t";
+  if (tab === "i") return has(c.id, "i");
+  if (tab === "t") return has(c.id, "t");
   if (tab === "c") return club(c);
   return true;
 }
@@ -137,8 +138,9 @@ function visible() {
 
 function toggle(id, kind) {
   var c = ALL.filter(function (x) { return x.id === id; })[0];
-  if (marks[id] && marks[id].k === kind) delete marks[id];
-  else marks[id] = { k: kind, s: c ? { n: c.n, d: c.d, v: c.v, r: c.r, u: c.u } : (marks[id] && marks[id].s) };
+  var m = marks[id] || {}; m[kind] = !m[kind];   // kaartje en interesse zijn los van elkaar
+  if (c) m.s = { n: c.n, d: c.d, v: c.v, r: c.r, u: c.u };
+  if (!m.i && !m.t) delete marks[id]; else marks[id] = m;
   save("ca-marks", marks);
   render(true);
 }
@@ -156,22 +158,22 @@ function timeCell(t) {
 }
 
 function row(c) {
-  var v = venue(c), m = (marks[c.id] || {}).k || "", open = state.open === c.id;
+  var v = venue(c), tk = has(c.id, "t"), it = has(c.id, "i"), open = state.open === c.id;
   var tags = (c.s ? '<span class="tag sold">uitverkocht</span>' : "") + (isNew(c) ? '<span class="tag new">nieuw</span>' : "") +
-             (club(c) ? '<span class="tag club">clubcard</span>' : "") + (m === "t" ? '<span class="tag tk">kaartje</span>' : "");
+             (club(c) ? '<span class="tag club">clubcard</span>' : "") + (tk ? '<span class="tag tk">kaartje</span>' : "");
   var where = esc(v.label) + (v.city ? " · " + esc(v.city) : "") + (c.r && c.r.toLowerCase().indexOf(v.label.toLowerCase()) < 0 && c.r.toLowerCase().indexOf((v.city || "~").toLowerCase()) < 0 && v.label.toLowerCase().indexOf(c.r.toLowerCase()) < 0 ? " · " + esc(c.r) : "");
-  return '<div class="ev' + (c.s ? " sold" : "") + (m === "t" ? " t" : "") + (open ? " open" : "") + '" data-id="' + esc(c.id) + '">' +
+  return '<div class="ev' + (c.s ? " sold" : "") + (tk ? " t" : "") + (open ? " open" : "") + '" data-id="' + esc(c.id) + '">' +
     '<div class="row" data-act="open">' + timeCell(c.t) +
     '<div class="body"><div class="name">' + esc(nice(c.n)) + '</div><div class="sub">' + where + tags + "</div></div>" +
-    '<button class="star" data-act="i" aria-pressed="' + (m === "i" || m === "t") + '" aria-label="Interesse"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z" stroke-linejoin="round"/></svg></button></div>' +
-    '<div class="more"><button class="btn" data-act="t" aria-pressed="' + (m === "t") + '">' + (m === "t" ? "Kaartje gekocht" : "Ik heb een kaartje") + "</button>" +
+    '<button class="star" data-act="i" aria-pressed="' + it + '" aria-label="Interesse"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z" stroke-linejoin="round"/></svg></button></div>' +
+    '<div class="more"><button class="btn" data-act="t" aria-pressed="' + tk + '">' + (tk ? "Kaartje gekocht" : "Ik heb een kaartje") + "</button>" +
     '<a class="btn link" href="' + esc(c.u) + '" target="_blank" rel="noopener">Zaal ↗</a>' +
     '<a class="btn link" href="' + esc(tsLink(c)) + '" target="_blank" rel="noopener">TicketSwap ↗</a></div></div>';
 }
 
 function archive() {
   var out = [];
-  Object.keys(marks).forEach(function (id) { var m = marks[id]; if (m.k === "t" && m.s && m.s.d < TODAY) out.push(m.s); });
+  Object.keys(marks).forEach(function (id) { var m = marks[id]; if (m.t && m.s && m.s.d < TODAY) out.push(m.s); });
   return out.sort(function (a, b) { return a.d < b.d ? 1 : -1; });
 }
 

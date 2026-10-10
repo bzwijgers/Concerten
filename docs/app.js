@@ -74,12 +74,16 @@ function slug(s){return s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().
 
 var ALL=[], state={tab:"all",q:"",hideSold:false,venues:{}}, marks={}, DATA=null;
 function eid(c){return c.v+"|"+c.d+"|"+c.u;}
-function loadMarks(){try{var r=localStorage.getItem("ca-marks");if(r)marks=JSON.parse(r)||{};}catch(e){}}
+function loadMarks(){try{var r=localStorage.getItem("ca-marks");if(r)marks=JSON.parse(r)||{};}catch(e){}
+  /* oud formaat {k:"t"|"i"} -> kaartje en interesse los van elkaar */
+  Object.keys(marks).forEach(function(id){var m=marks[id];if(m&&m.k){m[m.k]=true;delete m.k;}});}
+function has(id,f){return !!(marks[id]&&marks[id][f]);}
 function saveMarks(){try{localStorage.setItem("ca-marks",JSON.stringify(marks));}catch(e){}}
 function toggle(id,kind){
   var c=ALL.filter(function(x){return x.id===id;})[0];
-  if(marks[id]&&marks[id].k===kind){delete marks[id];}
-  else{marks[id]={k:kind,s:c?{n:c.n,d:c.d,v:c.v,r:c.r,u:c.u}:(marks[id]&&marks[id].s)};}
+  var m=marks[id]||{};m[kind]=!m[kind];
+  if(c)m.s={n:c.n,d:c.d,v:c.v,r:c.r,u:c.u};
+  if(!m.i&&!m.t)delete marks[id];else marks[id]=m;
   saveMarks();render();
 }
 function dayLabel(d){
@@ -102,18 +106,18 @@ function visible(){
   });
 }
 function row(c){
-  var m=(marks[c.id]||{}).k||"", v=VENUES[c.v];
+  var tk=has(c.id,"t"), it=has(c.id,"i"), v=VENUES[c.v];
   var place=c.r?esc(v.label)+" · "+esc(c.r):esc(v.label);
-  return '<article class="ev'+(m==="t"?" t":"")+'"><div class="name">'+esc(c.n)+'</div><div class="meta"><span class="venue">'+place+'</span>'
+  return '<article class="ev'+(tk?" t":"")+'"><div class="name">'+esc(c.n)+'</div><div class="meta"><span class="venue">'+place+'</span>'
    +(isNew(c)?'<span class="badge new">nieuw</span>':'')+(c.s?'<span class="badge sold">uitverkocht</span>':'')+(c.c&&c.v==="rotown"?'<span class="badge club">clubcard</span>':'')+(c.t?'<span>'+esc(c.t)+'</span>':'')
-   +'</div><div class="acts"><button class="mk" data-act="t" data-id="'+esc(c.id)+'" aria-pressed="'+(m==="t")+'">Kaartje</button>'
-   +'<button class="mk" data-act="i" data-id="'+esc(c.id)+'" aria-pressed="'+(m==="i")+'">Interesse</button>'
+   +'</div><div class="acts"><button class="mk" data-act="t" data-id="'+esc(c.id)+'" aria-pressed="'+tk+'">Kaartje</button>'
+   +'<button class="mk" data-act="i" data-id="'+esc(c.id)+'" aria-pressed="'+it+'">Interesse</button>'
    +'<a class="lk first" href="'+esc(c.u)+'" target="_blank" rel="noopener">Zaal ↗</a>'
-   +(m==="i"?'<a class="lk" href="'+esc(tsLink(c))+'" target="_blank" rel="noopener">TicketSwap ↗</a>':'')+'</div></article>';
+   +(it?'<a class="lk" href="'+esc(tsLink(c))+'" target="_blank" rel="noopener">TicketSwap ↗</a>':'')+'</div></article>';
 }
 function archive(){
   var out=[];
-  Object.keys(marks).forEach(function(id){var m=marks[id];if(m.k==="t"&&m.s&&m.s.d<TODAY)out.push(m.s);});
+  Object.keys(marks).forEach(function(id){var m=marks[id];if(m.t&&m.s&&m.s.d<TODAY)out.push(m.s);});
   out.sort(function(a,b){return a.d<b.d?1:a.d>b.d?-1:0;});return out;
 }
 function list(items,rowFn,key){
@@ -124,8 +128,8 @@ function list(items,rowFn,key){
 function render(){
   if(!DATA) return;
   var all=visible(), arch=archive();
-  var nT=ALL.filter(function(c){return c.d>=TODAY&&marks[c.id]&&marks[c.id].k==="t";}).length;
-  var nI=ALL.filter(function(c){return c.d>=TODAY&&marks[c.id]&&(marks[c.id].k==="i"||marks[c.id].k==="t");}).length;
+  var nT=ALL.filter(function(c){return c.d>=TODAY&&has(c.id,"t");}).length;
+  var nI=ALL.filter(function(c){return c.d>=TODAY&&has(c.id,"i");}).length;
   $("n-all").textContent=all.length;
   $("n-new").textContent=all.filter(isNew).length;
   $("n-t").textContent=nT;$("n-i").textContent=nI;
@@ -139,7 +143,7 @@ function render(){
   shown=all;
   if(state.tab==="new") shown=all.filter(isNew);
   else if(state.tab==="c") shown=all.filter(function(c){return c.c&&c.v==="rotown";});
-  else if(state.tab==="t"||state.tab==="i") shown=all.filter(function(c){var k=marks[c.id]&&marks[c.id].k;return state.tab==="i"?(k==="i"||k==="t"):k==="t";});
+  else if(state.tab==="t"||state.tab==="i") shown=all.filter(function(c){return has(c.id,state.tab);});
   if(!shown.length){
     var t=state.tab==="t"?["Nog geen kaartjes","Tik bij een concert op Kaartje als je een ticket hebt."]:state.tab==="i"?["Nog geen interesse gemarkeerd","Tik bij een concert op Interesse."]:state.tab==="new"?["Niets nieuws in de laatste 7 dagen","Hier staan concerten die de afgelopen week aan een zaalprogramma zijn toegevoegd."]:state.tab==="c"?["Geen Rotown clubconcerten","Hier staan Rotown-concerten waar Clubcard-houders gratis naar binnen kunnen."]:["Geen concerten gevonden","Pas je zoekopdracht of de zaalfilter aan."];
     out.innerHTML='<div class="empty"><b>'+t[0]+'</b>'+t[1]+'</div>';return;

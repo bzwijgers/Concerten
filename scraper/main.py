@@ -189,6 +189,9 @@ def main():
     # Ticketmaster (officiële API) voor grote zalen en festivals; alleen als de sleutel als GitHub-secret bestaat
     tm_venues = store.get("venues", {})
     tm_key = os.environ.get("TM_API_KEY", "").strip()
+    if not tm_key and not only:
+        status["ticketmaster"] = {"ok": False, "error": "geen API-sleutel: zet TM_API_KEY als secret in GitHub", "at": None}
+        print("ticketmaster: geen sleutel (TM_API_KEY) ingesteld")
     if tm_key and (not only or "ticketmaster" in only):
         try:
             raw = ticketmaster.fetch_all(tm_key)

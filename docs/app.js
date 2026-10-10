@@ -184,7 +184,7 @@ function renderDays(list) {
     var k = iso(d), wd = d.getDay();
     if (k > last) break;
     if (i === 0 || d.getDate() === 1) html += '<span class="dm">' + MON[d.getMonth()] + (d.getFullYear() !== NOW.getFullYear() ? " " + String(d.getFullYear()).slice(2) : "") + "</span>";
-    html += '<button class="dz' + (wd === 5 || wd === 6 || wd === 0 ? " we" : "") + (k === one ? " cur" : "") + '" data-day="' + k + '">' + DOW[wd] + "<b>" + d.getDate() + "</b><i>" + (cnt[k] || "–") + "</i></button>";
+    html += '<button class="dz' + (wd === 5 || wd === 6 || wd === 0 ? " we" : "") + (k === one ? " cur" : "") + (!one && state.from && k >= state.from && k <= (state.to || "9999") ? " inr" : "") + '" data-day="' + k + '">' + DOW[wd] + "<b>" + d.getDate() + "</b><i>" + (cnt[k] || "–") + "</i></button>";
     d.setDate(d.getDate() + 1);
   }
   $("days").innerHTML = html;
@@ -213,7 +213,7 @@ function render(keepScroll) {
   if (state.tab === "a") {
     out.innerHTML = arch.length ? '<div class="list">' + arch.map(function (s) {
       var v = VENUES[s.v] || { label: s.v, city: "" };
-      return '<div class="ev"><div class="row"><span class="tm">' + esc(s.d.slice(5).split("-").reverse().join("/")) + '</span><div class="body"><div class="name">' + esc(nice(s.n)) +
+      return '<div class="ev"><div class="row"><span class="tm">' + esc(+s.d.slice(8) + " " + MON[+s.d.slice(5, 7) - 1] + " " + s.d.slice(0, 4)) + '</span><div class="body"><div class="name">' + esc(nice(s.n)) +
         '</div><div class="sub">' + esc(v.label) + (v.city ? " · " + esc(v.city) : "") + "</div></div></div></div>";
     }).join("") + "</div>" : '<div class="empty"><b>Nog niets in het archief</b>Concerten waar je een kaartje voor had, komen hier na afloop.</div>';
     return;
@@ -307,6 +307,7 @@ $("f-date").addEventListener("click", function () { state.showDate = !state.show
 $("daterow").addEventListener("change", function () { var a = $("dfrom").value, b = $("dto").value; if (b && a && b < a) b = a; setRange(a, b); });
 $("daterow").addEventListener("click", function (e) {
   var p = e.target.closest("[data-preset]"); if (!p) return;
+  state.showDate = false; $("daterow").classList.remove("on");
   var t = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate()), k = p.getAttribute("data-preset"), e2 = new Date(t);
   if (k === "today") setRange(TODAY, TODAY);
   else if (k === "tomorrow") { e2.setDate(t.getDate() + 1); setRange(iso(e2), iso(e2)); }

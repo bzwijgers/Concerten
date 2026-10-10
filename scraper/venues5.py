@@ -132,3 +132,23 @@ def bolwerk(delay=1.0):
             out.append(ev("bolwerk", d, title, url, t, "", sold))
     print(f"bolwerk: {len(items)} items in het Bolwerk, {len(out)} concerten")
     return out
+
+# ---------- dB's (Utrecht): de agenda-API van hun eigen WordPress-site (The Events Calendar) ----------
+def dbs():
+    out, url, n = [], f"https://dbstudio.nl/wp-json/tribe/events/v1/events/?per_page=50&start_date={date.today().isoformat()}", 0
+    while url and n < 10:
+        j = json.loads(fetch(url, headers={"User-Agent": POORT_UA}))
+        for x in j.get("events", []):
+            v = x.get("venue") or {}
+            if isinstance(v, dict) and v.get("city") and v["city"].lower() != "utrecht": continue
+            if x.get("status") not in (None, "publish"): continue
+            title = clean(x.get("title"))
+            sold = bool(re.search(r"sold\s*out|uitverkocht", title, re.I))
+            title = re.sub(r"^\s*\*?\s*(sold\s*out|uitverkocht)\s*\*?\s*[:\-–]?\s*", "", title, flags=re.I).strip()
+            if BAD_TITLE.search(title): continue
+            d, t = split_dt(x.get("start_date"))
+            if d and title:
+                out.append(ev("dbs", d, title, (x.get("url") or "").split("?")[0], t, "", sold))
+        url, n = j.get("next_rest_url"), n + 1
+        time.sleep(1)
+    return out

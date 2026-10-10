@@ -2,7 +2,7 @@ import json, os, sys, traceback, importlib
 from datetime import date, datetime, timedelta, timezone
 sys.path.insert(0, os.path.dirname(__file__))
 from common import *
-import venues1, venues2, venues3, venues4, venues5, feedimport, ticketmaster
+import venues1, venues2, venues3, venues4, venues5, feedimport, ticketmaster, tsmap
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 DATA = os.path.join(ROOT, "data")
@@ -16,7 +16,7 @@ VENUES = [  # key, label, fn
     ("klokgebouw", venues4.klokgebouw), ("doornroosje", venues4.doornroosje), ("metropool", venues4.metropool),
     ("spot", venues4.spot), ("bibelot", venues4.bibelot), ("bosuil", venues4.bosuil), ("bird", venues4.bird),
     ("gebouwt", venues4.gebouwt), ("neushoorn", venues4.neushoorn), ("amare", venues5.amare), ("tolhuistuin", venues5.tolhuistuin),
-    ("bolwerk", venues5.bolwerk),
+    ("bolwerk", venues5.bolwerk), ("dbs", venues5.dbs),
 ]
 
 def load(path, default):
@@ -31,6 +31,18 @@ def merge_tivoli_inbox():
     mp = os.path.join(DATA, "manual", "tivoli.json")
     if not os.path.exists(ib): return
     b = load(ib, None); m = load(mp, None)
+    if b and b.get("format") == 2:   # van tools/tivoli_pc.py: kant-en-klare concerten
+        old = (m or {}).get("events", []) if (m or {}).get("format") == 2 else []
+        evs = b.get("events") or []
+        if not b.get("complete"):    # onvolledige lijst: bekende concerten na de laatste nieuwe datum behouden
+            last = max((e["d"] for e in evs), default="")
+            evs = evs + [e for e in old if e["d"] > last]
+        json.dump({"venue": "tivoli", "format": 2, "checked": (b.get("fetched") or "")[:10], "events": evs,
+                   "times": b.get("times") or {}, "note": "Opgehaald op de eigen pc van de eigenaar (Tivoli laat GitHub niet toe)."},
+                  open(mp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+        os.remove(ib)
+        print(f"tivoli inbox verwerkt: {len(evs)} concerten")
+        return
     if not b or not m or not b.get("listed"): return
     known = m.setdefault("known", {})
     for i, d in (b.get("details") or {}).items():
@@ -83,15 +95,20 @@ def main():
             status[key] = {"ok": False, "error": str(ex)[:200], "at": status.get(key, {}).get("at"), "count": status.get(key, {}).get("count")}
             print(f"{key}: FAILED {ex}")
             traceback.print_exc()
+    merge_tivoli_inbox()
+    # Tivoli komt van de eigen pc (data/manual/tivoli.json); is die lijst ouder dan 3 dagen, dan de oude feed
+    tv = load(os.path.join(DATA, "manual", "tivoli.json"), {}) or {}
+    tv_recent = tv.get("format") == 2 and (tv.get("checked") or "") >= (date.today() - timedelta(days=3)).isoformat()
     feed = feedimport.load()
     if feed:
+        # terugval: alleen als de eigen bron vandaag niets opleverde
         for src, key, minimum in (("TivoliVredenburg", "tivoli", 50), ("dB's", "dbs", 5)):
+            if key in fresh or (key == "tivoli" and tv_recent): continue
             got = [e for e in feedimport.events_for(feed, src, key) if e["d"] >= today]
             if len(got) >= minimum:
                 fresh[key] = got
-                status[key] = {"ok": True, "count": len(got), "at": now, "via": "eigen feed"}
+                status[key] = {"ok": True, "count": len(got), "at": now, "via": "oude feed (terugval)"}
                 print(f"{key}: {len(got)} (feed)")
-    merge_tivoli_inbox()
     # aanvullen met de eigen feed (zelfde zaalsites): wat de scraper hier mist, maar de feed wel heeft
     if feed:
         for key, src in (("klokgebouw", "Klokgebouw"), ("doornroosje", "Doornroosje"), ("metropool", "Metropool"),
@@ -139,6 +156,19 @@ def main():
         fresh[key] = [e for e in fresh[key] if not gone.search(e["n"])]
         for e in fresh[key]: e["n"] = newdate.sub("", e["n"]).strip()
         if len(fresh[key]) < before: print(f"{key}: {before - len(fresh[key])} geannuleerd/verplaatst weggelaten")
+    # zelfde concert bij twee zalen: de leidende zaal houdt het (BIRD/Rotown -> Rotown, De Helling/Tivoli -> Tivoli)
+    tnorm = lambda t: _re.sub(r"[^a-z0-9]+", "", t.lower().split(" + ")[0].split(":")[0].split(" (")[0])
+    for loser, leader in (("bird", "rotown"), ("helling", "tivoli")):
+        if loser not in fresh: continue
+        lead = fresh.get(leader) or [e for e in events.values() if e["v"] == leader]
+        have = {}
+        for e in lead: have.setdefault(e["d"], []).append(tnorm(e["n"]))
+        def same(e):
+            n = tnorm(e["n"])
+            return any(n and o and (n in o or o in n) and min(len(n), len(o)) >= 4 for o in have.get(e["d"], []))
+        before = len(fresh[loser])
+        fresh[loser] = [e for e in fresh[loser] if not same(e)]
+        if len(fresh[loser]) < before: print(f"{loser}: {before - len(fresh[loser])} dubbel met {leader} weggelaten")
     # Ticketmaster (officiële API) voor grote zalen en festivals; alleen als de sleutel als GitHub-secret bestaat
     tm_venues = store.get("venues", {})
     tm_key = os.environ.get("TM_API_KEY", "").strip()
@@ -177,6 +207,14 @@ def main():
         for eid in [k for k, v in events.items() if v["v"] == key and k not in ids]:
             del events[eid]
     if feed: feedimport.attach_ticketswap(events, feed)
+    # directe TicketSwap-links uit de openbare sitemap van TicketSwap (gaat voor op de feed)
+    try:
+        n = tsmap.attach(events, tm_venues)
+        status["ticketswap"] = {"ok": True, "count": n, "at": now}
+        print("TicketSwap-links uit sitemap:", n)
+    except Exception as ex:
+        status["ticketswap"] = {"ok": False, "error": str(ex)[:200], "at": status.get("ticketswap", {}).get("at")}
+        print("ticketswap sitemap: FAILED", ex)
     # keep past events one month for the archive
     cutoff = (date.today() - timedelta(days=45)).isoformat()
     for eid in [k for k, v in events.items() if v["d"] < cutoff]:

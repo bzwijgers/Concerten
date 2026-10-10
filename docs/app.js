@@ -29,7 +29,8 @@ var VENUES = {
   gebouwt:{label:"Gebouw-T",home:"https://gebouw-t.nl/agenda/"},
   tolhuistuin:{label:"Tolhuistuin",home:"https://tolhuistuin.nl/agenda/"},
   bolwerk:{label:"Het Bolwerk",home:"https://ontdekpoort.nl/programma/locatie/bolwerk-kerkgracht-8/"},
-  ticketmaster:{label:"Ticketmaster",home:"https://www.ticketmaster.nl/",linkOnly:true}
+  ticketmaster:{label:"Ticketmaster",home:"https://www.ticketmaster.nl/",linkOnly:true},
+  ticketswap:{label:"TicketSwap-links",home:"https://www.ticketswap.nl/",linkOnly:true}
 };
 /* TicketSwap-pagina's van de zaal of stad (gecontroleerd), anders zoekresultaten */
 var TSV = {rotown:"https://www.ticketswap.com/location/rotown/2033", melkweg:"https://www.ticketswap.com/location/melkweg/41", o13:"https://www.ticketswap.com/city/tilburg/12"};
@@ -60,7 +61,7 @@ function dayLabel(d){
   return {base:base,tag:diff===0?"vandaag":diff===1?"morgen":""};
 }
 function isNew(c){return c.first&&c.first!=="base"&&c.first>=WEEK_AGO;}
-function tsLink(c){return c.k||TS[c.id]||TSV[c.v]||("https://www.ticketswap.nl/search?q="+encodeURIComponent(c.n.split(" + ")[0].replace(/\s*\(.*?\)\s*/g," ").trim()));}
+function tsLink(c){return c.k||c.ka||TS[c.id]||TSV[c.v]||("https://www.ticketswap.nl/search?q="+encodeURIComponent(c.n.split(" + ")[0].replace(/\s*\(.*?\)\s*/g," ").trim()));}
 
 function visible(){
   var q=state.q.trim().toLowerCase(), on=Object.keys(state.venues).filter(function(k){return state.venues[k];});
@@ -129,7 +130,7 @@ function init(data){
   var bad=Object.keys(data.status||{}).filter(function(k){return !data.status[k].ok;});
   if(bad.length) $("warn").innerHTML='<div class="warn">Niet alle zalen zijn vandaag gelukt: '+bad.map(function(k){return esc(VENUES[k]?VENUES[k].label:k);}).join(", ")+'. Daarvan staat de laatst bekende lijst erin.</div>';
   var tv=(data.status||{}).tivoli;
-  if(tv&&tv.manual) $("warn").innerHTML+='<div class="warn">TivoliVredenburg: handmatig bijgewerkt op '+esc(tv.checked||"?")+'.</div>';
+  if(tv&&tv.manual&&(tv.checked||"")<iso(new Date(NOW.getFullYear(),NOW.getMonth(),NOW.getDate()-3))) $("warn").innerHTML+='<div class="warn">TivoliVredenburg: laatst bijgewerkt op '+esc(tv.checked||"?")+' (via de pc van de eigenaar).</div>';
   render();
 }
 $("venues").addEventListener("click",function(e){var b=e.target.closest("[data-v]");if(!b)return;var k=b.getAttribute("data-v");state.venues[k]=!state.venues[k];b.setAttribute("aria-pressed",String(!!state.venues[k]));render();});

@@ -140,3 +140,38 @@ def annabel():
 # ---------- Hall of Fame (Tilburg): het programma op hall-fame.nl is hun eigen Stager-winkel ----------
 def hof():
     return stager("hof", "hall-fame.stager.co", "Tilburg")
+
+
+# ---------- Van Polanen Presenteert (organisator, vooral Qbus Club Leiden): eigen Wix-site met schema.org per concert ----------
+OWN_VENUES = re.compile(r"paradiso|melkweg|tivoli|nobel|effenaar|patronaat|paard|013|doornroosje|hedon|boerderij|bibelot|mezz|rotown|baroeg", re.I)
+
+
+def vanpolanen():
+    import html as _h
+    base = "https://www.vanpolanenpresenteert.com"
+    h = fetch(base + "/", headers=UA_PLAIN)
+    urls = sorted(set(re.findall(r'href="(' + re.escape(base) + r'/event-info/[^"#?]+)"', h)))
+    out = []
+    for u in urls:
+        time.sleep(1)
+        try:
+            p = fetch(u, headers=UA_PLAIN, tries=2)
+        except Exception as ex:
+            print("vanpolanen: mislukt", u, ex); continue
+        for o in ld_events(p)[:1]:
+            if cancelled(o): continue
+            d, t = split_dt(o.get("startDate"))
+            loc = o.get("location") or {}
+            place = clean(loc.get("name") or "") if isinstance(loc, dict) else ""
+            addr = (loc.get("address") or "") if isinstance(loc, dict) else ""
+            addr = addr if isinstance(addr, str) else (addr.get("addressLocality") or "")
+            if OWN_VENUES.search(place): continue          # staat al bij die zaal zelf
+            name = clean(_h.unescape(o.get("name") or ""))
+            name = re.sub(r'^["“][^"”]+["”]\s*', "", name)            # reeksnaam vooraan ('"HALL OF FAME" ...')
+            name = re.split(r"\s+[\"“”']|\s*:\s", name)[0].strip(" -–:") or name   # ondertitel weg
+            city = (re.search(r"\d{4}\s?[A-Z]{2}\s+(.+)$", addr) or [None, ""])[1].strip()
+            e = ev("vanpolanen", d, name, u, t, place.title() + (", " + city.replace(", Nederland", "") if city else ""), sold_from_offers(o))
+            img = o.get("image"); img = img.get("url") if isinstance(img, dict) else img
+            if isinstance(img, str) and img.startswith("http"): e["img"] = img
+            if d: out.append(e)
+    return out

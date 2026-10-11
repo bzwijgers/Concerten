@@ -31,7 +31,7 @@ FEST = {
     "fest_pukkelpop": ("Pukkelpop", "Hasselt", "BE", "https://www.pukkelpop.be/"),
     "fest_lokerse": ("Lokerse Feesten", "Lokeren", "BE", "https://www.lokersefeesten.be/"),
     "fest_suikerrock": ("Suikerrock", "Tienen", "BE", "https://www.suikerrock.be/"),
-    "fest_zottegem": ("Rock Zottegem", "Zottegem", "BE", "https://rockzottegem.be/"),
+    "fest_zottegem": ("Rock Zottegem", "Zottegem", "BE", "http://www.rockzottegem.be/"),
     "fest_dour": ("Dour Festival", "Dour", "BE", "https://www.dourfestival.eu/"),
     "fest_twclassic": ("TW Classic", "Werchter", "BE", "https://www.twclassic.be/"),
     "fest_werchter": ("Rock Werchter", "Werchter", "BE", "https://www.rockwerchter.be/"),

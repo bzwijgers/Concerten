@@ -231,12 +231,12 @@ body.arch #days{display:none}
 </div>
 <script>
 (function(){var sp=document.getElementById("splash"),done=false,ready=false;
-function hide(){if(done)return;done=true;sp.classList.add("gone");setTimeout(function(){sp.remove();},500);}
+function hide(){if(done)return;done=true;try{window.AndroidApp&&AndroidApp.splashDone();}catch(e){}sp.classList.add("gone");setTimeout(function(){sp.remove();},500);}
 /* het startscherm blijft staan tot je tikt; zodra de agenda geladen is staat er wanneer die is bijgewerkt */
 window.__splashReady=function(msg){ready=true;document.getElementById("spst").textContent=msg||"Agenda geladen";sp.classList.add("ready");};
 sp.addEventListener("click",function(){if(ready)hide();});
 setTimeout(function(){if(!ready)window.__splashReady("Laden duurt lang; tik om toch verder te gaan");},15000);})();
 </script>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="halfgrad"><stop offset="50%" stop-color="currentColor"/><stop offset="50%" stop-color="transparent"/></linearGradient></defs></svg>
-<script src="app.js?v=22"></script>
+<script src="app.js?v=23"></script>
 </body></html>

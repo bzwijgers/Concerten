@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.webkit.JavascriptInterface
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
@@ -12,6 +13,9 @@ import android.webkit.WebViewClient
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 
 class MainActivity : AppCompatActivity() {
     private lateinit var web: WebView
@@ -24,6 +28,11 @@ class MainActivity : AppCompatActivity() {
         web.setBackgroundColor(0xFF0A0A12.toInt())
         setContentView(web)
         web.fitsSystemWindows = true
+        // startscherm schermvullend: balken weg tot je op het plaatje tikt
+        if (savedInstanceState == null) bars(false)
+        web.addJavascriptInterface(object {
+            @JavascriptInterface fun splashDone() { runOnUiThread { bars(true) } }
+        }, "AndroidApp")
 
         web.settings.apply {
             javaScriptEnabled = true
@@ -40,7 +49,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
-                if (request.isForMainFrame) view.loadUrl("file:///android_asset/offline.html")
+                if (request.isForMainFrame) { bars(true); view.loadUrl("file:///android_asset/offline.html") }
             }
         }
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -49,6 +58,15 @@ class MainActivity : AppCompatActivity() {
             }
         })
         if (savedInstanceState == null) web.loadUrl(START) else web.restoreState(savedInstanceState)
+    }
+
+    private fun bars(show: Boolean) {
+        val c = WindowCompat.getInsetsController(window, window.decorView)
+        if (show) c.show(WindowInsetsCompat.Type.systemBars())
+        else {
+            c.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            c.hide(WindowInsetsCompat.Type.systemBars())
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

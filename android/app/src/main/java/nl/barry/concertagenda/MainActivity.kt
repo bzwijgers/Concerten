@@ -25,7 +25,7 @@ class MainActivity : AppCompatActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         web = WebView(this)
-        web.setBackgroundColor(0xFF0A0A12.toInt())
+        web.setBackgroundColor(0x00000000)   // doorzichtig: de startfoto van het venster blijft zichtbaar tot de pagina zelf getekend is
         setContentView(web)
         web.fitsSystemWindows = true
         // startscherm schermvullend: balken weg tot je op het plaatje tikt

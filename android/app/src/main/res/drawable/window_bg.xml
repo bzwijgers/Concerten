@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- achtergrond van het app-venster: meteen de startfoto, zodat er na het opstarticoon geen donker scherm komt -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/app_bg" />
+    <item>
+        <bitmap android:src="@drawable/splash_full" android:gravity="fill" />
+    </item>
+</layer-list>

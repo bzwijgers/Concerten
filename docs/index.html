@@ -181,6 +181,8 @@ body.arch #days{display:none}
 .v2note a{color:var(--accent)}
 #splash{position:fixed;inset:0;z-index:99;background:#0a0a12;transition:opacity .4s ease;display:flex;align-items:flex-end;justify-content:center;padding:0 20px max(40px,env(safe-area-inset-bottom));cursor:pointer}
 #splash.gone{opacity:0;pointer-events:none}
+html.inapp.splashing,html.inapp.splashing body{background:transparent}
+html.inapp #splash{background:transparent}
 /* startscherm vult het hele scherm: de foto groot in beeld, daarachter een vage vergroting van dezelfde foto */
 #splash{overflow:hidden}
 #splash::before{content:"";position:absolute;inset:-40px;background:url(img/splash_art.jpg) center/cover no-repeat;filter:blur(22px) brightness(.6)}
@@ -193,6 +195,7 @@ body.arch #days{display:none}
 #splash.ready .go{display:block}
 @media (prefers-reduced-motion:reduce){#splash{transition:none}}
 </style></head><body>
+<script>if(/ConcertAgendaApp/.test(navigator.userAgent))document.documentElement.classList.add("inapp","splashing");</script>
 <div id="splash" role="button" aria-label="Barry's concerten, tik om verder te gaan"><div class="sb"><div class="st" id="spst">Programma laden…</div><div class="go">Tik om verder te gaan</div></div></div>
 <div class="wrap">
   <header id="hdr">
@@ -254,8 +257,8 @@ body.arch #days{display:none}
 <script>
 (function(){var sp=document.getElementById("splash"),done=false,ready=false,seen=false;
 try{seen=sessionStorage.getItem("ca-splash")==="1";sessionStorage.setItem("ca-splash","1");}catch(e){}
-if(seen){sp.remove();try{window.AndroidApp&&AndroidApp.splashDone();}catch(e){}window.__splashReady=function(){};return;}   /* terug van Info: geen startscherm */
-function hide(){if(done)return;done=true;try{window.AndroidApp&&AndroidApp.splashDone();}catch(e){}sp.classList.add("gone");setTimeout(function(){sp.remove();},500);}
+if(seen){document.documentElement.classList.remove("splashing");sp.remove();try{window.AndroidApp&&AndroidApp.splashDone();}catch(e){}window.__splashReady=function(){};return;}   /* terug van Info: geen startscherm */
+function hide(){if(done)return;done=true;document.documentElement.classList.remove("splashing");try{window.AndroidApp&&AndroidApp.splashDone();}catch(e){}sp.classList.add("gone");setTimeout(function(){sp.remove();},500);}
 /* het startscherm blijft staan tot je tikt; zodra de agenda geladen is staat er wanneer die is bijgewerkt */
 window.__splashReady=function(msg){ready=true;document.getElementById("spst").textContent=msg||"Agenda geladen";sp.classList.add("ready");};
 sp.addEventListener("click",function(){if(ready)hide();});

@@ -62,7 +62,7 @@ var VENUES = {
   ab:{label:"AB",home:"https://www.abconcerts.be/nl/agenda",city:"Brussel",cc:"BE"},
   botanique:{label:"Botanique",home:"https://botanique.be/nl/concerts",city:"Brussel",cc:"BE"},
   trix:{label:"Trix",home:"https://www.trixonline.be/nl/programma",city:"Antwerpen",cc:"BE"},
-  roma:{label:"De Roma",home:"https://www.deroma.be/nl/",city:"Borgerhout",cc:"BE"},
+  roma:{label:"De Roma",home:"https://www.deroma.be/nl/",city:"Antwerpen",cc:"BE"},
   depot:{label:"Het Depot",home:"https://www.hetdepot.be/programma",city:"Leuven",cc:"BE"},
   ha:{label:"Handelsbeurs",home:"https://www.haconcerts.be/nl/concertagenda",city:"Gent",cc:"BE"},
   kreun:{label:"De Kreun",home:"https://www.wildewesten.be/nl/agenda",city:"Kortrijk",cc:"BE"},
@@ -77,16 +77,29 @@ var VENUES = {
   olt:{label:"OLT Rivierenhof",home:"https://www.oltrivierenhof.be/nl/programma",city:"Antwerpen",cc:"BE"}
 };
 var REGIONS = [
-  ["Noord", ["Groningen", "Leeuwarden", "Sneek", "Drachten", "Assen", "Emmen", "Heerenveen"]],
-  ["Oost", ["Zwolle", "Deventer", "Apeldoorn", "Hengelo", "Enschede", "Almelo", "Nijmegen", "Arnhem", "Ede", "Doetinchem", "Veenendaal"]],
-  ["Midden", ["Utrecht", "Amersfoort", "Hilversum"]],
-  ["Noord-Holland", ["Amsterdam", "Haarlem", "Zaandam", "Alkmaar", "Purmerend", "Almere", "Hoofddorp", "Hoorn", "Amstelveen"]],
   ["Zuid-Holland", ["Rotterdam", "Den Haag", "Leiden", "Zoetermeer", "Dordrecht", "Scheveningen", "Delft", "Gouda"]],
+  ["Noord-Holland", ["Amsterdam", "Haarlem", "Zaandam", "Alkmaar", "Purmerend", "Almere", "Hoofddorp", "Hoorn", "Amstelveen"]],
+  ["Midden", ["Utrecht", "Amersfoort", "Hilversum"]],
   ["Zuid", ["Tilburg", "Breda", "Eindhoven", "Den Bosch", "'s-Hertogenbosch", "Uden", "Oss", "Bergen op Zoom", "Weert", "Venlo", "Heerlen", "Sittard",
-            "Maastricht", "Kerkrade", "Roermond", "Landgraaf", "Helmond"]]
+            "Maastricht", "Kerkrade", "Roermond", "Landgraaf", "Helmond"]],
+  ["Noord", ["Groningen", "Leeuwarden", "Sneek", "Drachten", "Assen", "Emmen", "Heerenveen"]],
+  ["Oost", ["Zwolle", "Deventer", "Apeldoorn", "Hengelo", "Enschede", "Almelo", "Nijmegen", "Arnhem", "Ede", "Doetinchem", "Veenendaal"]]
 ];
 REGIONS.push(["België", ["Brussel", "Bruxelles", "Antwerpen", "Borgerhout", "Leuven", "Gent", "Brugge", "Kortrijk", "Diksmuide", "Eeklo", "Sint-Niklaas",
   "Luik", "Liège", "Hasselt", "Mechelen", "Oostende", "Vorst", "Forest", "Werchter", "Genk", "Aalst", "Namen", "Namur", "Charleroi", "Bergen", "Mons", "Turnhout"]]);
+/* één naam per stad: Ticketmaster gebruikt Engelse en Franse namen en deelgemeenten */
+var CITY_ALIAS = { "antwerp": "Antwerpen", "merksem": "Antwerpen", "borgerhout": "Antwerpen", "deurne": "Antwerpen", "berchem": "Antwerpen", "wilrijk": "Antwerpen",
+  "brussels": "Brussel", "bruxelles": "Brussel", "elsene": "Brussel", "ixelles": "Brussel", "forest": "Brussel", "vorst": "Brussel", "woluwe-saint-pierre": "Brussel",
+  "sint-pieters-woluwe": "Brussel", "schaerbeek": "Brussel", "schaarbeek": "Brussel", "anderlecht": "Brussel", "laeken": "Brussel", "laken": "Brussel",
+  "saint-gilles": "Brussel", "sint-gillis": "Brussel", "ghent": "Gent", "gand": "Gent", "liège": "Luik", "liege": "Luik", "louvain": "Leuven", "courtrai": "Kortrijk",
+  "bruges": "Brugge", "namur": "Namen", "'s-hertogenbosch": "Den Bosch", "s-hertogenbosch": "Den Bosch", "'s-gravenhage": "Den Haag", "the hague": "Den Haag",
+  "amsterdam-zuidoost": "Amsterdam", "hengelo ov": "Hengelo" };
+function canonCity(c) {
+  c = (c || "").trim().replace(/ OV$/, "").replace(/\s+\d+$/, "");
+  var m = /^(.*?)\s*\((.*)\)$/.exec(c);              /* "Merksem (Antwerpen)", "Forest (Brussels)": de stad tussen haakjes */
+  if (m) { var inner = CITY_ALIAS[m[2].toLowerCase()] || m[2]; if (COORD[inner]) return inner; c = m[1]; }
+  return CITY_ALIAS[c.toLowerCase()] || c;
+}
 var REGION_OF = {};
 REGIONS.forEach(function (r) { r[1].forEach(function (c) { REGION_OF[c.toLowerCase()] = r[0]; }); });
 function regionOf(city) { return REGION_OF[(city || "").toLowerCase()] || "Overig"; }
@@ -118,7 +131,10 @@ var COORD = { "Amsterdam": [52.37, 4.90], "Utrecht": [52.09, 5.12], "Groningen":
   "Roermond": [51.19, 5.99], "Brussel": [50.85, 4.35], "Bruxelles": [50.85, 4.35], "Antwerpen": [51.22, 4.40], "Borgerhout": [51.21, 4.44],
   "Leuven": [50.88, 4.70], "Gent": [51.05, 3.72], "Brugge": [51.21, 3.22], "Kortrijk": [50.83, 3.26], "Diksmuide": [51.03, 2.86], "Eeklo": [51.19, 3.56],
   "Sint-Niklaas": [51.17, 4.14], "Luik": [50.63, 5.57], "Liège": [50.63, 5.57], "Hasselt": [50.93, 5.34], "Mechelen": [51.03, 4.48], "Oostende": [51.23, 2.92],
-  "Vorst": [50.81, 4.32], "Forest": [50.81, 4.32], "Werchter": [50.97, 4.70], "Genk": [50.97, 5.50], "Aalst": [50.94, 4.04], "Namen": [50.47, 4.87], "Veenendaal": [52.03, 5.56], "Landgraaf": [50.90, 6.02], "Helmond": [51.48, 5.66], "Scheveningen": [52.11, 4.27], "Delft": [52.01, 4.36] };
+  "Vorst": [50.81, 4.32], "Forest": [50.81, 4.32], "Werchter": [50.97, 4.70], "Genk": [50.97, 5.50], "Aalst": [50.94, 4.04], "Namen": [50.47, 4.87], "Veenendaal": [52.03, 5.56], "Bilzen": [50.87, 5.52], "Braine-le-Comte": [50.61, 4.14], "Charleroi": [50.41, 4.44],
+  "Chièvres": [50.59, 3.81], "Heist-op-den-Berg": [51.08, 4.73], "Huy": [50.52, 5.24], "La Louvière": [50.48, 4.19], "Lommel": [51.23, 5.31],
+  "Louvain-la-Neuve": [50.67, 4.61], "Malmedy": [50.43, 6.03], "Marche-en-Famenne": [50.23, 5.34], "Mons": [50.45, 3.95], "Mouscron": [50.74, 3.21],
+  "Roeselare": [50.95, 3.12], "Soignies": [50.58, 4.07], "Tournai": [50.61, 3.39], "Verviers": [50.59, 5.86], "Wieze": [50.98, 4.08], "Landgraaf": [50.90, 6.02], "Helmond": [51.48, 5.66], "Scheveningen": [52.11, 4.27], "Delft": [52.01, 4.36] };
 
 var DOW = ["zo", "ma", "di", "wo", "do", "vr", "za"], DOWL = ["zondag", "maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag"];
 var MON = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
@@ -222,15 +238,16 @@ function timeCell(t) {
 
 function row(c) {
   var v = venue(c), tk = has(c.id, "t"), it = has(c.id, "i"), open = state.open === c.id;
-  var tags = (c.s ? '<span class="tag sold">uitverkocht</span>' : "") + (isNew(c) ? '<span class="tag new">nieuw</span>' : "") +
-             (club(c) ? '<span class="tag club">clubcard</span>' : "") + (tk ? '<span class="tag tk">kaartje</span>' : "");
+  var tags = (tk ? '<span class="tag tk">\u2713 kaartje</span>' : "") + (c.s ? '<span class="tag sold">uitverkocht</span>' : "") +
+             (club(c) ? '<span class="tag club">clubcard</span>' : "") + (isNew(c) ? '<span class="tag new">nieuw</span>' : "");
   var where = esc(v.label) + place(v) + (c.r && c.r.toLowerCase().indexOf(v.label.toLowerCase()) < 0 && c.r.toLowerCase().indexOf((v.city || "~").toLowerCase()) < 0 && v.label.toLowerCase().indexOf(c.r.toLowerCase()) < 0 ? " · " + esc(c.r) : "");
-  var col = rcol(v.city), pic = c.th ? '<img class="th" src="' + esc(c.th) + '" alt="" loading="lazy" width="44" height="44">' :
+  var col = rcol(v.city), pic = open && c.th ? '<img class="th" src="' + esc(c.th) + '" alt="" loading="lazy" width="44" height="44">' :
     LOGO[c.v] ? '<img class="th logo" src="' + esc(LOGO[c.v]) + '" alt="" loading="lazy" width="44" height="44">' :
+    c.th ? '<img class="th" src="' + esc(c.th) + '" alt="" loading="lazy" width="44" height="44">' :
     '<span class="th thx" style="background:' + col + '26;color:' + col + '">' + esc((nice(c.n).replace(/^[^A-Za-z0-9\u00C0-\u00FF]+/, "").charAt(0) || "*").toUpperCase()) + "</span>";
   return '<div class="ev' + (c.s ? " sold" : "") + (tk ? " t" : "") + (open ? " open" : "") + '" data-id="' + esc(c.id) + '" style="--rc:' + col + '">' +
     '<div class="row" data-act="open">' + pic + timeCell(c.t) +
-    '<div class="body"><div class="name">' + esc(nice(c.n)) + '</div><div class="sub">' + where + tags + "</div></div>" +
+    '<div class="body"><div class="name">' + esc(nice(c.n)) + '</div><div class="sub">' + tags + where + "</div></div>" +
     '<button class="star" data-act="i" aria-pressed="' + it + '" aria-label="Interesse"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z" stroke-linejoin="round"/></svg></button></div>' +
     '<div class="more">' + (travel(v.city) !== null ? '<span class="trv">± ' + fmtTravel(travel(v.city)) + " rijden</span>" : "") + '<button class="btn" data-act="t" aria-pressed="' + tk + '">' + (tk ? "Kaartje gekocht" : "Ik heb een kaartje") + "</button>" +
     '<a class="btn link" href="' + esc(c.u) + '" target="_blank" rel="noopener">Zaal ↗</a>' +
@@ -297,7 +314,7 @@ function renderDays(list) {
   var cur = $("days").querySelector(".cur"); if (cur) cur.scrollIntoView({ inline: "center", block: "nearest" });
 }
 function fmt(k) { var d = parse(k); return DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()]; }
-function setRange(a, b) { state.from = a || ""; state.to = b || a || ""; state.limit = 300; $("dfrom").value = state.from; $("dto").value = state.to; render(); window.scrollTo(0, 0); }
+function setRange(a, b, open) { state.from = a || ""; state.to = b || (open ? "" : a) || ""; state.limit = 300; $("dfrom").value = state.from; $("dto").value = state.to; render(); window.scrollTo(0, 0); }
 
 function render(keepScroll) {
   if (!DATA) return;
@@ -314,6 +331,7 @@ function render(keepScroll) {
   var nz = state.sel.length + state.regions.length;
   $("f-zalen").setAttribute("aria-pressed", String(nz > 0));
   $("f-zalen").firstChild.textContent = nz ? "Zalen en regio (" + nz + ") " : "Zalen en regio ";
+  $("zx").style.display = nz ? "" : "none";
   $("f-ov").setAttribute("aria-pressed", String(!!state.city));
   $("f-near").setAttribute("aria-pressed", String(state.near));
   $("f-ov").lastChild.textContent = state.city ? " " + state.city + " \u2715" : " Overzicht";
@@ -371,7 +389,8 @@ function buildSheet() {
     var c = VENUES[k].city || "Overig"; (byCity[c] = byCity[c] || []).push(k);
   });
   var cnt = {}; ALL.forEach(function (c) { if (c.d >= TODAY) cnt[c.v] = (cnt[c.v] || 0) + 1; });
-  $("regions").innerHTML = REGIONS.map(function (r) { return r[0]; }).concat(["Overig"]).map(function (r) {
+  var hasOther = Object.keys(byCity).some(function (c) { return regionOf(c) === "Overig"; });
+  $("regions").innerHTML = REGIONS.map(function (r) { return r[0]; }).concat(hasOther ? ["Overig"] : []).map(function (r) {
     return '<button class="chip" data-region="' + r + '" aria-pressed="' + (state.regions.indexOf(r) >= 0) + '">' + r + "</button>";
   }).join("");
   var order = REGIONS.map(function (r) { return r[0]; }).concat(["Overig"]);
@@ -390,46 +409,104 @@ function buildSheet() {
   $("hideSold").checked = !!state.hideSold;
 }
 var ovOpenedAt = 0;
-function openOverview() {
-  var list = ALL.filter(function (c) { return c.d >= TODAY && baseFilter(c, false, true) && tabFilter(c, state.tab); });
-  var per = {}; list.forEach(function (c) { var ct = venue(c).city; if (COORD[ct]) per[ct] = (per[ct] || 0) + 1; });
-  var X = function (l) { return 10 + (l - 2.45) / (7.3 - 2.45) * 300; }, Y = function (b) { return 10 + (53.6 - b) / (53.6 - 49.45) * 420; };
+/* overzicht: kaart met in- en uitzoomen (knijpen, scrollwiel, slepen, knoppen) en concerten per maand */
+var OV = { z: 1, cx: 160, cy: 220, dragged: 0 };
+var OVW = 320, OVH = 440;
+function ovX(l) { return 10 + (l - 2.45) / (7.3 - 2.45) * 300; }
+function ovY(b) { return 10 + (53.6 - b) / (53.6 - 49.45) * 420; }
+function ovList(noDates) { return ALL.filter(function (c) { return c.d >= TODAY && baseFilter(c, noDates, true) && tabFilter(c, state.tab); }); }
+function drawMap() {
+  var per = {}; ovList(false).forEach(function (c) { var ct = venue(c).city; if (COORD[ct]) per[ct] = (per[ct] || 0) + 1; });
   var max = Math.max.apply(null, Object.keys(per).map(function (k) { return per[k]; }).concat([1]));
   var cities = Object.keys(per).sort(function (a, b) { return per[b] - per[a]; });
+  var z = OV.z, w = OVW / z, h = OVH / z;
+  OV.cx = Math.min(Math.max(OV.cx, w / 2), OVW - w / 2); OV.cy = Math.min(Math.max(OV.cy, h / 2), OVH - h / 2);
+  var x0 = OV.cx - w / 2, y0 = OV.cy - h / 2, k = 1 / z, rk = 1 / Math.pow(z, 0.7);
   var NL = [[52.96,4.73],[53.18,5.40],[53.40,5.95],[53.45,6.60],[53.33,7.20],[53.18,7.21],[52.65,7.05],[52.42,7.07],[52.22,7.06],[52.04,6.69],[51.85,6.15],
     [51.83,5.95],[51.65,6.10],[51.37,6.20],[51.17,6.08],[51.02,5.90],[50.76,6.02],[50.75,5.69],[51.05,5.62],[51.15,5.55],[51.27,5.23],[51.43,5.00],[51.45,4.55],
     [51.37,4.23],[51.30,3.95],[51.37,3.37],[51.60,3.70],[51.85,4.05],[52.10,4.25],[52.45,4.57],[52.96,4.73]];
   var BE = [[51.37,3.37],[51.30,3.95],[51.37,4.23],[51.45,4.55],[51.43,5.00],[51.27,5.23],[51.15,5.55],[51.05,5.62],[50.75,5.69],[50.76,6.02],[50.32,6.40],
     [50.13,6.13],[49.55,5.85],[49.50,5.47],[49.80,4.85],[50.15,4.20],[50.35,4.05],[50.73,3.25],[50.80,2.85],[51.00,2.55],[51.37,3.37]];
-  var poly = function (P) { return "M" + P.map(function (p) { return X(p[1]).toFixed(1) + " " + Y(p[0]).toFixed(1); }).join(" L") + "Z"; };
-  var svg = '<svg viewBox="0 0 320 440" class="map" role="img" aria-label="Concerten per stad"><path class="nl" d="' + poly(NL) + '"/><path class="nl be" d="' + poly(BE) + '"/>';
+  var poly = function (P) { return "M" + P.map(function (p) { return ovX(p[1]).toFixed(2) + " " + ovY(p[0]).toFixed(2); }).join(" L") + "Z"; };
+  var svg = '<svg viewBox="' + [x0, y0, w, h].map(function (n) { return n.toFixed(2); }).join(" ") + '" class="map" role="img" aria-label="Concerten per stad">' +
+    '<path class="nl" d="' + poly(NL) + '"/><path class="nl be" d="' + poly(BE) + '"/>';
   cities.slice().reverse().forEach(function (ct) {
-    var r = Math.max(4, Math.sqrt(per[ct] / max) * 24), on = state.city === ct, col = rcol(ct);
-    svg += '<circle data-city="' + esc(ct) + '" cx="' + X(COORD[ct][1]).toFixed(1) + '" cy="' + Y(COORD[ct][0]).toFixed(1) + '" r="' + r.toFixed(1) + '" fill="' + col +
-      '" fill-opacity="' + (on ? ".85" : ".32") + '" stroke="' + col + '" stroke-width="' + (on ? 3 : 1) + '"><title>' + esc(ct) + ": " + per[ct] + "</title></circle>";
+    var r = Math.max(4, Math.sqrt(per[ct] / max) * 24) * rk, on = state.city === ct, col = rcol(ct);
+    svg += '<circle data-city="' + esc(ct) + '" cx="' + ovX(COORD[ct][1]).toFixed(2) + '" cy="' + ovY(COORD[ct][0]).toFixed(2) + '" r="' + r.toFixed(2) + '" fill="' + col +
+      '" fill-opacity="' + (on ? ".85" : ".32") + '" stroke="' + col + '" stroke-width="' + ((on ? 3 : 1) * k).toFixed(2) + '"><title>' + esc(ct) + ": " + per[ct] + " concerten</title></circle>";
   });
-  var boxes = [];   /* namen alleen tonen als ze niet over een andere naam vallen */
+  var boxes = [];   /* plaatsnamen (zonder aantallen) alleen waar ze niet over elkaar vallen; inzoomen laat er meer zien */
   cities.forEach(function (ct) {
-    var r = Math.max(4, Math.sqrt(per[ct] / max) * 24), cx = X(COORD[ct][1]), cy = Y(COORD[ct][0]), txt = ct + " " + per[ct];
-    var w = txt.length * 5.6, left = cx > 200, x0 = left ? cx - r - 3 - w : cx + r + 3, b = [x0, cy - 7, x0 + w, cy + 5];
-    if (b[0] < 2 || b[2] > 318 || boxes.some(function (o) { return !(b[2] < o[0] || b[0] > o[2] || b[3] < o[1] || b[1] > o[3]); })) return;
-    boxes.push(b);
-    svg += '<text x="' + (left ? cx - r - 3 : cx + r + 3).toFixed(1) + '" y="' + (cy + 4).toFixed(1) + '" class="ml"' + (left ? ' text-anchor="end"' : "") + ">" + esc(txt) + "</text>";
+    var r = Math.max(4, Math.sqrt(per[ct] / max) * 24) * rk, cx = ovX(COORD[ct][1]), cy = ovY(COORD[ct][0]);
+    if (cx < x0 || cx > x0 + w || cy < y0 || cy > y0 + h) return;
+    var cw = 5.6 * k, tw = ct.length * cw, left = cx > x0 + w * 0.62, bx = left ? cx - r - 3 * k - tw : cx + r + 3 * k, bb = [bx, cy - 7 * k, bx + tw, cy + 5 * k];
+    if (bb[0] < x0 + 2 * k || bb[2] > x0 + w - 2 * k || boxes.some(function (o) { return !(bb[2] < o[0] || bb[0] > o[2] || bb[3] < o[1] || bb[1] > o[3]); })) return;
+    boxes.push(bb);
+    svg += '<text x="' + (left ? cx - r - 3 * k : cx + r + 3 * k).toFixed(2) + '" y="' + (cy + 3.5 * k).toFixed(2) + '" class="ml" style="font-size:' + (10 * k).toFixed(2) + 'px"' +
+      (left ? ' text-anchor="end"' : "") + (state.city === ct ? ' font-weight="700"' : "") + ">" + esc(ct) + "</text>";
   });
-  svg += '<text class="cl" x="' + X(3.3).toFixed(1) + '" y="' + Y(53.25).toFixed(1) + '">Nederland</text><text class="cl" x="' + X(4.6).toFixed(1) + '" y="' + Y(49.85).toFixed(1) + '">België</text>';
+  if (z < 2.2) svg += '<text class="cl" style="font-size:' + (11 * k).toFixed(2) + 'px" x="' + ovX(3.3).toFixed(1) + '" y="' + ovY(53.25).toFixed(1) + '">Nederland</text>' +
+    '<text class="cl" style="font-size:' + (11 * k).toFixed(2) + 'px" x="' + ovX(4.6).toFixed(1) + '" y="' + ovY(49.85).toFixed(1) + '">België</text>';
   $("map").innerHTML = svg + "</svg>";
-  var mon = {};
-  ALL.filter(function (c) { return c.d >= TODAY && baseFilter(c, true) && tabFilter(c, state.tab); }).forEach(function (c) { var k = c.d.slice(0, 7); mon[k] = (mon[k] || 0) + 1; });
-  var ks = Object.keys(mon).sort().slice(0, 12), mm = Math.max.apply(null, ks.map(function (k) { return mon[k]; }).concat([1]));
-  $("months").innerHTML = ks.map(function (k) {
-    var y = +k.slice(0, 4), m = +k.slice(5) - 1, on = !!(state.from && state.to && state.from.slice(0, 7) === k && state.to.slice(0, 7) === k && state.from !== state.to);
-    return '<button class="mb' + (on ? " on" : "") + '" data-month="' + k + '"><span>' + MON[m] + (y !== NOW.getFullYear() ? " " + String(y).slice(2) : "") +
-      '</span><i><b style="width:' + Math.round(mon[k] / mm * 100) + '%"></b></i><em>' + mon[k] + "</em></button>";
-  }).join("");
+  var mk = state.from && state.to && state.from.slice(0, 7) === state.to.slice(0, 7) && state.from !== state.to ? state.from.slice(0, 7) : "";
+  $("ovtitle").textContent = (state.from ? (mk ? MONL[+mk.slice(5) - 1] + " " + mk.slice(0, 4) : fmt(state.from) + (state.to && state.to !== state.from ? " – " + fmt(state.to) : state.to ? "" : " en later")) : "Alle maanden") +
+    " · " + Object.keys(per).reduce(function (t, c) { return t + per[c]; }, 0) + " concerten";
   $("ovclear").style.display = state.city ? "" : "none";
+}
+function drawMonths() {
+  var mon = {}, all = ovList(true);
+  all.forEach(function (c) { var k = c.d.slice(0, 7); mon[k] = (mon[k] || 0) + 1; });
+  var ks = Object.keys(mon).sort().slice(0, 12), mm = Math.max.apply(null, ks.map(function (k) { return mon[k]; }).concat([1]));
+  var cur = state.from && state.to && state.from.slice(0, 7) === state.to.slice(0, 7) && state.from !== state.to ? state.from.slice(0, 7) : "";
+  $("months").innerHTML = '<button class="mb' + (!state.from ? " on" : "") + '" data-month=""><span>Alle</span><i><b style="width:100%"></b></i><em>' + all.length + "</em></button>" +
+    ks.map(function (k) {
+      var y = +k.slice(0, 4), m = +k.slice(5) - 1;
+      return '<button class="mb' + (cur === k ? " on" : "") + '" data-month="' + k + '"><span>' + MON[m] + (y !== NOW.getFullYear() ? " " + String(y).slice(2) : "") +
+        '</span><i><b style="width:' + Math.round(mon[k] / mm * 100) + '%"></b></i><em>' + mon[k] + "</em></button>";
+    }).join("");
+}
+function ovZoom(f, px, py) {   /* f = factor, px/py = punt (in kaarteenheden) dat op zijn plek blijft */
+  var z = Math.min(8, Math.max(1, OV.z * f)), r = OV.z / z;
+  if (px !== undefined) { OV.cx = px + (OV.cx - px) * r; OV.cy = py + (OV.cy - py) * r; }
+  OV.z = z; drawMap();
+}
+function openOverview() {
+  drawMap(); drawMonths();
   ovOpenedAt = Date.now();   /* tikken op de kaart pas na een halve seconde: een doorgevallen tik kiest geen stad */
   $("ovsheet").classList.add("on"); $("ovsheet").setAttribute("aria-hidden", "false"); document.body.style.overflow = "hidden";
 }
+(function () {   /* knijpen en slepen op de kaart */
+  var pts = {}, start = null, raf = 0;
+  function svgPt(e) { var r = $("map").getBoundingClientRect(), w = OVW / OV.z, h = OVH / OV.z;
+    return [OV.cx - w / 2 + (e.clientX - r.left) / r.width * w, OV.cy - h / 2 + (e.clientY - r.top) / r.height * h, w / r.width]; }
+  function later() { if (!raf) raf = requestAnimationFrame(function () { raf = 0; drawMap(); }); }
+  var m = $("map");
+  m.addEventListener("wheel", function (e) { e.preventDefault(); var p = svgPt(e); ovZoom(e.deltaY < 0 ? 1.25 : 0.8, p[0], p[1]); }, { passive: false });
+  m.addEventListener("pointerdown", function (e) {
+    pts[e.pointerId] = [e.clientX, e.clientY];
+    var ids = Object.keys(pts);
+    start = { cx: OV.cx, cy: OV.cy, z: OV.z, x: e.clientX, y: e.clientY, s: svgPt(e)[2] };
+    if (ids.length === 2) { var a = pts[ids[0]], b = pts[ids[1]]; start.d = Math.hypot(a[0] - b[0], a[1] - b[1]);
+      start.mid = svgPt({ clientX: (a[0] + b[0]) / 2, clientY: (a[1] + b[1]) / 2 }); }
+    OV.dragged = 0;
+  });
+  m.addEventListener("pointermove", function (e) {
+    if (!pts[e.pointerId] || !start) return;
+    pts[e.pointerId] = [e.clientX, e.clientY];
+    var ids = Object.keys(pts);
+    if (ids.length >= 2 && start.d) {
+      var a = pts[ids[0]], b = pts[ids[1]], f = Math.hypot(a[0] - b[0], a[1] - b[1]) / start.d;
+      var z = Math.min(8, Math.max(1, start.z * f)), r = start.z / z;
+      OV.z = z; OV.cx = start.mid[0] + (start.cx - start.mid[0]) * r; OV.cy = start.mid[1] + (start.cy - start.mid[1]) * r; OV.dragged = 1; later();
+    } else if (ids.length === 1) {
+      var dx = e.clientX - start.x, dy = e.clientY - start.y;
+      if (Math.abs(dx) + Math.abs(dy) > 6 && OV.z > 1) { OV.cx = start.cx - dx * start.s; OV.cy = start.cy - dy * start.s; OV.dragged = 1; later(); }
+    }
+  });
+  function up(e) { delete pts[e.pointerId]; if (!Object.keys(pts).length) start = null; else start = null; }
+  m.addEventListener("pointerup", up); m.addEventListener("pointercancel", up); m.addEventListener("pointerleave", up);
+  m.addEventListener("dblclick", function (e) { var p = svgPt(e); ovZoom(2, p[0], p[1]); });
+})();
 function closeOverview() { $("ovsheet").classList.remove("on"); $("ovsheet").setAttribute("aria-hidden", "true"); document.body.style.overflow = ""; }
 
 function openSheet() {
@@ -441,11 +518,12 @@ function closeSheet() { $("sheet").classList.remove("on"); $("sheet").setAttribu
 function init(data) {
   DATA = data;
   var tmv = data.venues || {};
-  Object.keys(tmv).forEach(function (k) { if (!VENUES[k]) VENUES[k] = { label: tmv[k].label, home: tmv[k].home, city: (tmv[k].city || "").replace(/ OV$/, ""), cc: tmv[k].cc || "NL", tm: true }; });
+  Object.keys(tmv).forEach(function (k) { if (!VENUES[k]) VENUES[k] = { label: tmv[k].label, home: tmv[k].home, city: canonCity(tmv[k].city), cc: tmv[k].cc || "NL", tm: true }; });
+  Object.keys(VENUES).forEach(function (k) { var v = VENUES[k]; if (v.cc === "BE" && v.city) REGION_OF[v.city.toLowerCase()] = "België"; });   /* heel België is één regio */
   ALL = data.events.filter(function (e) { return VENUES[e.v]; }).map(function (e) { e.id = eid(e); e.ts = (e.t || "").replace("deuren ", "") || "99"; if (e.ts < "06") e.ts = "3" + e.ts; return e; });
   ALL.sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : 0; });
   var u = new Date(data.updated);
-  $("stamp").textContent = "bijgewerkt " + u.getDate() + " " + MON[u.getMonth()] + " " + pad(u.getHours()) + ":" + pad(u.getMinutes());
+  try { localStorage.setItem("ca-updated", data.updated); } catch (e) {}   /* de infopagina laat zien wanneer de agenda is bijgewerkt */
   var bad = Object.keys(data.status || {}).filter(function (k) { return !data.status[k].ok; });
   if (bad.length) $("warn").innerHTML = '<div class="warn">Niet gelukt vandaag: ' + bad.map(function (k) { return esc((VENUES[k] || {}).label || k); }).join(", ") + ". Daarvan staat de laatst bekende lijst erin.</div>";
   render(); sizeHeader();
@@ -465,7 +543,7 @@ $("f-mine").addEventListener("click", function () {
 });
 $("f-weekend").addEventListener("click", function () { var w = weekendRange(); if (state.from === w[0] && state.to === w[1]) setRange("", ""); else setRange(w[0], w[1]); });
 $("f-date").addEventListener("click", function () { state.showDate = !state.showDate; $("daterow").classList.toggle("on", state.showDate); sizeHeader(); });
-$("daterow").addEventListener("change", function () { var a = $("dfrom").value, b = $("dto").value; if (b && a && b < a) b = a; setRange(a, b); });
+$("daterow").addEventListener("change", function () { var a = $("dfrom").value, b = $("dto").value; if (b && a && b < a) b = a; setRange(a, b, true); });   /* alleen 'Van': alles vanaf die dag */
 $("daterow").addEventListener("click", function (e) {
   var p = e.target.closest("[data-preset]"); if (!p) return;
   state.showDate = false; $("daterow").classList.remove("on");
@@ -477,7 +555,10 @@ $("daterow").addEventListener("click", function (e) {
   else if (k === "next") { setRange(iso(new Date(t.getFullYear(), t.getMonth() + 1, 1)), iso(new Date(t.getFullYear(), t.getMonth() + 2, 0))); }
   else setRange("", "");
 });
-$("f-zalen").addEventListener("click", openSheet);
+$("f-zalen").addEventListener("click", function (e) {
+  if (e.target.closest("#zx")) { state.sel = []; state.regions = []; state.limit = 300; render(); return; }   /* kruisje: selectie wissen */
+  openSheet();
+});
 $("f-ov").addEventListener("click", function () {
   if (state.city) { state.city = ""; state.limit = 300; render(); return; }   /* stad aan: de knop zet het filter uit */
   openOverview();
@@ -487,12 +568,17 @@ $("ovsheet").addEventListener("click", function (e) {
   if (e.target.hasAttribute("data-close")) { closeOverview(); return; }
   var c = e.target.closest("[data-city]");
   if (e.target.id === "ovclear") { state.city = ""; closeOverview(); render(); return; }
-  if (c && Date.now() - ovOpenedAt < 500) return;
+  if (e.target.closest("[data-zoom]")) { var zz = e.target.closest("[data-zoom]").getAttribute("data-zoom");
+    if (zz === "0") { OV.z = 1; OV.cx = 160; OV.cy = 220; drawMap(); } else ovZoom(+zz, OV.cx, OV.cy); return; }
+  if (c && (Date.now() - ovOpenedAt < 500 || OV.dragged)) { OV.dragged = 0; return; }
   if (c) { var ct = c.getAttribute("data-city"); state.city = state.city === ct ? "" : ct; state.limit = 300; closeOverview(); render(); window.scrollTo(0, 0); return; }
   var m = e.target.closest("[data-month]");
   if (m) {
-    var k = m.getAttribute("data-month"), y = +k.slice(0, 4), mo = +k.slice(5);
-    var a = k + "-01" < TODAY ? TODAY : k + "-01"; closeOverview(); setRange(a, iso(new Date(y, mo, 0)));
+    var k = m.getAttribute("data-month");
+    if (!k || (state.from && state.from.slice(0, 7) === k && state.to && state.to.slice(0, 7) === k && state.from !== state.to)) { state.from = state.to = ""; }
+    else { var y = +k.slice(0, 4), mo = +k.slice(5); state.from = k + "-01" < TODAY ? TODAY : k + "-01"; state.to = iso(new Date(y, mo, 0)); }
+    $("dfrom").value = state.from; $("dto").value = state.to; state.limit = 300;
+    render(); drawMap(); drawMonths(); return;   /* het overzicht blijft open: kaart en lijst tonen die maand */
   }
 });
 $("days").addEventListener("click", function (e) {
@@ -500,6 +586,11 @@ $("days").addEventListener("click", function (e) {
   var d = b.getAttribute("data-day");
   if (state.from === d && state.to === d) setRange("", ""); else setRange(d, d);   // tik = alleen die dag, nog eens = alles
 });
+/* verder scrollen laadt vanzelf de volgende concerten */
+window.addEventListener("scroll", function () {
+  var m = $("more"); if (!m || state.tab === "a") return;
+  if (m.getBoundingClientRect().top < innerHeight + 600) { state.limit += 400; render(true); }
+}, { passive: true });
 $("out").addEventListener("click", function (e) {
   if (e.target.id === "more") { state.limit += 400; render(true); return; }
   var arow = e.target.closest("[data-aid]");

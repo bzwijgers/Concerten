@@ -34,7 +34,7 @@ header{position:sticky;top:0;z-index:6;background:var(--bg);margin:0 -16px;paddi
 .tt h1{display:flex;align-items:center;min-width:0}
 .tt h1 .tn{overflow:hidden;text-overflow:ellipsis;min-width:0}
 .tt h1 .hflags{flex:none}
-.stamp{font:400 11px var(--f-mono);color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stamp{display:none;font:400 11px var(--f-mono);color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 h1{font-family:var(--f-display);font-weight:700;font-size:clamp(14px,4.4vw,20px);letter-spacing:-.02em;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ib{appearance:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;width:34px;height:34px;display:grid;place-items:center;cursor:pointer;color:var(--fg);text-decoration:none;flex:none}
 .ib svg{width:17px;height:17px}
@@ -85,7 +85,7 @@ h1{font-family:var(--f-display);font-weight:700;font-size:clamp(14px,4.4vw,20px)
 .name{font-weight:600;font-size:15px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ev.open .name{white-space:normal}
 .sub{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
-.sub .tag{font:500 10px var(--f-mono);text-transform:uppercase;letter-spacing:.05em;margin-left:4px}
+.sub .tag{font:600 10px var(--f-mono);text-transform:uppercase;letter-spacing:.05em;margin-right:6px;padding:1px 5px;border-radius:4px;background:color-mix(in srgb,currentColor 12%,transparent)}
 .tag.sold{color:var(--sold)}.tag.new{color:var(--accent)}.tag.club{color:var(--ticket)}.tag.tk{color:var(--ticket)}
 .ev.sold .name{color:var(--muted)}
 .ev{position:relative}
@@ -97,6 +97,12 @@ h1{font-family:var(--f-display);font-weight:700;font-size:clamp(14px,4.4vw,20px)
 .map{width:100%;height:auto;display:block;background:var(--bg);border:1px solid var(--line);border-radius:12px}
 .map circle{cursor:pointer}
 .map .ml{font:500 10px var(--f-body);fill:var(--muted);pointer-events:none}
+.mapwrap{position:relative}#map{touch-action:none}
+.map path{vector-effect:non-scaling-stroke}
+.zoom{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:4px}
+.zoom button{appearance:none;width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:600 17px var(--f-body);cursor:pointer}
+.ovh b{color:var(--fg);font-size:14px}
+.mb.on span,.mb.on em{color:var(--accent);font-weight:700}
 .ovh{font-size:12px;color:var(--muted);margin:12px 0 6px}
 .mb{appearance:none;border:0;background:none;width:100%;display:flex;align-items:center;gap:10px;padding:5px 2px;cursor:pointer;color:var(--fg)}
 .mb span{width:52px;text-align:left;font:500 13px var(--f-body)}
@@ -107,10 +113,12 @@ h1{font-family:var(--f-display);font-weight:700;font-size:clamp(14px,4.4vw,20px)
 .score{flex:none;font:600 13px var(--f-mono);color:var(--star);padding:0 8px}
 .score.none{font:400 11px var(--f-body);color:var(--faint)}
 .rvtxt{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.zx{margin-left:2px;padding:0 2px 0 6px;border-left:1px solid var(--line);font-size:12px}
 .amore{flex-direction:column;align-items:stretch;padding-left:12px}
 .rate{display:flex;gap:0;align-items:center;flex-wrap:wrap}
-.rs,.rz{appearance:none;border:0;background:none;width:27px;height:32px;display:grid;place-items:center;cursor:pointer;color:var(--faint);padding:0}
-.rs svg{width:21px;height:21px}
+.rs,.rz{appearance:none;border:0;background:none;width:100%;max-width:27px;height:32px;display:grid;place-items:center;cursor:pointer;color:var(--faint);padding:0}
+.rs svg{width:min(21px,100%);height:21px}
+.amore .rate{display:grid;grid-template-columns:repeat(10,minmax(0,27px)) 40px;align-items:center;max-width:100%}
 .rate{flex-wrap:nowrap}
 body.arch #days{display:none}
 .rs.on{color:var(--star)}.rs.on svg path{fill:currentColor}
@@ -122,7 +130,7 @@ body.arch #days{display:none}
 .trv{align-self:center;font-size:12.5px;color:var(--muted);margin-right:4px}
 .map .be{fill:var(--hover)}
 .map .cl{font:700 11px var(--f-display);fill:var(--muted);opacity:.7;letter-spacing:.06em;text-transform:uppercase;pointer-events:none}
-.rz{font:600 12px var(--f-mono);border:1px solid var(--line);border-radius:6px;width:28px;height:24px;margin-left:6px}
+.rz{font:600 12px var(--f-mono);border:1px solid var(--line);border-radius:6px;width:28px;height:24px;margin-left:6px;max-width:28px}
 .rz.on{background:var(--star);color:var(--surface);border-color:var(--star)}
 .rvin{width:100%;font:400 14px var(--f-body);color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;resize:vertical}
 .btn.small{font-size:12px;padding:5px 8px;align-self:flex-start}
@@ -164,8 +172,12 @@ body.arch #days{display:none}
 .primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
 .v2note{font-size:12px;color:var(--muted);background:var(--accent-soft);border-radius:8px;padding:8px 10px;margin-top:10px}
 .v2note a{color:var(--accent)}
-#splash{position:fixed;inset:0;z-index:99;background:#0a0a12 url(img/splash.jpg) center/cover no-repeat;transition:opacity .4s ease;display:flex;align-items:flex-end;justify-content:center;padding:0 20px max(40px,env(safe-area-inset-bottom));cursor:pointer}
+#splash{position:fixed;inset:0;z-index:99;background:#0a0a12;transition:opacity .4s ease;display:flex;align-items:flex-end;justify-content:center;padding:0 20px max(40px,env(safe-area-inset-bottom));cursor:pointer}
 #splash.gone{opacity:0;pointer-events:none}
+#splash::before{content:"";position:absolute;inset:0;background:url(img/splash.jpg) center/cover no-repeat}
+#splash .sb{position:relative;z-index:1}
+@media (orientation:landscape){#splash::before{filter:blur(26px) brightness(.5);transform:scale(1.15)}
+#splash::after{content:"";position:absolute;inset:0;background:url(img/splash.jpg) center/contain no-repeat}}
 #splash .sb{background:rgba(10,10,18,.72);color:#fff;border-radius:14px;padding:12px 18px;text-align:center;max-width:340px;width:100%}
 #splash .st{font:500 13px var(--f-body);letter-spacing:.04em;opacity:.85}
 #splash .go{display:none;margin-top:8px;font:600 15px var(--f-body);letter-spacing:.02em}
@@ -194,8 +206,8 @@ body.arch #days{display:none}
       <button class="chip" id="f-date" aria-pressed="false">Datum <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg></button>
       <button class="chip" id="f-weekend" aria-pressed="false">Dit weekend</button>
       <button class="chip" id="f-ov" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg> Overzicht</button>
+      <button class="chip" id="f-zalen" aria-pressed="false">Zalen en regio <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg><span class="zx" id="zx" role="button" aria-label="Selectie wissen" style="display:none">✕</span></button>
       <button class="chip" id="f-near" aria-pressed="false">Binnen 1,5 uur</button>
-      <button class="chip" id="f-zalen" aria-pressed="false">Zalen en regio <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg></button>
     </div>
     <div class="daterow" id="daterow">
       <div class="dr"><label>Van <input type="date" id="dfrom"></label><label>Tot en met <input type="date" id="dto"></label></div>
@@ -212,9 +224,9 @@ body.arch #days{display:none}
   <div class="panel" role="dialog" aria-label="Overzicht">
     <div class="ph"><h2>Overzicht</h2><button class="btn" data-close>Sluiten</button></div>
     <div class="pb">
-      <p class="ovh">Tik op een stad om alleen die stad te zien <button class="lnk" id="ovclear">Alle steden</button></p>
-      <div id="map"></div>
-      <p class="ovh">Concerten per maand · tik om naar die maand te gaan</p>
+      <p class="ovh"><b id="ovtitle"></b><br>Tik op een stad om alleen die stad te zien · knijp of tik dubbel om in te zoomen <button class="lnk" id="ovclear">Alle steden</button></p>
+      <div class="mapwrap"><div id="map"></div><div class="zoom"><button data-zoom="1.6" aria-label="Inzoomen">+</button><button data-zoom="0.625" aria-label="Uitzoomen">−</button><button data-zoom="0" aria-label="Hele kaart">⟲</button></div></div>
+      <p class="ovh">Kies een maand: kaart en lijst tonen dan alleen die maand</p>
       <div id="months"></div>
     </div>
   </div>
@@ -227,11 +239,13 @@ body.arch #days{display:none}
       <div class="reg" id="regions"></div>
       <div id="cities"></div>
     </div>
-    <div class="pf"><label><input type="checkbox" id="hideSold"> Verberg uitverkocht</label><button class="btn" id="clearsel">Alles</button><button class="btn primary" id="saveMine">Bewaar als mijn zalen</button></div>
+    <div class="pf"><label><input type="checkbox" id="hideSold"> Verberg uitverkocht</label><button class="btn" id="clearsel">Wis selectie</button><button class="btn primary" id="saveMine">Bewaar als mijn zalen</button></div>
   </div>
 </div>
 <script>
-(function(){var sp=document.getElementById("splash"),done=false,ready=false;
+(function(){var sp=document.getElementById("splash"),done=false,ready=false,seen=false;
+try{seen=sessionStorage.getItem("ca-splash")==="1";sessionStorage.setItem("ca-splash","1");}catch(e){}
+if(seen){sp.remove();try{window.AndroidApp&&AndroidApp.splashDone();}catch(e){}window.__splashReady=function(){};return;}   /* terug van Info: geen startscherm */
 function hide(){if(done)return;done=true;try{window.AndroidApp&&AndroidApp.splashDone();}catch(e){}sp.classList.add("gone");setTimeout(function(){sp.remove();},500);}
 /* het startscherm blijft staan tot je tikt; zodra de agenda geladen is staat er wanneer die is bijgewerkt */
 window.__splashReady=function(msg){ready=true;document.getElementById("spst").textContent=msg||"Agenda geladen";sp.classList.add("ready");};
@@ -239,5 +253,5 @@ sp.addEventListener("click",function(){if(ready)hide();});
 setTimeout(function(){if(!ready)window.__splashReady("Laden duurt lang; tik om toch verder te gaan");},15000);})();
 </script>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="halfgrad"><stop offset="50%" stop-color="currentColor"/><stop offset="50%" stop-color="transparent"/></linearGradient></defs></svg>
-<script src="app.js?v=25"></script>
+<script src="app.js?v=27"></script>
 </body></html>

@@ -14,7 +14,7 @@ OWN = ["paradiso", "melkweg", "013", "tivolivredenburg", "tivoli", "effenaar", "
        "baroeg", "dbs", "bolwerk", "ontdekpoort", "burgerweeshuis", "ekko", "nobel", "grenswerk", "iduna", "musicon",
        "qfactory", "simplon", "sounddog", "vera", "victorie",
        "luxorlive", "willemtwee", "gigant", "fluor", "vorstin", "p3purmerend", "demeester", "occii", "cinetol", "groeneengel", "backstagebridges", "muziekgieterij", "poppodiumvolt", "dekade", "nieuwenor", "annabel", "halloffame", "hallfame", "qbus", "walhalla",
-       "anciennebelgique", "afasdome", "sportpaleis", "lottoarena", "vorstnationaal", "forestnational", "botanique", "trix", "deroma", "hetdepot", "handelsbeurs", "dekreun", "4ad",
+       "anciennebelgique", "maassilo", "bitterzoet", "kroepoekfabriek", "cacaofabriek", "corneel", "worm", "afasdome", "sportpaleis", "lottoarena", "vorstnationaal", "forestnational", "botanique", "trix", "deroma", "hetdepot", "handelsbeurs", "dekreun", "4ad",
        "muziekclubn9", "decasino", "reflektor", "hetbos"]
 # horeca/arrangementen bij grote zalen: geen aparte zaal
 HOSPITALITY = re.compile(r"\b(loge|lounge|skybox|hospitality)\b|ziggo\s*dome\s*club", re.I)

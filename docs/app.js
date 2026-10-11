@@ -74,6 +74,14 @@ var VENUES = {
   afasdome:{label:"AFAS Dome",home:"https://www.afas-dome.be/kalender",city:"Antwerpen",cc:"BE"},
   lottoarena:{label:"Lotto Arena",home:"https://www.lotto-arena.be/kalender",city:"Antwerpen",cc:"BE"},
   vorst:{label:"Vorst Nationaal",home:"https://www.vorst-nationaal.be/nl/kalender",city:"Brussel",cc:"BE"},
+  bitterzoet:{label:"Bitterzoet",home:"https://www.bitterzoet.com/agenda/",city:"Amsterdam"},
+  sowhat:{label:"So What!",home:"https://www.so-what.nl/agenda/",city:"Gouda"},
+  corneel:{label:"Corneel",home:"https://www.corneel.nl/agenda/",city:"Lelystad"},
+  kroepoek:{label:"De Kroepoekfabriek",home:"https://www.kroepoekfabriek.nl/agenda/",city:"Vlaardingen"},
+  cacao:{label:"De Cacaofabriek",home:"https://www.cacaofabriek.nl/agenda?type=concert",city:"Helmond"},
+  worm:{label:"WORM",home:"https://worm.org/agenda/",city:"Rotterdam"},
+  maassilo:{label:"Maassilo",home:"https://maassilo.com/agenda/",city:"Rotterdam"},
+  lockkeepers:{label:"The Lock Keepers",home:"https://thelockkeepers.nl/Concert-agenda-The-Lock-Keepers/",city:"Maassluis"},
   olt:{label:"OLT Rivierenhof",home:"https://www.oltrivierenhof.be/nl/programma",city:"Antwerpen",cc:"BE"},
   fest_bospop:{label:"Bospop",home:"https://www.bospop.nl/",city:"Weert",fest:true},
   fest_pinkpop:{label:"Pinkpop",home:"https://www.pinkpop.nl/",city:"Landgraaf",fest:true},
@@ -106,8 +114,8 @@ var VENUES = {
   fest_alcatraz:{label:"Alcatraz",home:"https://www.alcatraz.be/nl/",city:"Kortrijk",cc:"BE",fest:true}
 };
 var REGIONS = [
-  ["Zuid-Holland", ["Wateringen", "Rotterdam", "Den Haag", "Leiden", "Zoetermeer", "Dordrecht", "Scheveningen", "Delft", "Gouda"]],
-  ["Noord-Holland", ["Amsterdam", "Haarlem", "Zaandam", "Alkmaar", "Purmerend", "Almere", "Hoofddorp", "Hoorn", "Amstelveen"]],
+  ["Zuid-Holland", ["Maassluis", "Vlaardingen", "Gouda", "Wateringen", "Rotterdam", "Den Haag", "Leiden", "Zoetermeer", "Dordrecht", "Scheveningen", "Delft", "Gouda"]],
+  ["Noord-Holland", ["Lelystad", "Amsterdam", "Haarlem", "Zaandam", "Alkmaar", "Purmerend", "Almere", "Hoofddorp", "Hoorn", "Amstelveen"]],
   ["Midden", ["Utrecht", "Amersfoort", "Hilversum", "Biddinghuizen"]],
   ["Zuid", ["Ysselsteyn", "Schijndel", "Hilvarenbeek", "Tilburg", "Breda", "Eindhoven", "Den Bosch", "'s-Hertogenbosch", "Uden", "Oss", "Bergen op Zoom", "Weert", "Venlo", "Heerlen", "Sittard",
             "Maastricht", "Kerkrade", "Roermond", "Landgraaf", "Helmond"]],
@@ -162,7 +170,7 @@ var COORD = { "Amsterdam": [52.37, 4.90], "Utrecht": [52.09, 5.12], "Groningen":
   "Roermond": [51.19, 5.99], "Brussel": [50.85, 4.35], "Bruxelles": [50.85, 4.35], "Antwerpen": [51.22, 4.40], "Borgerhout": [51.21, 4.44],
   "Leuven": [50.88, 4.70], "Gent": [51.05, 3.72], "Brugge": [51.21, 3.22], "Kortrijk": [50.83, 3.26], "Diksmuide": [51.03, 2.86], "Eeklo": [51.19, 3.56],
   "Sint-Niklaas": [51.17, 4.14], "Luik": [50.63, 5.57], "Liège": [50.63, 5.57], "Hasselt": [50.93, 5.34], "Mechelen": [51.03, 4.48], "Oostende": [51.23, 2.92],
-  "Vorst": [50.81, 4.32], "Forest": [50.81, 4.32], "Werchter": [50.97, 4.70], "Genk": [50.97, 5.50], "Aalst": [50.94, 4.04], "Namen": [50.47, 4.87], "Veenendaal": [52.03, 5.56], "Biddinghuizen": [52.45, 5.69], "Beuningen": [51.86, 5.77], "Hilvarenbeek": [51.49, 5.14], "Dessel": [51.24, 5.12], "Deest": [51.89, 5.66], "Schijndel": [51.62, 5.43], "Lichtenvoorde": [51.99, 6.57], "Vlieland": [53.3, 5.07], "Ysselsteyn": [51.49, 5.92], "Wateringen": [52.02, 4.27], "Meerhout": [51.13, 5.08], "Lokeren": [51.1, 3.99], "Tienen": [50.81, 4.94], "Zottegem": [50.87, 3.81], "Dour": [50.4, 3.78], "Bilzen": [50.87, 5.52], "Braine-le-Comte": [50.61, 4.14], "Charleroi": [50.41, 4.44],
+  "Vorst": [50.81, 4.32], "Forest": [50.81, 4.32], "Werchter": [50.97, 4.70], "Genk": [50.97, 5.50], "Aalst": [50.94, 4.04], "Namen": [50.47, 4.87], "Veenendaal": [52.03, 5.56], "Biddinghuizen": [52.45, 5.69], "Beuningen": [51.86, 5.77], "Hilvarenbeek": [51.49, 5.14], "Dessel": [51.24, 5.12], "Deest": [51.89, 5.66], "Gouda": [52.01, 4.71], "Lelystad": [52.52, 5.47], "Vlaardingen": [51.91, 4.34], "Maassluis": [51.92, 4.25], "Schijndel": [51.62, 5.43], "Lichtenvoorde": [51.99, 6.57], "Vlieland": [53.3, 5.07], "Ysselsteyn": [51.49, 5.92], "Wateringen": [52.02, 4.27], "Meerhout": [51.13, 5.08], "Lokeren": [51.1, 3.99], "Tienen": [50.81, 4.94], "Zottegem": [50.87, 3.81], "Dour": [50.4, 3.78], "Bilzen": [50.87, 5.52], "Braine-le-Comte": [50.61, 4.14], "Charleroi": [50.41, 4.44],
   "Chièvres": [50.59, 3.81], "Heist-op-den-Berg": [51.08, 4.73], "Huy": [50.52, 5.24], "La Louvière": [50.48, 4.19], "Lommel": [51.23, 5.31],
   "Louvain-la-Neuve": [50.67, 4.61], "Malmedy": [50.43, 6.03], "Marche-en-Famenne": [50.23, 5.34], "Mons": [50.45, 3.95], "Mouscron": [50.74, 3.21],
   "Roeselare": [50.95, 3.12], "Soignies": [50.58, 4.07], "Tournai": [50.61, 3.39], "Verviers": [50.59, 5.86], "Wieze": [50.98, 4.08], "Landgraaf": [50.90, 6.02], "Helmond": [51.48, 5.66], "Scheveningen": [52.11, 4.27], "Delft": [52.01, 4.36] };

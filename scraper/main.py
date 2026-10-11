@@ -2,7 +2,7 @@ import json, os, sys, time, traceback, importlib
 from datetime import date, datetime, timedelta, timezone
 sys.path.insert(0, os.path.dirname(__file__))
 from common import *
-import venues1, venues2, venues3, venues4, venues5, venues6, venues7, venues8, festivals, feedimport, ticketmaster, tsmap, times, images
+import venues1, venues2, venues3, venues4, venues5, venues6, venues7, venues8, venues9, festivals, feedimport, ticketmaster, tsmap, times, images
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 DATA = os.path.join(ROOT, "data")
@@ -27,6 +27,7 @@ VENUES = [  # key, label, fn
     ("vierad", venues8.vierad), ("ab", venues8.ab), ("botanique", venues8.botanique), ("trix", venues8.trix), ("roma", venues8.roma), ("depot", venues8.depot),
     ("ha", venues8.ha), ("kreun", venues8.kreun), ("n9", venues8.n9), ("casino", venues8.casino), ("reflektor", venues8.reflektor), ("bos", venues8.bos),
     ("afasdome", venues8.afasdome), ("lottoarena", venues8.lottoarena), ("vorst", venues8.vorst), ("olt", venues8.olt),
+    ("bitterzoet", venues9.bitterzoet), ("sowhat", venues9.sowhat), ("corneel", venues9.corneel), ("kroepoek", venues9.kroepoek), ("cacao", venues9.cacao), ("worm", venues9.worm), ("maassilo", venues9.maassilo), ("lockkeepers", venues9.lockkeepers),
 ] + [(k, festivals.make(k)) for k in festivals.FEST] + [
 ]
 
@@ -205,7 +206,7 @@ def main():
     except Exception as ex:
         print("tijden aanvullen mislukt:", ex)
     # geen concert: quizzen, workshops, kindervoorstellingen, platenbeurs e.d. (lijst nagelopen op 2026-10-10)
-    nonc = _re.compile(r"\b(pop\s*quiz|quiz|platenbeurs|jukebox|luistersessies?|workshops?|masterclass|lezing|expositie|"
+    nonc = _re.compile(r"\b(pop\s*quiz|quiz|karaoke|karaocaf\w*|platenbeurs|jukebox|luistersessies?|workshops?|masterclass|lezing|expositie|"
                        r"rondleiding|yoga|boekenclub|podcast|science\s*caf[eé]|comedy(?!\s+of\s+errors)|stand-?up|cabaret|"
                        r"indie\s*disco|silent\s*disco|kinderdisco|discozwemmen|feestfabriek|dutchtuber|dikkie\s*dik|"
                        r"ernst,?\s*bobbie|de\s*betovering|backstage\s*&\s*blik|open\s*mic|markt|bingo(?!\s+players)|subsidie\w*)\b"

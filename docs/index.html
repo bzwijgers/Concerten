@@ -184,9 +184,9 @@ body.arch #days{display:none}
 /* startscherm vult het hele scherm: de foto groot in beeld, daarachter een vage vergroting van dezelfde foto */
 #splash{overflow:hidden}
 #splash::before{content:"";position:absolute;inset:-40px;background:url(img/splash_art.jpg) center/cover no-repeat;filter:blur(22px) brightness(.6)}
-#splash::after{content:"";position:absolute;inset:0;background:url(img/splash_art.jpg) center 42%/auto 74% no-repeat}
+#splash::after{content:"";position:absolute;inset:0;background:url(img/splash_art.jpg) 50% 18%/cover no-repeat}
 #splash .sb{position:relative;z-index:1}
-@media (orientation:landscape){#splash::after{background-size:auto 100%;background-position:center}}
+@media (orientation:landscape){#splash::after{background-size:contain;background-position:center}}
 #splash .sb{background:rgba(10,10,18,.72);color:#fff;border-radius:14px;padding:12px 18px;text-align:center;max-width:340px;width:100%}
 #splash .st{font:500 13px var(--f-body);letter-spacing:.04em;opacity:.85}
 #splash .go{display:none;margin-top:8px;font:600 15px var(--f-body);letter-spacing:.02em}

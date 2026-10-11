@@ -29,11 +29,14 @@ jobs:
         run: python scraper/main.py
         env:
           TM_API_KEY: ${{ secrets.TM_API_KEY }}
+      - name: Logo's van nieuwe zalen
+        if: steps.gate.outputs.run == '1'
+        run: python tools/logos.py || true
       - name: Commit data
         if: steps.gate.outputs.run == '1'
         run: |
           git config user.name "concert-agenda-bot"; git config user.email "bot@users.noreply.github.com"
-          git add -A data docs/data docs/thumbs
+          git add -A data docs/data docs/thumbs docs/logos
           git diff --cached --quiet || git commit -m "Update concerten $(date -u +%F)"
           git pull --rebase -q origin main || true
           git push

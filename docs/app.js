@@ -139,6 +139,7 @@ function nice(t) {
   }).join("");
 }
 
+var LOGO = {};   /* logo per zaal (docs/logos), voor concerten zonder foto */
 var ALL = [], DATA = null, marks = load("ca-marks", {}), mine = load("ca-mine", []);
 Object.keys(marks).forEach(function (id) { var m = marks[id]; if (m && m.k) { m[m.k] = true; delete m.k; } });   /* oud formaat */
 function has(id, f) { return !!(marks[id] && marks[id][f]); }
@@ -221,6 +222,7 @@ function row(c) {
              (club(c) ? '<span class="tag club">clubcard</span>' : "") + (tk ? '<span class="tag tk">kaartje</span>' : "");
   var where = esc(v.label) + place(v) + (c.r && c.r.toLowerCase().indexOf(v.label.toLowerCase()) < 0 && c.r.toLowerCase().indexOf((v.city || "~").toLowerCase()) < 0 && v.label.toLowerCase().indexOf(c.r.toLowerCase()) < 0 ? " · " + esc(c.r) : "");
   var col = rcol(v.city), pic = c.th ? '<img class="th" src="' + esc(c.th) + '" alt="" loading="lazy" width="44" height="44">' :
+    LOGO[c.v] ? '<img class="th logo" src="' + esc(LOGO[c.v]) + '" alt="" loading="lazy" width="44" height="44">' :
     '<span class="th thx" style="background:' + col + '26;color:' + col + '">' + esc((nice(c.n).replace(/^[^A-Za-z0-9\u00C0-\u00FF]+/, "").charAt(0) || "*").toUpperCase()) + "</span>";
   return '<div class="ev' + (c.s ? " sold" : "") + (tk ? " t" : "") + (open ? " open" : "") + '" data-id="' + esc(c.id) + '" style="--rc:' + col + '">' +
     '<div class="row" data-act="open">' + pic + timeCell(c.t) +
@@ -547,6 +549,7 @@ $("saveMine").addEventListener("click", function () {
   mine = state.sel.slice(); save("ca-mine", mine); state.useMine = mine.length > 0; if (state.useMine) state.sel = []; closeSheet();
 });
 window.addEventListener("resize", sizeHeader);
+fetch("data/logos.json", { cache: "no-cache" }).then(function (r) { return r.json(); }).then(function (l) { LOGO = l; if (ALL.length) render(true); }).catch(function () {});
 fetch("data/events.json", { cache: "no-cache" }).then(function (r) { return r.json(); }).then(function (d) {
   init(d);
   var u = new Date(d.updated);

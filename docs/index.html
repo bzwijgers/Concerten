@@ -91,6 +91,7 @@ h1{font-family:var(--f-display);font-weight:700;font-size:clamp(14px,4.4vw,20px)
 .ev{position:relative}
 .ev::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--rc,transparent)}
 .th{flex:none;width:44px;height:44px;border-radius:8px;object-fit:cover;background:var(--hover)}
+.th.logo{box-shadow:0 0 0 1px var(--line)}
 .thx{display:grid;place-items:center;font:700 18px var(--f-display)}
 .map .nl{fill:var(--surface);stroke:var(--line);stroke-width:1.2}
 .map{width:100%;height:auto;display:block;background:var(--bg);border:1px solid var(--line);border-radius:12px}
@@ -238,5 +239,5 @@ sp.addEventListener("click",function(){if(ready)hide();});
 setTimeout(function(){if(!ready)window.__splashReady("Laden duurt lang; tik om toch verder te gaan");},15000);})();
 </script>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="halfgrad"><stop offset="50%" stop-color="currentColor"/><stop offset="50%" stop-color="transparent"/></linearGradient></defs></svg>
-<script src="app.js?v=23"></script>
+<script src="app.js?v=24"></script>
 </body></html>

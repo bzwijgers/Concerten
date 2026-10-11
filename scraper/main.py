@@ -2,7 +2,7 @@ import json, os, sys, time, traceback, importlib
 from datetime import date, datetime, timedelta, timezone
 sys.path.insert(0, os.path.dirname(__file__))
 from common import *
-import venues1, venues2, venues3, venues4, venues5, venues6, venues7, feedimport, ticketmaster, tsmap, times
+import venues1, venues2, venues3, venues4, venues5, venues6, venues7, feedimport, ticketmaster, tsmap, times, images
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 DATA = os.path.join(ROOT, "data")
@@ -278,6 +278,11 @@ def main():
         # events of this venue no longer listed -> drop (cancelled/removed), unless past
         for eid in [k for k, v in events.items() if v["v"] == key and k not in ids]:
             del events[eid]
+    try:
+        images.fill(events, DATA)
+        images.thumbs(events, os.path.join(ROOT, "docs"), DATA)
+    except Exception as ex:
+        print("afbeeldingen mislukt:", ex)
     if feed: feedimport.attach_ticketswap(events, feed)
     # directe TicketSwap-links uit de openbare sitemap van TicketSwap (gaat voor op de feed)
     try:

@@ -200,7 +200,10 @@ def stager(key, shop, place_filter=None):
         loc = ((o.get("location") or {}).get("address") or {}).get("addressLocality", "")
         if not d or (place_filter and loc and place_filter.lower() not in loc.lower()): continue
         room = (o.get("location") or {}).get("name", "")
-        out.append(ev(key, d, o.get("name", ""), o.get("url") or "", t, room, sold_from_offers(o)))
+        e = ev(key, d, o.get("name", ""), o.get("url") or "", t, room, sold_from_offers(o))
+        img = o.get("image"); img = img[0] if isinstance(img, list) and img else img
+        if isinstance(img, str) and img.startswith("http"): e["img"] = img
+        out.append(e)
     return out
 
 

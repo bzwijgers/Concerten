@@ -353,8 +353,12 @@ $("saveMine").addEventListener("click", function () {
   mine = state.sel.slice(); save("ca-mine", mine); state.useMine = mine.length > 0; if (state.useMine) state.sel = []; closeSheet();
 });
 window.addEventListener("resize", sizeHeader);
-fetch("data/events.json", { cache: "no-cache" }).then(function (r) { return r.json(); }).then(function (d) { init(d); if (window.__splashReady) window.__splashReady(); }).catch(function () {
-  if (window.__splashReady) window.__splashReady();
+fetch("data/events.json", { cache: "no-cache" }).then(function (r) { return r.json(); }).then(function (d) {
+  init(d);
+  var u = new Date(d.updated);
+  if (window.__splashReady) window.__splashReady("Agenda bijgewerkt " + DOW[u.getDay()] + " " + u.getDate() + " " + MON[u.getMonth()] + " " + pad(u.getHours()) + ":" + pad(u.getMinutes()) + " · " + ALL.filter(function (c) { return c.d >= TODAY; }).length + " concerten");
+}).catch(function () {
+  if (window.__splashReady) window.__splashReady("Geen verbinding: je ziet de laatst bekende agenda");
   $("out").innerHTML = '<div class="empty"><b>Agenda niet geladen</b>Controleer je verbinding en probeer het opnieuw.</div>';
 });
 

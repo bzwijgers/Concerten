@@ -23,6 +23,13 @@ JUNK = re.compile(r"\b(parkeren|parkeer\w*|parking|upgrade|vip[\s-]*(package|pak
                   r"meet\s*(&|and|en)\s*greet|skybox|arrangement|fan\s*pakket|early\s*entry|packages?)\b", re.I)
 
 
+def _img(x):
+    """Kleinste afbeelding van ten minste 300 px breed (16:9 als die er is)."""
+    ims = [i for i in (x.get("images") or []) if i.get("url") and (i.get("width") or 0) >= 300]
+    ims.sort(key=lambda i: (i.get("ratio") != "16_9", i.get("width") or 9999))
+    return ims[0]["url"] if ims else ""
+
+
 def norm(s):
     return re.sub(r"[^a-z0-9]+", "", (s or "").lower())
 
@@ -119,7 +126,7 @@ def convert(raw, have):
         key = "tm-" + slug(vname)
         venues[key] = {"label": vname, "city": city, "home": v.get("url") or "", "src": "ticketmaster"}
         out.setdefault(key, []).append({"v": key, "d": d, "n": re.sub(r"\s+", " ", name), "u": x.get("url") or "",
-                                        "t": (start.get("localTime") or "")[:5], "r": city, "s": False, "c": False, "g": genre})
+                                        "t": (start.get("localTime") or "")[:5], "r": city, "s": False, "c": False, "g": genre, "img": _img(x)})
         by_day.setdefault(d, []).append(norm(name))
     print("ticketmaster overgeslagen:", skipped)
     return out, venues

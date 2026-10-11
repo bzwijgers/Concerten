@@ -120,6 +120,14 @@ def main():
     repo = os.path.abspath(args[0] if args else os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
     if not dry:
         sync(repo)
+        # de taak start om 06:30 én bij inloggen: is het vandaag al gedaan, dan niets doen (tenzij --force)
+        try:
+            checked = json.load(open(os.path.join(repo, "data", "manual", "tivoli.json"), encoding="utf-8")).get("checked")
+        except Exception:
+            checked = None
+        if checked == date.today().isoformat() and "--force" not in sys.argv:
+            print("Vandaag al opgehaald (" + checked + "); niets te doen.")
+            return
     try:
         times = json.load(open(os.path.join(repo, "data", "manual", "tivoli.json"), encoding="utf-8")).get("times", {})
     except Exception:

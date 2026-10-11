@@ -13,12 +13,18 @@ OUT = os.path.join(ROOT, "docs", "logos")
 INDEX = os.path.join(ROOT, "docs", "data", "logos.json")
 # zelf gekozen logo's: {"zaal": "https://..."} (een plaatje van de eigen site van de zaal); die gaan voor
 OWN = os.path.join(ROOT, "data", "logo_urls.json")
-SKIP = {"grenswerk", "occii", "vanpolanen", "bos"}   # site-icoon is het standaard WordPress-logo, een foto of wit op wit: dan liever de letter
+SKIP = {"grenswerk", "occii", "vanpolanen", "bos", "tm-toekomstmuziek"}   # site-icoon is het standaard WordPress-logo, een foto of wit op wit: dan liever de letter
+
+
+TM_SITES = os.path.join(ROOT, "data", "tm_sites.json")   # Ticketmaster-locaties: hun eigen site ("=zaal" = logo van die zaal)
 
 
 def venues():
     js = open(os.path.join(ROOT, "docs", "app.js"), encoding="utf-8").read()
-    return dict(re.findall(r'^\s*([a-z0-9_]+):\{label:"[^"]*",home:"([^"]+)"', js, re.M))
+    vs = dict(re.findall(r'^\s*([a-z0-9_]+):\{label:"[^"]*",home:"([^"]+)"', js, re.M))
+    try: vs.update(json.load(open(TM_SITES, encoding="utf-8")))
+    except Exception: pass
+    return vs
 
 
 # met cookies, zoals een browser: sommige zalen (be•at) sturen eerst door naar een stille aanmeldstap
@@ -89,6 +95,7 @@ def main(force=()):
         except Exception as e:
             print("eigen logo mislukt", k, u, type(e).__name__)
     for k, home in sorted(vs.items()):
+        if home.startswith("="): continue                              # zelfde logo als een andere zaal: hieronder
         if k in own and index.get(k + "@") == own[k]: continue
         if k in SKIP:
             index.pop(k, None)
@@ -108,6 +115,8 @@ def main(force=()):
                 print("geen logo", k)
         except Exception as e:
             print("geen logo", k, type(e).__name__)
+    for k, home in vs.items():
+        if home.startswith("=") and home[1:] in index: index[k] = index[home[1:]]
     index = {k: v for k, v in index.items() if k.rstrip("@") in vs}
     json.dump(index, open(INDEX, "w", encoding="utf-8"), separators=(",", ":"), sort_keys=True)
     print(sum(1 for k in index if not k.endswith("@")), "van", len(vs), "zalen met logo")

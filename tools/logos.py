@@ -13,7 +13,7 @@ OUT = os.path.join(ROOT, "docs", "logos")
 INDEX = os.path.join(ROOT, "docs", "data", "logos.json")
 # zelf gekozen logo's: {"zaal": "https://..."} (een plaatje van de eigen site van de zaal); die gaan voor
 OWN = os.path.join(ROOT, "data", "logo_urls.json")
-SKIP = {"tm-toekomstmuziek"}   # site-icoon is het standaard WordPress-logo, een foto of wit op wit: dan liever de letter
+SKIP = set()   # site-icoon is het standaard WordPress-logo, een foto of wit op wit: dan liever de letter
 
 
 TM_SITES = os.path.join(ROOT, "data", "tm_sites.json")   # Ticketmaster-locaties: hun eigen site ("=zaal" = logo van die zaal)

@@ -85,12 +85,25 @@ h1{font-family:var(--f-display);font-weight:700;font-size:20px;letter-spacing:-.
 .sub .tag{font:500 10px var(--f-mono);text-transform:uppercase;letter-spacing:.05em;margin-left:4px}
 .tag.sold{color:var(--sold)}.tag.new{color:var(--accent)}.tag.club{color:var(--ticket)}.tag.tk{color:var(--ticket)}
 .ev.sold .name{color:var(--muted)}
-.ev.t{box-shadow:inset 3px 0 0 var(--ticket)}
+.ev{position:relative}
+.ev::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--rc,transparent)}
+.th{flex:none;width:44px;height:44px;border-radius:8px;object-fit:cover;background:var(--hover)}
+.thx{display:grid;place-items:center;color:#fff;font:700 18px var(--f-display);opacity:.85}
+.map{width:100%;height:auto;display:block;background:var(--bg);border:1px solid var(--line);border-radius:12px}
+.map circle{cursor:pointer}
+.map .ml{font:500 10px var(--f-body);fill:var(--muted);pointer-events:none}
+.ovh{font-size:12px;color:var(--muted);margin:12px 0 6px}
+.mb{appearance:none;border:0;background:none;width:100%;display:flex;align-items:center;gap:10px;padding:5px 2px;cursor:pointer;color:var(--fg)}
+.mb span{width:52px;text-align:left;font:500 13px var(--f-body)}
+.mb i{flex:1;height:14px;background:var(--hover);border-radius:4px;overflow:hidden}
+.mb b{display:block;height:100%;background:var(--accent);border-radius:4px}
+.mb em{width:40px;text-align:right;font:400 12px var(--f-mono);font-style:normal;color:var(--muted)}
+.mb.on span{color:var(--accent)}
 .star{flex:none;appearance:none;border:0;background:none;width:40px;height:40px;display:grid;place-items:center;cursor:pointer;color:var(--faint);border-radius:999px}
 .star svg{width:21px;height:21px}
 .star[aria-pressed="true"]{color:var(--star)}
 .star[aria-pressed="true"] svg path{fill:currentColor}
-.more{display:none;gap:8px;flex-wrap:wrap;padding:0 12px 12px 62px}
+.more{display:none;gap:8px;flex-wrap:wrap;padding:0 12px 12px 110px}
 .ev.open .more{display:flex}
 .btn{appearance:none;border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:7px 11px;font:600 13px var(--f-body);cursor:pointer;color:var(--fg);text-decoration:none}
 .btn[aria-pressed="true"]{background:var(--ticket);border-color:var(--ticket);color:var(--surface)}
@@ -150,6 +163,7 @@ h1{font-family:var(--f-display);font-weight:700;font-size:20px;letter-spacing:-.
       <button class="chip" id="f-mine" aria-pressed="false">Mijn zalen</button>
       <button class="chip" id="f-weekend" aria-pressed="false">Dit weekend</button>
       <button class="chip" id="f-date" aria-pressed="false">Datum <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button class="chip" id="f-ov" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg> Overzicht</button>
       <button class="chip" id="f-zalen" aria-pressed="false">Zalen en regio <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg></button>
     </div>
     <div class="daterow" id="daterow">
@@ -161,6 +175,18 @@ h1{font-family:var(--f-display);font-weight:700;font-size:20px;letter-spacing:-.
   <div id="warn"></div>
   <main id="out" aria-live="polite"><div class="empty"><b>Laden…</b>De agenda wordt opgehaald.</div></main>
   <div class="foot">Gegevens van de websites van de zalen zelf (en Ticketmaster voor grote zalen), elke ochtend rond 07:00 bijgewerkt. <a href="info.html">Info</a> · <a href="v1/">vorige versie</a></div>
+</div>
+<div class="sheet" id="ovsheet" aria-hidden="true">
+  <div class="back" data-close></div>
+  <div class="panel" role="dialog" aria-label="Overzicht">
+    <div class="ph"><h2>Overzicht</h2><button class="btn" data-close>Sluiten</button></div>
+    <div class="pb">
+      <p class="ovh">Tik op een stad om alleen die stad te zien</p>
+      <div id="map"></div>
+      <p class="ovh">Concerten per maand · tik om naar die maand te gaan</p>
+      <div id="months"></div>
+    </div>
+  </div>
 </div>
 <div class="sheet" id="sheet" aria-hidden="true">
   <div class="back" data-close></div>
@@ -181,5 +207,5 @@ window.__splashReady=function(msg){ready=true;document.getElementById("spst").te
 sp.addEventListener("click",function(){if(ready)hide();});
 setTimeout(function(){if(!ready)window.__splashReady("Laden duurt lang; tik om toch verder te gaan");},15000);})();
 </script>
-<script src="app.js?v=9"></script>
+<script src="app.js?v=10"></script>
 </body></html>

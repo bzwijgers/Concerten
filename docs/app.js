@@ -70,6 +70,17 @@ var REGIONS = [
 var REGION_OF = {};
 REGIONS.forEach(function (r) { r[1].forEach(function (c) { REGION_OF[c.toLowerCase()] = r[0]; }); });
 function regionOf(city) { return REGION_OF[(city || "").toLowerCase()] || "Overig"; }
+var RCOL = { "Noord": "#1D9E75", "Oost": "#BA7517", "Midden": "#7F77DD", "Noord-Holland": "#378ADD", "Zuid-Holland": "#D4537E", "Zuid": "#D85A30", "Overig": "#888780" };
+function rcol(city) { return RCOL[regionOf(city)]; }
+/* ligging van de steden (breedte, lengte) voor de kaart */
+var COORD = { "Amsterdam": [52.37, 4.90], "Utrecht": [52.09, 5.12], "Groningen": [53.22, 6.57], "Den Haag": [52.08, 4.30], "Rotterdam": [51.92, 4.48],
+  "Eindhoven": [51.44, 5.47], "Tilburg": [51.56, 5.09], "Nijmegen": [51.84, 5.86], "Haarlem": [52.38, 4.64], "Breda": [51.59, 4.78], "Arnhem": [51.98, 5.91],
+  "Hengelo": [52.27, 6.79], "Enschede": [52.22, 6.89], "Zwolle": [52.52, 6.09], "Leiden": [52.16, 4.49], "Maastricht": [50.85, 5.69], "Alkmaar": [52.63, 4.75],
+  "Oss": [51.77, 5.52], "Heerlen": [50.89, 5.98], "Leeuwarden": [53.20, 5.80], "Zoetermeer": [52.06, 4.49], "Dordrecht": [51.81, 4.67], "Bergen op Zoom": [51.49, 4.29],
+  "Uden": [51.66, 5.62], "Weert": [51.25, 5.71], "Sneek": [53.03, 5.66], "Purmerend": [52.50, 4.95], "Venlo": [51.37, 6.17], "Amersfoort": [52.16, 5.39],
+  "Hilversum": [52.22, 5.18], "Deventer": [52.25, 6.16], "Apeldoorn": [52.21, 5.97], "Drachten": [53.11, 6.10], "Almere": [52.37, 5.21], "Den Bosch": [51.69, 5.30],
+  "Sittard": [51.00, 5.87], "Zaandam": [52.44, 4.83], "Amstelveen": [52.30, 4.86], "Ede": [52.04, 5.67], "Hoofddorp": [52.30, 4.69], "Kerkrade": [50.87, 6.06],
+  "Roermond": [51.19, 5.99], "Veenendaal": [52.03, 5.56], "Landgraaf": [50.90, 6.02], "Helmond": [51.48, 5.66], "Scheveningen": [52.11, 4.27], "Delft": [52.01, 4.36] };
 
 var DOW = ["zo", "ma", "di", "wo", "do", "vr", "za"], DOWL = ["zondag", "maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag"];
 var MON = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
@@ -97,7 +108,7 @@ function nice(t) {
 var ALL = [], DATA = null, marks = load("ca-marks", {}), mine = load("ca-mine", []);
 Object.keys(marks).forEach(function (id) { var m = marks[id]; if (m && m.k) { m[m.k] = true; delete m.k; } });   /* oud formaat */
 function has(id, f) { return !!(marks[id] && marks[id][f]); }
-var state = { tab: "all", q: "", hideSold: load("ca-hidesold", false), useMine: mine.length > 0, from: "", to: "", sel: [], regions: [], limit: 300, open: null, showDate: false };
+var state = { city: "", tab: "all", q: "", hideSold: load("ca-hidesold", false), useMine: mine.length > 0, from: "", to: "", sel: [], regions: [], limit: 300, open: null, showDate: false };
 
 function venue(c) { return VENUES[c.v] || { label: c.v, city: "" }; }
 function eid(c) { return c.v + "|" + c.d + "|" + c.u; }
@@ -113,8 +124,9 @@ function weekendRange() {
   return [iso(fri) < TODAY ? TODAY : iso(fri), iso(sun)];
 }
 
-function baseFilter(c, noDates) {
+function baseFilter(c, noDates, noCity) {
   var v = venue(c);
+  if (!noCity && state.city && v.city !== state.city) return false;
   if (state.useMine && mine.length) { if (mine.indexOf(c.v) < 0) return false; }
   else if (state.sel.length && state.sel.indexOf(c.v) < 0) return false;
   if (state.regions.length && state.regions.indexOf(regionOf(v.city)) < 0) return false;
@@ -162,8 +174,10 @@ function row(c) {
   var tags = (c.s ? '<span class="tag sold">uitverkocht</span>' : "") + (isNew(c) ? '<span class="tag new">nieuw</span>' : "") +
              (club(c) ? '<span class="tag club">clubcard</span>' : "") + (tk ? '<span class="tag tk">kaartje</span>' : "");
   var where = esc(v.label) + (v.city ? " · " + esc(v.city) : "") + (c.r && c.r.toLowerCase().indexOf(v.label.toLowerCase()) < 0 && c.r.toLowerCase().indexOf((v.city || "~").toLowerCase()) < 0 && v.label.toLowerCase().indexOf(c.r.toLowerCase()) < 0 ? " · " + esc(c.r) : "");
-  return '<div class="ev' + (c.s ? " sold" : "") + (tk ? " t" : "") + (open ? " open" : "") + '" data-id="' + esc(c.id) + '">' +
-    '<div class="row" data-act="open">' + timeCell(c.t) +
+  var col = rcol(v.city), pic = c.th ? '<img class="th" src="' + esc(c.th) + '" alt="" loading="lazy" width="44" height="44">' :
+    '<span class="th thx" style="background:' + col + '">' + esc((nice(c.n).replace(/^[^A-Za-z0-9\u00C0-\u00FF]+/, "").charAt(0) || "*").toUpperCase()) + "</span>";
+  return '<div class="ev' + (c.s ? " sold" : "") + (tk ? " t" : "") + (open ? " open" : "") + '" data-id="' + esc(c.id) + '" style="--rc:' + col + '">' +
+    '<div class="row" data-act="open">' + pic + timeCell(c.t) +
     '<div class="body"><div class="name">' + esc(nice(c.n)) + '</div><div class="sub">' + where + tags + "</div></div>" +
     '<button class="star" data-act="i" aria-pressed="' + it + '" aria-label="Interesse"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z" stroke-linejoin="round"/></svg></button></div>' +
     '<div class="more"><button class="btn" data-act="t" aria-pressed="' + tk + '">' + (tk ? "Kaartje gekocht" : "Ik heb een kaartje") + "</button>" +
@@ -208,6 +222,8 @@ function render(keepScroll) {
   var nz = state.sel.length + state.regions.length;
   $("f-zalen").setAttribute("aria-pressed", String(nz > 0));
   $("f-zalen").firstChild.textContent = nz ? "Zalen en regio (" + nz + ") " : "Zalen en regio ";
+  $("f-ov").setAttribute("aria-pressed", String(!!state.city));
+  $("f-ov").lastChild.textContent = state.city ? " " + state.city : " Overzicht";
   renderDays(state.tab === "a" ? [] : ALL.filter(function (c) { return c.d >= TODAY && baseFilter(c, true) && tabFilter(c, state.tab); }));
   var out = $("out");
   if (state.tab === "a") {
@@ -224,8 +240,8 @@ function render(keepScroll) {
     out.innerHTML = '<div class="empty"><b>' + msg[0] + "</b>" + msg[1] + "</div>"; return;
   }
   var y = window.scrollY, html = "", cur = "", n = 0, perDay = {};
-  if (state.q.trim() || state.from) html += '<div class="resinfo"><b>' + all.length + "</b> concert" + (all.length === 1 ? "" : "en") +
-    (state.q.trim() ? " voor ‘" + esc(state.q.trim()) + "’" : "") + (state.from ? (state.from === state.to ? " op " + fmt(state.from) : " van " + fmt(state.from) + (state.to ? " t/m " + fmt(state.to) : "")) : "") +
+  if (state.q.trim() || state.from || state.city) html += '<div class="resinfo"><b>' + all.length + "</b> concert" + (all.length === 1 ? "" : "en") +
+    (state.q.trim() ? " voor ‘" + esc(state.q.trim()) + "’" : "") + (state.city ? " in " + esc(state.city) : "") + (state.from ? (state.from === state.to ? " op " + fmt(state.from) : " van " + fmt(state.from) + (state.to ? " t/m " + fmt(state.to) : "")) : "") +
     ' <button class="lnk" id="clearall">wissen</button></div>';
   all.forEach(function (c) { perDay[c.d] = (perDay[c.d] || 0) + 1; });
   for (var i = 0; i < all.length && n < state.limit; i++, n++) {
@@ -271,6 +287,35 @@ function buildSheet() {
   }).join("");
   $("hideSold").checked = !!state.hideSold;
 }
+function openOverview() {
+  var list = ALL.filter(function (c) { return c.d >= TODAY && baseFilter(c, false, true) && tabFilter(c, state.tab); });
+  var per = {}; list.forEach(function (c) { var ct = venue(c).city; if (COORD[ct]) per[ct] = (per[ct] || 0) + 1; });
+  var X = function (l) { return 14 + (l - 3.35) / (7.25 - 3.35) * 292; }, Y = function (b) { return 14 + (53.6 - b) / (53.6 - 50.72) * 352; };
+  var max = Math.max.apply(null, Object.keys(per).map(function (k) { return per[k]; }).concat([1]));
+  var cities = Object.keys(per).sort(function (a, b) { return per[b] - per[a]; });
+  var svg = '<svg viewBox="0 0 320 380" class="map" role="img" aria-label="Concerten per stad">';
+  cities.slice().reverse().forEach(function (ct) {
+    var r = Math.max(4, Math.sqrt(per[ct] / max) * 30), on = state.city === ct, col = rcol(ct);
+    svg += '<circle data-city="' + esc(ct) + '" cx="' + X(COORD[ct][1]).toFixed(1) + '" cy="' + Y(COORD[ct][0]).toFixed(1) + '" r="' + r.toFixed(1) + '" fill="' + col +
+      '" fill-opacity="' + (on ? ".85" : ".32") + '" stroke="' + col + '" stroke-width="' + (on ? 3 : 1) + '"><title>' + esc(ct) + ": " + per[ct] + "</title></circle>";
+  });
+  cities.slice(0, 12).forEach(function (ct) {
+    var r = Math.max(4, Math.sqrt(per[ct] / max) * 30);
+    svg += '<text x="' + (X(COORD[ct][1]) + r + 3).toFixed(1) + '" y="' + (Y(COORD[ct][0]) + 4).toFixed(1) + '" class="ml">' + esc(ct) + " " + per[ct] + "</text>";
+  });
+  $("map").innerHTML = svg + "</svg>";
+  var mon = {};
+  ALL.filter(function (c) { return c.d >= TODAY && baseFilter(c, true) && tabFilter(c, state.tab); }).forEach(function (c) { var k = c.d.slice(0, 7); mon[k] = (mon[k] || 0) + 1; });
+  var ks = Object.keys(mon).sort().slice(0, 12), mm = Math.max.apply(null, ks.map(function (k) { return mon[k]; }).concat([1]));
+  $("months").innerHTML = ks.map(function (k) {
+    var y = +k.slice(0, 4), m = +k.slice(5) - 1, on = !!(state.from && state.to && state.from.slice(0, 7) === k && state.to.slice(0, 7) === k && state.from !== state.to);
+    return '<button class="mb' + (on ? " on" : "") + '" data-month="' + k + '"><span>' + MON[m] + (y !== NOW.getFullYear() ? " " + String(y).slice(2) : "") +
+      '</span><i><b style="width:' + Math.round(mon[k] / mm * 100) + '%"></b></i><em>' + mon[k] + "</em></button>";
+  }).join("");
+  $("ovsheet").classList.add("on"); $("ovsheet").setAttribute("aria-hidden", "false"); document.body.style.overflow = "hidden";
+}
+function closeOverview() { $("ovsheet").classList.remove("on"); $("ovsheet").setAttribute("aria-hidden", "true"); document.body.style.overflow = ""; }
+
 function openSheet() {
   if (state.useMine && mine.length && !state.sel.length) state.sel = mine.slice();
   buildSheet(); $("sheet").classList.add("on"); $("sheet").setAttribute("aria-hidden", "false"); document.body.style.overflow = "hidden";
@@ -280,7 +325,7 @@ function closeSheet() { $("sheet").classList.remove("on"); $("sheet").setAttribu
 function init(data) {
   DATA = data;
   var tmv = data.venues || {};
-  Object.keys(tmv).forEach(function (k) { if (!VENUES[k]) VENUES[k] = { label: tmv[k].label, home: tmv[k].home, city: tmv[k].city || "", tm: true }; });
+  Object.keys(tmv).forEach(function (k) { if (!VENUES[k]) VENUES[k] = { label: tmv[k].label, home: tmv[k].home, city: (tmv[k].city || "").replace(/ OV$/, ""), tm: true }; });
   ALL = data.events.filter(function (e) { return VENUES[e.v]; }).map(function (e) { e.id = eid(e); e.ts = (e.t || "").replace("deuren ", "") || "99"; if (e.ts < "06") e.ts = "3" + e.ts; return e; });
   ALL.sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : 0; });
   var u = new Date(data.updated);
@@ -317,6 +362,17 @@ $("daterow").addEventListener("click", function (e) {
   else setRange("", "");
 });
 $("f-zalen").addEventListener("click", openSheet);
+$("f-ov").addEventListener("click", openOverview);
+$("ovsheet").addEventListener("click", function (e) {
+  if (e.target.hasAttribute("data-close")) { closeOverview(); return; }
+  var c = e.target.closest("[data-city]");
+  if (c) { var ct = c.getAttribute("data-city"); state.city = state.city === ct ? "" : ct; state.limit = 300; closeOverview(); render(); window.scrollTo(0, 0); return; }
+  var m = e.target.closest("[data-month]");
+  if (m) {
+    var k = m.getAttribute("data-month"), y = +k.slice(0, 4), mo = +k.slice(5);
+    var a = k + "-01" < TODAY ? TODAY : k + "-01"; closeOverview(); setRange(a, iso(new Date(y, mo, 0)));
+  }
+});
 $("days").addEventListener("click", function (e) {
   var b = e.target.closest("[data-day]"); if (!b) return;
   var d = b.getAttribute("data-day");
@@ -324,7 +380,7 @@ $("days").addEventListener("click", function (e) {
 });
 $("out").addEventListener("click", function (e) {
   if (e.target.id === "more") { state.limit += 400; render(true); return; }
-  if (e.target.id === "clearall") { state.q = ""; $("q").value = ""; setRange("", ""); return; }
+  if (e.target.id === "clearall") { state.q = ""; $("q").value = ""; state.city = ""; setRange("", ""); return; }
   var a = e.target.closest("[data-act]"); if (!a) return;
   var ev = a.closest(".ev"), id = ev && ev.getAttribute("data-id"), act = a.getAttribute("data-act");
   if (!id) return;

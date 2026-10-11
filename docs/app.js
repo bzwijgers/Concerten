@@ -251,6 +251,7 @@ function render(keepScroll) {
   $("f-zalen").firstChild.textContent = nz ? "Zalen en regio (" + nz + ") " : "Zalen en regio ";
   $("f-ov").setAttribute("aria-pressed", String(!!state.city));
   $("f-ov").lastChild.textContent = state.city ? " " + state.city : " Overzicht";
+  document.body.classList.toggle("arch", state.tab === "a");
   renderDays(state.tab === "a" ? [] : ALL.filter(function (c) { return c.d >= TODAY && baseFilter(c, true) && tabFilter(c, state.tab); }));
   var out = $("out");
   if (state.tab === "a") {

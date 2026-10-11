@@ -103,10 +103,12 @@ h1{font-family:var(--f-display);font-weight:700;font-size:20px;letter-spacing:-.
 .score{flex:none;font:600 13px var(--f-mono);color:var(--star);padding:0 8px}
 .score.none{font:400 11px var(--f-body);color:var(--faint)}
 .rvtxt{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.amore{flex-direction:column;align-items:stretch;padding-left:62px}
+.amore{flex-direction:column;align-items:stretch;padding-left:12px}
 .rate{display:flex;gap:0;align-items:center;flex-wrap:wrap}
-.rs,.rz{appearance:none;border:0;background:none;width:28px;height:32px;display:grid;place-items:center;cursor:pointer;color:var(--faint);padding:0}
-.rs svg{width:22px;height:22px}
+.rs,.rz{appearance:none;border:0;background:none;width:27px;height:32px;display:grid;place-items:center;cursor:pointer;color:var(--faint);padding:0}
+.rs svg{width:21px;height:21px}
+.rate{flex-wrap:nowrap}
+body.arch #days{display:none}
 .rs.on{color:var(--star)}.rs.on svg path{fill:currentColor}
 .rz{font:600 12px var(--f-mono);border:1px solid var(--line);border-radius:6px;width:28px;height:24px;margin-left:6px}
 .rz.on{background:var(--star);color:var(--surface);border-color:var(--star)}
@@ -223,5 +225,5 @@ window.__splashReady=function(msg){ready=true;document.getElementById("spst").te
 sp.addEventListener("click",function(){if(ready)hide();});
 setTimeout(function(){if(!ready)window.__splashReady("Laden duurt lang; tik om toch verder te gaan");},15000);})();
 </script>
-<script src="app.js?v=13"></script>
+<script src="app.js?v=14"></script>
 </body></html>

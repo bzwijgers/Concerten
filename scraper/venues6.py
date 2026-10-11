@@ -8,7 +8,9 @@ import times as _times
 UA_PLAIN = {"User-Agent": "BarrysConcertAgenda/1.0 (+https://github.com/bzwijgers/Concerten)"}
 EN_MONTHS = {"jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6, "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12}
 WEEKDAYS = {"ma": 0, "mo": 0, "di": 1, "tu": 1, "wo": 2, "we": 2, "do": 3, "th": 3, "vr": 4, "fr": 4, "za": 5, "sa": 5, "zo": 6, "su": 6}
-MONTHS = {**NL_MONTHS, **EN_MONTHS, "maa": 3, "mei": 5, "okt": 10, "oct": 10, "may": 5}
+MONTHS = {**NL_MONTHS, **EN_MONTHS, "maa": 3, "mei": 5, "okt": 10, "oct": 10, "may": 5,
+          "janvier": 1, "février": 2, "fevrier": 2, "mars": 3, "avril": 4, "mai": 5, "juin": 6, "juillet": 7, "août": 8, "aout": 8,
+          "septembre": 9, "octobre": 10, "novembre": 11, "décembre": 12, "decembre": 12}
 DATA = os.path.join(os.path.dirname(__file__), "..", "data")
 
 
@@ -54,12 +56,12 @@ def page_date(page):
         if m.group(3): return f"{m.group(3)}-{int(m.group(2)):02d}-{int(m.group(1)):02d}"
         d = _infer(None, int(m.group(1)), int(m.group(2)))
         if d: return d
-    m = re.search(r"\b(\d{1,2})\s+([a-z]{3,10})\.?\s+(20\d\d)\b", t, re.I)
-    if m and MONTHS.get(m.group(2).lower()[:3] if m.group(2).lower()[:3] != "maa" else "maa"):
+    m = re.search(r"\b(\d{1,2})(?:er)?\s+([a-zéû]{3,10})\.?\s+(20\d\d)\b", t, re.I)   # ook Frans: '1er octobre 2026', 'février'
+    if m and (MONTHS.get(m.group(2).lower()) or MONTHS.get(m.group(2).lower()[:3])):
         mon = MONTHS.get(m.group(2).lower()) or MONTHS.get(m.group(2).lower()[:3])
         if mon:
             return f"{int(m.group(3)):04d}-{mon:02d}-{int(m.group(1)):02d}"
-    m = re.search(r"\b(ma|di|wo|do|vr|za|zo|mo|tu|we|th|fr|sa|su)[a-z]*[.\s]+(\d{1,2})[.\s]+([a-z]{3,10})\b", t, re.I)
+    m = re.search(r"\b(ma|di|wo|do|vr|za|zo|mo|tu|we|th|fr|sa|su)[a-z]*[.\s|]+(\d{1,2})[.\s|]+([a-z]{3,10})\b", t, re.I)   # ook 'zo | 11 | okt' (Walhalla)
     if m:
         mon = MONTHS.get(m.group(3).lower()) or MONTHS.get(m.group(3).lower()[:3])
         if mon:
@@ -100,7 +102,7 @@ class Details:
     def get(self, url, strip="", budget=None):
         today = date.today().isoformat()
         x = self.c.get(url)
-        fresh = x and x.get("v") == 2 and (x.get("d") and x["d"] < today or x.get("at", "") >= (date.today() - timedelta(days=7)).isoformat())
+        fresh = x and x.get("v") == 2 and x.get("d") and (x["d"] < today or x.get("at", "") >= (date.today() - timedelta(days=7)).isoformat())   # zonder datum: volgende run opnieuw
         if fresh or (budget is not None and budget[0] <= 0):
             return x
         if budget is not None: budget[0] -= 1

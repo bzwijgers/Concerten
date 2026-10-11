@@ -13,7 +13,9 @@ OWN = ["paradiso", "melkweg", "013", "tivolivredenburg", "tivoli", "effenaar", "
        "oosterpoort", "bibelot", "bosuil", "birdrotterdam", "gebouwt", "neushoorn", "amare", "tolhuistuin", "rotown",
        "baroeg", "dbs", "bolwerk", "ontdekpoort", "burgerweeshuis", "ekko", "nobel", "grenswerk", "iduna", "musicon",
        "qfactory", "simplon", "sounddog", "vera", "victorie",
-       "luxorlive", "willemtwee", "gigant", "fluor", "vorstin", "p3purmerend", "demeester", "occii", "cinetol", "groeneengel", "backstagebridges", "muziekgieterij", "poppodiumvolt", "dekade", "nieuwenor", "annabel", "halloffame", "hallfame", "qbus"]
+       "luxorlive", "willemtwee", "gigant", "fluor", "vorstin", "p3purmerend", "demeester", "occii", "cinetol", "groeneengel", "backstagebridges", "muziekgieterij", "poppodiumvolt", "dekade", "nieuwenor", "annabel", "halloffame", "hallfame", "qbus", "walhalla",
+       "anciennebelgique", "botanique", "trix", "deroma", "hetdepot", "handelsbeurs", "cactus", "dekreun", "4ad",
+       "muziekclubn9", "decasino", "reflektor", "hetbos"]
 # horeca/arrangementen bij grote zalen: geen aparte zaal
 HOSPITALITY = re.compile(r"\b(loge|lounge|skybox|hospitality)\b|ziggo\s*dome\s*club", re.I)
 # geen klassiek, jazz of dance (zelfde regel als bij Tivoli)
@@ -59,15 +61,18 @@ def _get(params, key):
     raise TMError(f"Ticketmaster niet bereikbaar ({last})")
 
 
-def _window(a, b, key, out):
+COUNTRIES = ("NL", "BE")
+
+
+def _window(a, b, key, out, cc="NL"):
     """Alle events tussen a en b (datetimes). De API geeft maximaal 1000 resultaten per zoekvraag: zo nodig splitsen."""
-    base = {"countryCode": "NL", "segmentId": MUSIC, "size": 200, "sort": "date,asc", "locale": "*",
+    base = {"countryCode": cc, "segmentId": MUSIC, "size": 200, "sort": "date,asc", "locale": "*",
             "startDateTime": a.strftime("%Y-%m-%dT%H:%M:%SZ"), "endDateTime": b.strftime("%Y-%m-%dT%H:%M:%SZ")}
     first = _get({**base, "page": 0}, key)
     total = (first.get("page") or {}).get("totalElements", 0)
     if total > 1000 and (b - a) > timedelta(days=1):
         mid = a + (b - a) / 2
-        _window(a, mid, key, out); _window(mid, b, key, out)
+        _window(a, mid, key, out, cc); _window(mid, b, key, out, cc)
         return
     out += (first.get("_embedded") or {}).get("events", [])
     for p in range(1, min((total + 199) // 200, 5)):
@@ -76,13 +81,15 @@ def _window(a, b, key, out):
 
 
 def fetch_all(key, days=600):
-    raw, a = [], datetime.combine(date.today(), datetime.min.time())
-    end = a + timedelta(days=days)
-    while a < end:
-        b = min(a + timedelta(days=31), end)
-        _window(a, b, key, raw)
-        a = b
-        time.sleep(0.25)
+    raw = []
+    for cc in COUNTRIES:
+        a = datetime.combine(date.today(), datetime.min.time())
+        end = a + timedelta(days=days)
+        while a < end:
+            b = min(a + timedelta(days=31), end)
+            _window(a, b, key, raw, cc)
+            a = b
+            time.sleep(0.25)
     return raw
 
 
@@ -108,7 +115,8 @@ def convert(raw, have):
         d = start.get("localDate")
         vs = (x.get("_embedded") or {}).get("venues") or [{}]
         v = vs[0]
-        if (v.get("country") or {}).get("countryCode", "NL") != "NL" or not d or not name: continue
+        cc = (v.get("country") or {}).get("countryCode", "NL")
+        if cc not in COUNTRIES or not d or not name: continue
         if st in ("cancelled", "postponed"): skipped["geannuleerd"] += 1; continue
         if JUNK.search(name): skipped["geen concert"] += 1; continue
         cl = (x.get("classifications") or [{}])[0]
@@ -124,7 +132,7 @@ def convert(raw, have):
         seen.add(k)
         if dup(d, name): skipped["dubbel"] += 1; continue
         key = "tm-" + slug(vname)
-        venues[key] = {"label": vname, "city": city, "home": v.get("url") or "", "src": "ticketmaster"}
+        venues[key] = {"label": vname, "city": city, "home": v.get("url") or "", "src": "ticketmaster", "cc": cc}
         out.setdefault(key, []).append({"v": key, "d": d, "n": re.sub(r"\s+", " ", name), "u": x.get("url") or "",
                                         "t": (start.get("localTime") or "")[:5], "r": city, "s": False, "c": False, "g": genre, "img": _img(x)})
         by_day.setdefault(d, []).append(norm(name))

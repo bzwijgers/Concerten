@@ -63,7 +63,8 @@ def find_time(page):
         return start
     if door:
         return "deuren " + door
-    m = re.search(r"(?i)\b\d{1,2}\s+[a-z]{3,9}\.?\s+20\d\d\s*\|\s*(\d{1,2})[:.](\d{2})\b", t)   # De Meester: 'za 10 okt 2026 | 20:00'
+    m = (re.search(r"(?i)\b\d{1,2}\s+[a-z]{3,9}\.?\s+20\d\d\s*\|\s*(\d{1,2})[:.](\d{2})\b", t)   # De Meester: 'za 10 okt 2026 | 20:00'
+         or re.search(r"(?i)\b(?:ma|di|wo|do|vr|za|zo)\s*\|\s*\d{1,2}\s*\|\s*[a-z]{3,9}\s*\|\s*(\d{1,2})[:.](\d{2})\s*u\b", t))   # Walhalla: 'zo | 11 | okt | 15:00 u'
     if m and _hm(m.group(1), m.group(2)):
         return _hm(m.group(1), m.group(2))
     m = re.search(r"(?i)\bTijd\s*:?\s*\|\s*(\d{1,2})[:.](\d{2})\b", t)   # Willem Twee: 'Tijd | 17:00'

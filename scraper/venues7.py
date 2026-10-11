@@ -175,3 +175,45 @@ def vanpolanen():
             if isinstance(img, str) and img.startswith("http"): e["img"] = img
             if d: out.append(e)
     return out
+
+
+# ---------- Theater Walhalla (Rotterdam): alleen voorstellingen met een muziekgenre (theaterconcert e.d.) ----------
+WALHALLA_MUSIC = {"theaterconcert"}   # op verzoek: alleen theaterconcerten
+
+
+def walhalla():
+    import os
+    from venues6 import DET
+    path = os.path.join(os.path.dirname(__file__), "..", "data", "walhalla_genres.json")
+    try:
+        genres = json.load(open(path, encoding="utf-8"))
+    except Exception:
+        genres = {}
+    urls, page = [], 1
+    while page <= 4:
+        try:
+            j = json.loads(fetch(f"https://www.theaterwalhalla.nl/wp-json/wp/v2/event-import-event?per_page=100&page={page}", headers=UA_PLAIN))
+        except RuntimeError:
+            break
+        urls += [x["link"] for x in j if x.get("link")]
+        if len(j) < 100: break
+        page += 1
+    urls = list(dict.fromkeys(urls))
+    out, n = [], 0
+    for u in urls:
+        if u not in genres:
+            if n >= 120: continue          # per run een beperkt aantal nieuwe pagina's
+            n += 1
+            try:
+                p = fetch(u, tries=2)
+                genres[u] = sorted(set(re.findall(r"_genre=([a-z0-9-]+)", p)))
+            except Exception:
+                continue
+            time.sleep(0.7)
+        if not (set(genres[u]) & WALHALLA_MUSIC): continue
+        x = DET.get(u, "Theater Walhalla|Walhalla")
+        if x and x.get("d") and x.get("n"):
+            out.append(ev("walhalla", x["d"], x["n"], u, x.get("t", ""), "", x.get("s", False)))
+    DET.save()
+    json.dump({u: g for u, g in genres.items() if u in set(urls)}, open(path, "w", encoding="utf-8"), separators=(",", ":"))
+    return out

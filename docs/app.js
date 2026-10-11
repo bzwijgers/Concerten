@@ -99,7 +99,10 @@ function travel(city) {
 }
 function fmtTravel(m) { return m < 60 ? m + " min" : Math.floor(m / 60) + " u " + (m % 60 ? (m % 60) + " min" : ""); }
 /* vlaggetje in plaats van de landnaam (land uit de zaal, standaard Nederland) */
-var FLAG = { NL: "\uD83C\uDDF3\uD83C\uDDF1", BE: "\uD83C\uDDE7\uD83C\uDDEA", DE: "\uD83C\uDDE9\uD83C\uDDEA" };
+/* getekende vlaggetjes (emoji-vlaggen werken niet op elke telefoon) */
+var FLAG = {
+  NL: '<svg class="flag" viewBox="0 0 9 6" aria-label="Nederland"><rect width="9" height="2" fill="#AE1C28"/><rect y="2" width="9" height="2" fill="#fff"/><rect y="4" width="9" height="2" fill="#21468B"/></svg>',
+  BE: '<svg class="flag" viewBox="0 0 9 6" aria-label="België"><rect width="3" height="6" fill="#000"/><rect x="3" width="3" height="6" fill="#FDDA24"/><rect x="6" width="3" height="6" fill="#EF3340"/></svg>' };
 function place(v) { return v.city ? " · " + esc(v.city) + " " + (FLAG[v.cc || "NL"] || "") : ""; }
 /* ligging van de steden (breedte, lengte) voor de kaart */
 var COORD = { "Amsterdam": [52.37, 4.90], "Utrecht": [52.09, 5.12], "Groningen": [53.22, 6.57], "Den Haag": [52.08, 4.30], "Rotterdam": [51.92, 4.48],

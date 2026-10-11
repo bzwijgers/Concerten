@@ -17,6 +17,7 @@ FEST = {
     "fest_dynamo": ("Dynamo Metalfest", "Eindhoven", "NL", "https://dynamo-metalfest.nl/"),
     "fest_itg": ("Into The Grave", "Leeuwarden", "NL", "https://www.intothegrave.nl/"),
     "fest_lotd": ("Left of the Dial", "Rotterdam", "NL", "https://www.leftofthedial.nl/"),
+    "fest_zeeltje": ("Zeeltje", "Deest", "NL", "https://www.festivalzeeltje.nl/nieuws.php"),
     "fest_werchter": ("Rock Werchter", "Werchter", "BE", "https://www.rockwerchter.be/"),
     "fest_graspop": ("Graspop Metal Meeting", "Dessel", "BE", "https://www.graspop.be/nl/"),
     "fest_alcatraz": ("Alcatraz", "Kortrijk", "BE", "https://www.alcatraz.be/nl/"),

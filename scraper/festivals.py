@@ -18,6 +18,22 @@ FEST = {
     "fest_itg": ("Into The Grave", "Leeuwarden", "NL", "https://www.intothegrave.nl/"),
     "fest_lotd": ("Left of the Dial", "Rotterdam", "NL", "https://www.leftofthedial.nl/"),
     "fest_zeeltje": ("Zeeltje", "Deest", "NL", "https://www.festivalzeeltje.nl/nieuws.php"),
+    "fest_paaspop": ("Paaspop", "Schijndel", "NL", "https://www.paaspop.nl/"),
+    "fest_zwartecross": ("Zwarte Cross", "Lichtenvoorde", "NL", "https://zwartecross.nl/"),
+    "fest_esns": ("Eurosonic Noorderslag", "Groningen", "NL", "https://esns.nl/"),
+    "fest_motel": ("Motel Mozaïque", "Rotterdam", "NL", "https://www.motelmozaique.nl/"),
+    "fest_lgw": ("Le Guess Who?", "Utrecht", "NL", "https://leguesswho.nl/"),
+    "fest_itgwo": ("Into The Great Wide Open", "Vlieland", "NL", "https://www.intothegreatwideopen.nl/"),
+    "fest_roadburn": ("Roadburn", "Tilburg", "NL", "https://roadburn.com/"),
+    "fest_jera": ("Jera On Air", "Ysselsteyn", "NL", "https://www.jeraonair.nl/"),
+    "fest_waterpop": ("Waterpop", "Wateringen", "NL", "https://www.waterpop.nl/"),
+    "fest_groezrock": ("Groezrock", "Meerhout", "BE", "https://www.groezrock.be/"),
+    "fest_pukkelpop": ("Pukkelpop", "Hasselt", "BE", "https://www.pukkelpop.be/"),
+    "fest_lokerse": ("Lokerse Feesten", "Lokeren", "BE", "https://www.lokersefeesten.be/"),
+    "fest_suikerrock": ("Suikerrock", "Tienen", "BE", "https://www.suikerrock.be/"),
+    "fest_zottegem": ("Rock Zottegem", "Zottegem", "BE", "https://rockzottegem.be/"),
+    "fest_dour": ("Dour Festival", "Dour", "BE", "https://www.dourfestival.eu/"),
+    "fest_twclassic": ("TW Classic", "Werchter", "BE", "https://www.twclassic.be/"),
     "fest_werchter": ("Rock Werchter", "Werchter", "BE", "https://www.rockwerchter.be/"),
     "fest_graspop": ("Graspop Metal Meeting", "Dessel", "BE", "https://www.graspop.be/nl/"),
     "fest_alcatraz": ("Alcatraz", "Kortrijk", "BE", "https://www.alcatraz.be/nl/"),
@@ -25,16 +41,30 @@ FEST = {
 
 MONTHS = {"jan": 1, "feb": 2, "mrt": 3, "maa": 3, "mar": 3, "apr": 4, "mei": 5, "may": 5, "jun": 6, "jul": 7, "aug": 8,
           "sep": 9, "okt": 10, "oct": 10, "nov": 11, "dec": 12}
-RANGE = re.compile(r"\b(\d{1,2})((?:\s*(?:[-–•,./&+]|t/m|tot en met|tot|en|and)\s*\d{1,2}){0,5})\.?\s+"
-                   r"(januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december|"
-                   r"january|february|march|may|june|july|august|october|"
-                   r"jan|feb|mrt|mar|apr|jun|jul|aug|sep|sept|okt|oct|nov|dec)\.?,?\s+(20\d\d)\b", re.I)
+MON = (r"januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december|"
+       r"january|february|march|may|june|july|august|october|jan|feb|mrt|mar|apr|jun|jul|aug|sept|sep|okt|oct|nov|dec")
+DAYS = r"\d{1,2}(?:\s*(?:[-–—•,./&+]|t/m|tot en met|tot|en|and)\s*\d{1,2}){1,9}"
+# '18 • 19 • 20 juni 2027', '13 — 16 jan 2027', '26-27-28 maart' (jaar elders)
+RANGE = re.compile(r"\b(" + DAYS + r")\.?\s+(" + MON + r")\b\.?,?(?:\s+(20\d\d)\b)?", re.I)
+# 'April 15-18, 2027', 'June 24-25-26', '07+08+09+10+11 July' wordt hierboven al gevonden
+RANGE2 = re.compile(r"\b(" + MON + r")\.?\s+(" + DAYS + r")\b(?:,?\s+(20\d\d)\b)?", re.I)
 
 
 def _text(page):
+    import html as _h
     t = re.sub(r"<script.*?</script>|<style.*?</style>", " ", page, flags=re.S | re.I)
     t = re.sub(r"<[^>]+>", " ", t)
-    return re.sub(r"\s+", " ", t.replace("&amp;", "&").replace("&#8211;", "–").replace("&nbsp;", " "))
+    return re.sub(r"\s+", " ", _h.unescape(t))
+
+
+def _year(txt, pos, end):
+    """Jaartal bij de datum: het dichtstbijzijnde jaartal binnen 80 tekens ervoor of erna."""
+    lo = max(0, pos - 80)
+    near = []
+    for m in re.finditer(r"\b20\d\d\b", txt[lo: end + 80]):
+        x = lo + m.start()
+        near.append((pos - x if x < pos else x - end, int(m.group(0))))
+    return min(near)[1] if near else None
 
 
 def dates(page):
@@ -45,17 +75,22 @@ def dates(page):
         a, b = str(o.get("startDate", ""))[:10], str(o.get("endDate", "") or o.get("startDate", ""))[:10]
         if re.match(r"\d{4}-\d\d-\d\d$", a) and b >= today:
             found[(a, b)] = found.get((a, b), 0) + 5
-    txt = _text(page)
-    if not RANGE.search(txt): txt = re.sub(r"<[^>]+>|\u003c[^>]*?\u003e", " ", page)   # sommige sites zetten de tekst in een script
-    for m in RANGE.finditer(txt):
-        days = [int(m.group(1))] + [int(x) for x in re.findall(r"\d{1,2}", m.group(2))]
-        mo, y = MONTHS.get(m.group(3).lower()[:3]), int(m.group(4))
-        if not mo or len(days) < 2 or days != sorted(days) or days[-1] - days[0] > 5: continue   # een festival duurt een paar dagen
-        try:
-            a, b = date(y, mo, days[0]).isoformat(), date(y, mo, days[-1]).isoformat()
-        except ValueError:
-            continue
-        if b >= today: found[(a, b)] = found.get((a, b), 0) + 1
+    import html as _h
+    for txt in (_text(page), re.sub(r"\s+", " ", _h.unescape(re.sub(r"<[^>]+>", " ", page)))):   # ook tekst in scripts
+        hits = [(m.group(1), m.group(2), m.group(3), m.start(), m.end()) for m in RANGE.finditer(txt)] + \
+               [(m.group(2), m.group(1), m.group(3), m.start(), m.end()) for m in RANGE2.finditer(txt)]
+        for ds, mon, y, st, en in hits:
+            days = [int(x) for x in re.findall(r"\d{1,2}", ds)]
+            mo = MONTHS.get(mon.lower()[:3])
+            if not mo or len(days) < 2 or days != sorted(days) or days[0] < 1 or days[-1] - days[0] > 10: continue   # hooguit een dag of tien (Lokerse Feesten)
+            y = int(y) if y else _year(txt, st, en)
+            if not y: continue
+            try:
+                a, b = date(y, mo, days[0]).isoformat(), date(y, mo, days[-1]).isoformat()
+            except ValueError:
+                continue
+            if b >= today: found[(a, b)] = found.get((a, b), 0) + 1
+        if found: break
     return sorted(found, key=lambda k: (-found[k], k))
 
 

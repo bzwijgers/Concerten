@@ -85,18 +85,34 @@ var VENUES = {
   fest_itg:{label:"Into The Grave",home:"https://www.intothegrave.nl/",city:"Leeuwarden",fest:true},
   fest_lotd:{label:"Left of the Dial",home:"https://www.leftofthedial.nl/",city:"Rotterdam",fest:true},
   fest_zeeltje:{label:"Zeeltje",home:"https://www.festivalzeeltje.nl/",city:"Deest",fest:true},
+  fest_paaspop:{label:"Paaspop",home:"https://www.paaspop.nl/",city:"Schijndel",fest:true},
+  fest_zwartecross:{label:"Zwarte Cross",home:"https://zwartecross.nl/",city:"Lichtenvoorde",fest:true},
+  fest_esns:{label:"Eurosonic Noorderslag",home:"https://esns.nl/",city:"Groningen",fest:true},
+  fest_motel:{label:"Motel Mozaïque",home:"https://www.motelmozaique.nl/",city:"Rotterdam",fest:true},
+  fest_lgw:{label:"Le Guess Who?",home:"https://leguesswho.nl/",city:"Utrecht",fest:true},
+  fest_itgwo:{label:"Into The Great Wide Open",home:"https://www.intothegreatwideopen.nl/",city:"Vlieland",fest:true},
+  fest_roadburn:{label:"Roadburn",home:"https://roadburn.com/",city:"Tilburg",fest:true},
+  fest_jera:{label:"Jera On Air",home:"https://www.jeraonair.nl/",city:"Ysselsteyn",fest:true},
+  fest_waterpop:{label:"Waterpop",home:"https://www.waterpop.nl/",city:"Wateringen",fest:true},
+  fest_groezrock:{label:"Groezrock",home:"https://www.groezrock.be/",city:"Meerhout",cc:"BE",fest:true},
+  fest_pukkelpop:{label:"Pukkelpop",home:"https://www.pukkelpop.be/",city:"Hasselt",cc:"BE",fest:true},
+  fest_lokerse:{label:"Lokerse Feesten",home:"https://www.lokersefeesten.be/",city:"Lokeren",cc:"BE",fest:true},
+  fest_suikerrock:{label:"Suikerrock",home:"https://www.suikerrock.be/",city:"Tienen",cc:"BE",fest:true},
+  fest_zottegem:{label:"Rock Zottegem",home:"https://rockzottegem.be/",city:"Zottegem",cc:"BE",fest:true},
+  fest_dour:{label:"Dour Festival",home:"https://www.dourfestival.eu/",city:"Dour",cc:"BE",fest:true},
+  fest_twclassic:{label:"TW Classic",home:"https://www.twclassic.be/",city:"Werchter",cc:"BE",fest:true},
   fest_werchter:{label:"Rock Werchter",home:"https://www.rockwerchter.be/",city:"Werchter",cc:"BE",fest:true},
   fest_graspop:{label:"Graspop Metal Meeting",home:"https://www.graspop.be/nl/",city:"Dessel",cc:"BE",fest:true},
   fest_alcatraz:{label:"Alcatraz",home:"https://www.alcatraz.be/nl/",city:"Kortrijk",cc:"BE",fest:true}
 };
 var REGIONS = [
-  ["Zuid-Holland", ["Rotterdam", "Den Haag", "Leiden", "Zoetermeer", "Dordrecht", "Scheveningen", "Delft", "Gouda"]],
+  ["Zuid-Holland", ["Wateringen", "Rotterdam", "Den Haag", "Leiden", "Zoetermeer", "Dordrecht", "Scheveningen", "Delft", "Gouda"]],
   ["Noord-Holland", ["Amsterdam", "Haarlem", "Zaandam", "Alkmaar", "Purmerend", "Almere", "Hoofddorp", "Hoorn", "Amstelveen"]],
   ["Midden", ["Utrecht", "Amersfoort", "Hilversum", "Biddinghuizen"]],
-  ["Zuid", ["Hilvarenbeek", "Tilburg", "Breda", "Eindhoven", "Den Bosch", "'s-Hertogenbosch", "Uden", "Oss", "Bergen op Zoom", "Weert", "Venlo", "Heerlen", "Sittard",
+  ["Zuid", ["Ysselsteyn", "Schijndel", "Hilvarenbeek", "Tilburg", "Breda", "Eindhoven", "Den Bosch", "'s-Hertogenbosch", "Uden", "Oss", "Bergen op Zoom", "Weert", "Venlo", "Heerlen", "Sittard",
             "Maastricht", "Kerkrade", "Roermond", "Landgraaf", "Helmond"]],
-  ["Noord", ["Groningen", "Leeuwarden", "Sneek", "Drachten", "Assen", "Emmen", "Heerenveen"]],
-  ["Oost", ["Deest", "Beuningen", "Zwolle", "Deventer", "Apeldoorn", "Hengelo", "Enschede", "Almelo", "Nijmegen", "Arnhem", "Ede", "Doetinchem", "Veenendaal"]]
+  ["Noord", ["Vlieland", "Groningen", "Leeuwarden", "Sneek", "Drachten", "Assen", "Emmen", "Heerenveen"]],
+  ["Oost", ["Lichtenvoorde", "Deest", "Beuningen", "Zwolle", "Deventer", "Apeldoorn", "Hengelo", "Enschede", "Almelo", "Nijmegen", "Arnhem", "Ede", "Doetinchem", "Veenendaal"]]
 ];
 REGIONS.push(["België", ["Brussel", "Bruxelles", "Antwerpen", "Borgerhout", "Leuven", "Gent", "Brugge", "Kortrijk", "Diksmuide", "Eeklo", "Sint-Niklaas",
   "Luik", "Liège", "Hasselt", "Mechelen", "Oostende", "Vorst", "Forest", "Werchter", "Genk", "Aalst", "Namen", "Namur", "Charleroi", "Bergen", "Mons", "Turnhout"]]);
@@ -146,7 +162,7 @@ var COORD = { "Amsterdam": [52.37, 4.90], "Utrecht": [52.09, 5.12], "Groningen":
   "Roermond": [51.19, 5.99], "Brussel": [50.85, 4.35], "Bruxelles": [50.85, 4.35], "Antwerpen": [51.22, 4.40], "Borgerhout": [51.21, 4.44],
   "Leuven": [50.88, 4.70], "Gent": [51.05, 3.72], "Brugge": [51.21, 3.22], "Kortrijk": [50.83, 3.26], "Diksmuide": [51.03, 2.86], "Eeklo": [51.19, 3.56],
   "Sint-Niklaas": [51.17, 4.14], "Luik": [50.63, 5.57], "Liège": [50.63, 5.57], "Hasselt": [50.93, 5.34], "Mechelen": [51.03, 4.48], "Oostende": [51.23, 2.92],
-  "Vorst": [50.81, 4.32], "Forest": [50.81, 4.32], "Werchter": [50.97, 4.70], "Genk": [50.97, 5.50], "Aalst": [50.94, 4.04], "Namen": [50.47, 4.87], "Veenendaal": [52.03, 5.56], "Biddinghuizen": [52.45, 5.69], "Beuningen": [51.86, 5.77], "Hilvarenbeek": [51.49, 5.14], "Dessel": [51.24, 5.12], "Deest": [51.89, 5.66], "Bilzen": [50.87, 5.52], "Braine-le-Comte": [50.61, 4.14], "Charleroi": [50.41, 4.44],
+  "Vorst": [50.81, 4.32], "Forest": [50.81, 4.32], "Werchter": [50.97, 4.70], "Genk": [50.97, 5.50], "Aalst": [50.94, 4.04], "Namen": [50.47, 4.87], "Veenendaal": [52.03, 5.56], "Biddinghuizen": [52.45, 5.69], "Beuningen": [51.86, 5.77], "Hilvarenbeek": [51.49, 5.14], "Dessel": [51.24, 5.12], "Deest": [51.89, 5.66], "Schijndel": [51.62, 5.43], "Lichtenvoorde": [51.99, 6.57], "Vlieland": [53.3, 5.07], "Ysselsteyn": [51.49, 5.92], "Wateringen": [52.02, 4.27], "Meerhout": [51.13, 5.08], "Lokeren": [51.1, 3.99], "Tienen": [50.81, 4.94], "Zottegem": [50.87, 3.81], "Dour": [50.4, 3.78], "Bilzen": [50.87, 5.52], "Braine-le-Comte": [50.61, 4.14], "Charleroi": [50.41, 4.44],
   "Chièvres": [50.59, 3.81], "Heist-op-den-Berg": [51.08, 4.73], "Huy": [50.52, 5.24], "La Louvière": [50.48, 4.19], "Lommel": [51.23, 5.31],
   "Louvain-la-Neuve": [50.67, 4.61], "Malmedy": [50.43, 6.03], "Marche-en-Famenne": [50.23, 5.34], "Mons": [50.45, 3.95], "Mouscron": [50.74, 3.21],
   "Roeselare": [50.95, 3.12], "Soignies": [50.58, 4.07], "Tournai": [50.61, 3.39], "Verviers": [50.59, 5.86], "Wieze": [50.98, 4.08], "Landgraaf": [50.90, 6.02], "Helmond": [51.48, 5.66], "Scheveningen": [52.11, 4.27], "Delft": [52.01, 4.36] };

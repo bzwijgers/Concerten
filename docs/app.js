@@ -182,10 +182,10 @@ function tabFilter(c, tab) {
 function visible() {
   var out = ALL.filter(function (c) { return c.d >= TODAY && baseFilter(c) && tabFilter(c, state.tab); });
   if (state.tab === "i" || state.tab === "t") {
-    var known = {}; ALL.forEach(function (c) { known[c.id] = 1; });
+    var known = {}; ALL.forEach(function (c) { known[c.id] = 1; if (has(c.id, state.tab)) known[dupKey(c)] = 1; });
     Object.keys(marks).forEach(function (id) {
       var m = marks[id];
-      if (known[id] || !m[state.tab] || !m.s || m.s.d < TODAY) return;
+      if (known[id] || !m[state.tab] || !m.s || m.s.d < TODAY || known[dupKey(m.s)]) return;   /* zelfde concert al gemarkeerd onder nieuwe link */
       out.push({ id: id, v: m.s.v, d: m.s.d, n: m.s.n, u: m.s.u, t: "", r: m.s.r || "", s: false, orphan: true, ts: "99" });
     });
     out.sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : 0; });
@@ -257,9 +257,23 @@ function setReview(id, f, val) {
   save("ca-marks", marks);
 }
 
+/* hetzelfde concert twee keer gemarkeerd (bv. omdat de link van de zaal veranderde): samenvoegen, cijfer en review blijven bewaard */
+function dupKey(s) { return s.d + "|" + nice(s.n).toLowerCase().replace(/[^a-z0-9À-ÿ]/g, "").slice(0, 14); }
 function archive() {
-  var out = [];
-  Object.keys(marks).forEach(function (id) { var m = marks[id]; if (m.t && m.s && m.s.d < TODAY) out.push({ id: id, s: m.s, rv: m.rv || {} }); });
+  var out = [], seen = {}, changed = false;
+  Object.keys(marks).forEach(function (id) {
+    var m = marks[id]; if (!(m.t && m.s && m.s.d < TODAY)) return;
+    var k = dupKey(m.s), o = seen[k];
+    if (o) {
+      var keep = marks[o.id], rv = keep.rv || {}, rv2 = m.rv || {};
+      if (typeof rv.r !== "number" && typeof rv2.r === "number") rv.r = rv2.r;
+      if (rv2.txt && rv.txt !== rv2.txt) rv.txt = rv.txt ? rv.txt + "\n" + rv2.txt : rv2.txt;
+      keep.rv = rv; keep.i = keep.i || m.i; o.rv = rv;
+      delete marks[id]; changed = true; return;
+    }
+    seen[k] = { id: id, s: m.s, rv: m.rv || {} }; out.push(seen[k]);
+  });
+  if (changed) save("ca-marks", marks);
   return out.sort(function (a, b) { return a.s.d < b.s.d ? 1 : -1; });
 }
 

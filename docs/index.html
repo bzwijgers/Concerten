@@ -31,9 +31,11 @@ button{font:inherit;color:inherit}
 header{position:sticky;top:0;z-index:6;background:var(--bg);margin:0 -16px;padding:calc(env(safe-area-inset-top,0px) + 10px) 16px 0;border-bottom:1px solid var(--line)}
 .top{display:flex;align-items:center;gap:10px}
 .tt{flex:1;min-width:0}
-.tt h1{display:block}
+.tt h1{display:flex;align-items:center;min-width:0}
+.tt h1 .tn{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.tt h1 .hflags{flex:none}
 .stamp{font:400 11px var(--f-mono);color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-h1{font-family:var(--f-display);font-weight:700;font-size:clamp(16px,4.6vw,20px);letter-spacing:-.02em;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(14px,4.4vw,20px);letter-spacing:-.02em;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ib{appearance:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;width:34px;height:34px;display:grid;place-items:center;cursor:pointer;color:var(--fg);text-decoration:none;flex:none}
 .ib svg{width:17px;height:17px}
 .search{display:none;width:100%;margin-top:10px;font:400 15px var(--f-body);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 12px}
@@ -113,7 +115,7 @@ body.arch #days{display:none}
 .rs.on{color:var(--star)}.rs.on svg path{fill:currentColor}
 .rs.half{color:var(--star)}.rs.half svg path{fill:url(#halfgrad)}
 #halfgrad stop:first-child{stop-color:var(--star)}
-.hflags{display:inline-flex;gap:3px;vertical-align:2px;margin-left:3px}
+.hflags{display:inline-flex;gap:3px;vertical-align:2px;margin-left:5px}
 .hflags .flag{width:16px;height:11px}
 .flag{width:15px;height:10px;vertical-align:-1px;border-radius:2px;box-shadow:0 0 0 .5px rgba(0,0,0,.25)}
 .trv{align-self:center;font-size:12.5px;color:var(--muted);margin-right:4px}
@@ -173,13 +175,13 @@ body.arch #days{display:none}
 <div class="wrap">
   <header id="hdr">
     <div class="top">
-      <div class="tt"><h1>Barry's concert agenda <span class="hflags"><svg class="flag" viewBox="0 0 9 6" aria-label="Nederland"><rect width="9" height="2" fill="#AE1C28"/><rect y="2" width="9" height="2" fill="#fff"/><rect y="4" width="9" height="2" fill="#21468B"/></svg><svg class="flag" viewBox="0 0 9 6" aria-label="België"><rect width="3" height="6" fill="#000"/><rect x="3" width="3" height="6" fill="#FDDA24"/><rect x="6" width="3" height="6" fill="#EF3340"/></svg></span></h1><div class="stamp"><span id="stamp"></span></div></div>
+      <div class="tt"><h1><span class="tn">Barry's concert agenda</span><span class="hflags"><svg class="flag" viewBox="0 0 9 6" aria-label="Nederland"><rect width="9" height="2" fill="#AE1C28"/><rect y="2" width="9" height="2" fill="#fff"/><rect y="4" width="9" height="2" fill="#21468B"/></svg><svg class="flag" viewBox="0 0 9 6" aria-label="België"><rect width="3" height="6" fill="#000"/><rect x="3" width="3" height="6" fill="#FDDA24"/><rect x="6" width="3" height="6" fill="#EF3340"/></svg></span></h1><div class="stamp"><span id="stamp"></span></div></div>
       <button class="ib" id="sbtn" aria-label="Zoeken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
       <a class="ib" href="info.html" aria-label="Info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></a>
     </div>
     <input class="search" id="q" type="search" placeholder="Artiest, zaal of stad" autocomplete="off">
     <div class="tabs" role="tablist" id="tabs">
-      <button class="tab" role="tab" data-tab="all" aria-selected="true">Alles <span class="n" id="n-all"></span></button>
+      <button class="tab" role="tab" data-tab="all" aria-selected="true">Agenda <span class="n" id="n-all"></span></button>
       <button class="tab" role="tab" data-tab="new" aria-selected="false">Nieuw <span class="n" id="n-new"></span></button>
       <button class="tab" role="tab" data-tab="i" aria-selected="false">Interesse <span class="n" id="n-i"></span></button>
       <button class="tab" role="tab" data-tab="t" aria-selected="false">Kaartjes <span class="n" id="n-t"></span></button>
@@ -236,5 +238,5 @@ sp.addEventListener("click",function(){if(ready)hide();});
 setTimeout(function(){if(!ready)window.__splashReady("Laden duurt lang; tik om toch verder te gaan");},15000);})();
 </script>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="halfgrad"><stop offset="50%" stop-color="currentColor"/><stop offset="50%" stop-color="transparent"/></linearGradient></defs></svg>
-<script src="app.js?v=20"></script>
+<script src="app.js?v=22"></script>
 </body></html>

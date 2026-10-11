@@ -169,6 +169,17 @@ body.arch #days{display:none}
 .city h3{font:600 13px var(--f-body);color:var(--muted);margin:0 0 4px;display:flex;gap:8px;align-items:center}
 .city h3 button{appearance:none;border:0;background:none;color:var(--accent);font:500 12px var(--f-body);cursor:pointer;padding:0}
 .vl{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px 10px}
+.seg{display:flex;gap:4px;margin:10px 16px 0;padding:3px;background:var(--hover);border-radius:10px}
+.seg button{flex:1;appearance:none;border:0;background:none;padding:8px;border-radius:8px;font:600 14px var(--f-body);color:var(--muted);cursor:pointer}
+.seg button[aria-selected=true]{background:var(--surface);color:var(--fg);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.fc{display:flex;gap:12px;align-items:center;padding:10px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+.fc img,.fc .fl{width:52px;height:52px;border-radius:10px;flex:none;object-fit:cover;box-shadow:0 0 0 1px var(--line)}
+.fc .fl{display:grid;place-items:center;font:700 20px var(--f-display);background:var(--hover);color:var(--muted)}
+.fc .fb{flex:1;min-width:0}.fc .fn{font:700 15px var(--f-display)}
+.fc .fd{font-size:13px;color:var(--fg);margin-top:1px}.fc .fd.tbd{color:var(--muted);font-style:italic}
+.fc .fp{font-size:12px;color:var(--muted);margin-top:1px}
+.fc .fs{font-size:12px;color:var(--accent);text-decoration:none;margin-left:6px}
+.fc input{width:22px;height:22px;flex:none;accent-color:var(--accent)}
 .vl.one{grid-template-columns:1fr}
 .vl label small{margin-left:4px}
 .vl label{display:flex;gap:8px;align-items:center;padding:6px 0;font-size:14px;cursor:pointer}
@@ -247,9 +258,10 @@ html.inapp #splash{background:transparent}
   <div class="back" data-close></div>
   <div class="panel" role="dialog" aria-label="Zalen kiezen">
     <div class="ph"><h2>Zalen en regio</h2><button class="btn" data-close>Sluiten</button></div>
+    <div class="seg" role="tablist"><button data-view="zalen" aria-selected="true">Zalen</button><button data-view="fest" aria-selected="false">Festivals</button></div>
     <div class="pb">
-      <div class="reg" id="regions"></div>
-      <div id="cities"></div>
+      <div id="vzalen"><div class="reg" id="regions"></div><div id="cities"></div></div>
+      <div id="vfest" hidden><div id="fests"></div><button class="btn primary" id="allfest" style="width:100%;margin:12px 0 4px">Toon alle festivals in de agenda</button></div>
     </div>
     <div class="pf"><label><input type="checkbox" id="hideSold"> Verberg uitverkocht</label><button class="btn" id="clearsel">Wis selectie</button><button class="btn primary" id="saveMine">Bewaar als mijn zalen</button></div>
   </div>
@@ -265,5 +277,5 @@ sp.addEventListener("click",function(){if(ready)hide();});
 setTimeout(function(){if(!ready)window.__splashReady("Laden duurt lang; tik om toch verder te gaan");},15000);})();
 </script>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="halfgrad"><stop offset="50%" stop-color="currentColor"/><stop offset="50%" stop-color="transparent"/></linearGradient></defs></svg>
-<script src="app.js?v=38"></script>
+<script src="app.js?v=39"></script>
 </body></html>

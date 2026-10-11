@@ -410,6 +410,30 @@ function render(keepScroll) {
 
 function sizeHeader() { document.documentElement.style.setProperty("--hh", $("hdr").offsetHeight + "px"); }
 
+function fmtRange(a, b) {   /* 18 – 20 juni 2027 */
+  var x = parse(a), y = parse(b || a);
+  if (a === (b || a)) return x.getDate() + " " + MONL[x.getMonth()] + " " + x.getFullYear();
+  return x.getDate() + (x.getMonth() !== y.getMonth() ? " " + MONL[x.getMonth()] : "") + " – " + y.getDate() + " " + MONL[y.getMonth()] + " " + y.getFullYear();
+}
+function buildFests() {
+  var ks = Object.keys(VENUES).filter(function (k) { return VENUES[k].fest; });
+  var next = {}; ALL.forEach(function (c) { if (VENUES[c.v] && VENUES[c.v].fest && c.d >= TODAY && !next[c.v]) next[c.v] = c; });
+  ks.sort(function (a, b) { var x = next[a], y = next[b]; return x && y ? (x.d < y.d ? -1 : 1) : x ? -1 : y ? 1 : VENUES[a].label.localeCompare(VENUES[b].label); });
+  $("fests").innerHTML = ks.map(function (k) {
+    var v = VENUES[k], c = next[k], tt = travel(v.city);
+    return '<label class="fc">' + (LOGO[k] ? '<img src="' + esc(LOGO[k]) + '" alt="" loading="lazy">' : '<span class="fl">' + esc(v.label.charAt(0)) + "</span>") +
+      '<span class="fb"><span class="fn">' + esc(v.label) + '</span><a class="fs" href="' + esc(v.home) + '" target="_blank" rel="noopener">site ↗</a>' +
+      (c ? '<span class="fd" style="display:block">' + esc(fmtRange(c.d, c.e)) + "</span>" : '<span class="fd tbd" style="display:block">data volgen</span>') +
+      '<span class="fp" style="display:block">' + esc(v.city) + " " + (FLAG[v.cc || "NL"] || "") + (tt !== null ? " · ± " + fmtTravel(tt) + " rijden" : "") + "</span></span>" +
+      '<input type="checkbox" value="' + k + '"' + (state.sel.indexOf(k) >= 0 ? " checked" : "") + "></label>";
+  }).join("");
+}
+function setView(vw) {
+  state.sview = vw;
+  Array.prototype.forEach.call(document.querySelectorAll(".seg button"), function (b) { b.setAttribute("aria-selected", String(b.getAttribute("data-view") === vw)); });
+  $("vzalen").hidden = vw !== "zalen"; $("vfest").hidden = vw !== "fest";
+  if (vw === "fest") buildFests();
+}
 function buildSheet() {
   var byCity = {};
   Object.keys(VENUES).forEach(function (k) {
@@ -557,7 +581,7 @@ function closeOverview() { $("ovsheet").classList.remove("on"); $("ovsheet").set
 
 function openSheet() {
   if (state.useMine && mine.length && !state.sel.length) state.sel = mine.slice();
-  buildSheet(); $("sheet").classList.add("on"); $("sheet").setAttribute("aria-hidden", "false"); document.body.style.overflow = "hidden";
+  buildSheet(); setView(state.sview || "zalen"); $("sheet").classList.add("on"); $("sheet").setAttribute("aria-hidden", "false"); document.body.style.overflow = "hidden";
 }
 function closeSheet() { $("sheet").classList.remove("on"); $("sheet").setAttribute("aria-hidden", "true"); document.body.style.overflow = ""; render(); }
 
@@ -678,6 +702,11 @@ $("out").addEventListener("input", function (e) {
 });
 $("sheet").addEventListener("click", function (e) {
   if (e.target.hasAttribute("data-close")) { closeSheet(); return; }
+  var vb = e.target.closest("[data-view]"); if (vb) { setView(vb.getAttribute("data-view")); return; }
+  if (e.target.closest(".fs")) return;   /* 'site ↗' opent de site van het festival, zonder aan te vinken */
+  if (e.target.id === "allfest") {
+    state.sel = Object.keys(VENUES).filter(function (k) { return VENUES[k].fest; }); state.regions = []; state.useMine = false; closeSheet(); return;
+  }
   var r = e.target.closest("[data-region]");
   if (r) { var k = r.getAttribute("data-region"), i = state.regions.indexOf(k); if (i >= 0) state.regions.splice(i, 1); else state.regions.push(k); r.setAttribute("aria-pressed", String(i < 0)); return; }
   var cb = e.target.closest("[data-city]");
@@ -693,7 +722,7 @@ $("sheet").addEventListener("change", function (e) {
   if (e.target.checked && i < 0) state.sel.push(k); if (!e.target.checked && i >= 0) state.sel.splice(i, 1);
   state.useMine = false;
 });
-$("clearsel").addEventListener("click", function () { state.sel = []; state.regions = []; state.useMine = false; buildSheet(); });
+$("clearsel").addEventListener("click", function () { state.sel = []; state.regions = []; state.useMine = false; buildSheet(); if (state.sview === "fest") buildFests(); });
 $("saveMine").addEventListener("click", function () {
   mine = state.sel.slice(); save("ca-mine", mine); state.useMine = mine.length > 0; if (state.useMine) state.sel = []; closeSheet();
 });

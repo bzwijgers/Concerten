@@ -88,7 +88,8 @@ h1{font-family:var(--f-display);font-weight:700;font-size:20px;letter-spacing:-.
 .ev{position:relative}
 .ev::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--rc,transparent)}
 .th{flex:none;width:44px;height:44px;border-radius:8px;object-fit:cover;background:var(--hover)}
-.thx{display:grid;place-items:center;color:#fff;font:700 18px var(--f-display);opacity:.85}
+.thx{display:grid;place-items:center;font:700 18px var(--f-display)}
+.map .nl{fill:var(--surface);stroke:var(--line);stroke-width:1.2}
 .map{width:100%;height:auto;display:block;background:var(--bg);border:1px solid var(--line);border-radius:12px}
 .map circle{cursor:pointer}
 .map .ml{font:500 10px var(--f-body);fill:var(--muted);pointer-events:none}
@@ -207,5 +208,5 @@ window.__splashReady=function(msg){ready=true;document.getElementById("spst").te
 sp.addEventListener("click",function(){if(ready)hide();});
 setTimeout(function(){if(!ready)window.__splashReady("Laden duurt lang; tik om toch verder te gaan");},15000);})();
 </script>
-<script src="app.js?v=10"></script>
+<script src="app.js?v=11"></script>
 </body></html>

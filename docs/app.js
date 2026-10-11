@@ -175,7 +175,7 @@ function row(c) {
              (club(c) ? '<span class="tag club">clubcard</span>' : "") + (tk ? '<span class="tag tk">kaartje</span>' : "");
   var where = esc(v.label) + (v.city ? " · " + esc(v.city) : "") + (c.r && c.r.toLowerCase().indexOf(v.label.toLowerCase()) < 0 && c.r.toLowerCase().indexOf((v.city || "~").toLowerCase()) < 0 && v.label.toLowerCase().indexOf(c.r.toLowerCase()) < 0 ? " · " + esc(c.r) : "");
   var col = rcol(v.city), pic = c.th ? '<img class="th" src="' + esc(c.th) + '" alt="" loading="lazy" width="44" height="44">' :
-    '<span class="th thx" style="background:' + col + '">' + esc((nice(c.n).replace(/^[^A-Za-z0-9\u00C0-\u00FF]+/, "").charAt(0) || "*").toUpperCase()) + "</span>";
+    '<span class="th thx" style="background:' + col + '26;color:' + col + '">' + esc((nice(c.n).replace(/^[^A-Za-z0-9\u00C0-\u00FF]+/, "").charAt(0) || "*").toUpperCase()) + "</span>";
   return '<div class="ev' + (c.s ? " sold" : "") + (tk ? " t" : "") + (open ? " open" : "") + '" data-id="' + esc(c.id) + '" style="--rc:' + col + '">' +
     '<div class="row" data-act="open">' + pic + timeCell(c.t) +
     '<div class="body"><div class="name">' + esc(nice(c.n)) + '</div><div class="sub">' + where + tags + "</div></div>" +
@@ -293,15 +293,23 @@ function openOverview() {
   var X = function (l) { return 14 + (l - 3.35) / (7.25 - 3.35) * 292; }, Y = function (b) { return 14 + (53.6 - b) / (53.6 - 50.72) * 352; };
   var max = Math.max.apply(null, Object.keys(per).map(function (k) { return per[k]; }).concat([1]));
   var cities = Object.keys(per).sort(function (a, b) { return per[b] - per[a]; });
-  var svg = '<svg viewBox="0 0 320 380" class="map" role="img" aria-label="Concerten per stad">';
+  var NL = [[52.96,4.73],[53.18,5.40],[53.40,5.95],[53.45,6.60],[53.33,7.20],[53.18,7.21],[52.65,7.05],[52.42,7.07],[52.22,7.06],[52.04,6.69],[51.85,6.15],
+    [51.83,5.95],[51.65,6.10],[51.37,6.20],[51.17,6.08],[51.02,5.90],[50.76,6.02],[50.75,5.69],[51.05,5.62],[51.15,5.55],[51.27,5.23],[51.43,5.00],[51.45,4.55],
+    [51.37,4.23],[51.30,3.95],[51.37,3.37],[51.60,3.70],[51.85,4.05],[52.10,4.25],[52.45,4.57],[52.96,4.73]];
+  var svg = '<svg viewBox="0 0 320 380" class="map" role="img" aria-label="Concerten per stad"><path class="nl" d="M' +
+    NL.map(function (p) { return X(p[1]).toFixed(1) + " " + Y(p[0]).toFixed(1); }).join(" L") + 'Z"/>';
   cities.slice().reverse().forEach(function (ct) {
-    var r = Math.max(4, Math.sqrt(per[ct] / max) * 30), on = state.city === ct, col = rcol(ct);
+    var r = Math.max(4, Math.sqrt(per[ct] / max) * 24), on = state.city === ct, col = rcol(ct);
     svg += '<circle data-city="' + esc(ct) + '" cx="' + X(COORD[ct][1]).toFixed(1) + '" cy="' + Y(COORD[ct][0]).toFixed(1) + '" r="' + r.toFixed(1) + '" fill="' + col +
       '" fill-opacity="' + (on ? ".85" : ".32") + '" stroke="' + col + '" stroke-width="' + (on ? 3 : 1) + '"><title>' + esc(ct) + ": " + per[ct] + "</title></circle>";
   });
-  cities.slice(0, 12).forEach(function (ct) {
-    var r = Math.max(4, Math.sqrt(per[ct] / max) * 30);
-    svg += '<text x="' + (X(COORD[ct][1]) + r + 3).toFixed(1) + '" y="' + (Y(COORD[ct][0]) + 4).toFixed(1) + '" class="ml">' + esc(ct) + " " + per[ct] + "</text>";
+  var boxes = [];   /* namen alleen tonen als ze niet over een andere naam vallen */
+  cities.forEach(function (ct) {
+    var r = Math.max(4, Math.sqrt(per[ct] / max) * 24), cx = X(COORD[ct][1]), cy = Y(COORD[ct][0]), txt = ct + " " + per[ct];
+    var w = txt.length * 5.6, left = cx > 200, x0 = left ? cx - r - 3 - w : cx + r + 3, b = [x0, cy - 7, x0 + w, cy + 5];
+    if (b[0] < 2 || b[2] > 318 || boxes.some(function (o) { return !(b[2] < o[0] || b[0] > o[2] || b[3] < o[1] || b[1] > o[3]); })) return;
+    boxes.push(b);
+    svg += '<text x="' + (left ? cx - r - 3 : cx + r + 3).toFixed(1) + '" y="' + (cy + 4).toFixed(1) + '" class="ml"' + (left ? ' text-anchor="end"' : "") + ">" + esc(txt) + "</text>";
   });
   $("map").innerHTML = svg + "</svg>";
   var mon = {};

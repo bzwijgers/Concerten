@@ -2,7 +2,7 @@
 Haalt het pictogram dat de zaal zelf op zijn site zet (apple-touch-icon of het grootste icon), maakt er
 een vierkant van 112x112 op wit van en zet het in docs/logos/<zaal>.webp. Alleen zalen zonder logo worden
 opgehaald; docs/data/logos.json zegt welke er zijn. Gebruik: python tools/logos.py [--force zaal ...]"""
-import html as _html, io, json, os, re, sys, urllib.parse, urllib.request
+import html as _html, http.cookiejar, io, json, os, re, sys, urllib.parse, urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "scraper"))
@@ -19,8 +19,18 @@ def venues():
     return dict(re.findall(r'^\s*([a-z0-9]+):\{label:"[^"]*",home:"([^"]+)"', js, re.M))
 
 
+# met cookies, zoals een browser: sommige zalen (be•at) sturen eerst door naar een stille aanmeldstap
+OPENER = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+
+
+def get(u):
+    with OPENER.open(urllib.request.Request(u, headers={"User-Agent": UA}), timeout=30) as r:
+        return r.read()
+
+
 def candidates(home):
-    page = fetch(home, tries=2, timeout=30)
+    try: page = fetch(home, tries=2, timeout=30)
+    except Exception: page = get(home).decode("utf-8", "replace")
     found = []
     for tag in re.findall(r"<link\b[^>]*>", page, re.I):
         rel = re.search(r'rel=["\']([^"\']+)', tag, re.I)
@@ -36,9 +46,8 @@ def candidates(home):
 
 
 def load(u):
-    req = urllib.request.Request(u, headers={"User-Agent": UA})
-    with urllib.request.urlopen(req, timeout=25) as r:
-        im = Image.open(io.BytesIO(r.read()))
+    if True:
+        im = Image.open(io.BytesIO(get(u)))
         if getattr(im, "n_frames", 1) > 1 or im.format == "ICO":
             try: im.size = max(im.info.get("sizes", [im.size]))      # grootste formaat uit een .ico
             except Exception: pass

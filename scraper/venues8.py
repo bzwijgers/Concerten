@@ -17,6 +17,7 @@ SITES = {
     "casino": (["https://decasino.be/"], r"decasino\.be/concert/[^/]+/?$", "De Casino"),
     "reflektor": (["https://reflektor.be/agenda/"], r"reflektor\.be/nl/concert/[^/]+/?$", "Reflektor"),
     "bos": (["https://www.hetbos.be/programma"], r"hetbos\.be/programma/evenement/[^/]+/?$", "Het Bos"),
+    "olt": (["https://www.oltrivierenhof.be/nl/programma"], r"oltrivierenhof\.be/nl/programma/[^/]+/[A-Za-z0-9]{10,}/?$", "OLT Rivierenhof"),
 }
 BASES = {k: re.match(r"https?://[^/]+", v[0][0]).group(0) for k, v in SITES.items()}
 # agenda's met paginering: (eerste paginanummer, maximum)
@@ -70,3 +71,62 @@ def casino(): return _site("casino")
 def reflektor(): return _site("reflektor")
 def bos(): return _site("bos")
 def vierad(): return stager("vierad", "muziekclub4ad.stager.co", "Diksmuide")
+
+
+# --- grote zalen van be•at (AFAS Dome, ex-Sportpaleis; Lotto Arena; Vorst Nationaal) -------------------------------
+# De sites sturen eerst door naar een stille aanmeldstap en verwachten dan een cookie terug, net als een browser.
+# Alle evenementpagina's staan in de sitemap; alleen evenementen met het genre 'concert' tellen mee (geen shows of sport).
+BEAT = {"afasdome": ("https://www.afas-dome.be/sitemap.xml", r"^https://www\.afas-dome\.be/evenement/[^/]+$"),
+        "lottoarena": ("https://www.lotto-arena.be/sitemap.xml", r"^https://www\.lotto-arena\.be/evenement/[^/]+$"),
+        "vorst": ("https://www.forest-national.be/sitemap.xml", r"^https://www\.vorst-nationaal\.be/nl/evenement/[^/]+$")}
+
+
+def _beat(key):
+    import http.cookiejar, json, os, urllib.request
+    from datetime import date, datetime, timedelta
+    from zoneinfo import ZoneInfo
+    op = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+    def get(u):
+        req = urllib.request.Request(u, headers={"User-Agent": UA, "Accept-Language": "nl,en;q=0.8"})
+        with op.open(req, timeout=40) as r:
+            return r.read().decode("utf-8", "replace")
+    path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "beat_cache.json")
+    try: cache = json.load(open(path, encoding="utf-8"))
+    except Exception: cache = {}
+    sm, pat = BEAT[key]
+    urls = [u for u in re.findall(r"<loc>\s*([^<\s]+)\s*</loc>", get(sm)) if re.match(pat, u)]
+    if not urls: raise RuntimeError("geen evenementen in de sitemap")
+    today = date.today().isoformat(); stale = (date.today() - timedelta(days=3)).isoformat()
+    out = []
+    for u in urls:
+        c = cache.get(u)
+        if not c or c.get("at", "") < stale:
+            try:
+                p = get(u)
+            except Exception as ex:
+                print(key, "pagina mislukt", u, ex); continue
+            evs = []
+            if '"g-concert"' in p:
+                for o in ld_events(p):
+                    try:
+                        dt = datetime.fromisoformat(o["startDate"].replace("Z", "+00:00")).astimezone(ZoneInfo("Europe/Brussels"))
+                    except Exception:
+                        continue
+                    evs.append([dt.date().isoformat(), dt.strftime("%H:%M"), html.unescape(o.get("name", "")), sold_from_offers(o)])
+            c = cache[u] = {"at": today, "ev": evs}
+            time.sleep(0.7)
+        for d, t, n, s in c["ev"]:
+            if d >= today and n: out.append(ev(key, d, n, u, t, sold=s))
+    live = set(urls)
+    cache = {u: c for u, c in cache.items() if u in live or not any(re.match(p2, u) for _, p2 in BEAT.values())}
+    json.dump(cache, open(path, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+    return out
+
+
+def afasdome(): return _beat("afasdome")
+def lottoarena(): return _beat("lottoarena")
+def vorst(): return _beat("vorst")
+
+
+def olt():   # Openluchttheater Rivierenhof, Antwerpen: zomerzaal, buiten het seizoen staat er niets op de agenda
+    return _site("olt")

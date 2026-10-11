@@ -70,7 +70,11 @@ var VENUES = {
   n9:{label:"N9",home:"https://www.n9.be/agenda/",city:"Eeklo",cc:"BE"},
   casino:{label:"De Casino",home:"https://decasino.be/",city:"Sint-Niklaas",cc:"BE"},
   reflektor:{label:"Reflektor",home:"https://reflektor.be/agenda/",city:"Luik",cc:"BE"},
-  bos:{label:"Het Bos",home:"https://www.hetbos.be/programma",city:"Antwerpen",cc:"BE"}
+  bos:{label:"Het Bos",home:"https://www.hetbos.be/programma",city:"Antwerpen",cc:"BE"},
+  afasdome:{label:"AFAS Dome",home:"https://www.afas-dome.be/kalender",city:"Antwerpen",cc:"BE"},
+  lottoarena:{label:"Lotto Arena",home:"https://www.lotto-arena.be/kalender",city:"Antwerpen",cc:"BE"},
+  vorst:{label:"Vorst Nationaal",home:"https://www.vorst-nationaal.be/nl/kalender",city:"Brussel",cc:"BE"},
+  olt:{label:"OLT Rivierenhof",home:"https://www.oltrivierenhof.be/nl/programma",city:"Antwerpen",cc:"BE"}
 };
 var REGIONS = [
   ["Noord", ["Groningen", "Leeuwarden", "Sneek", "Drachten", "Assen", "Emmen", "Heerenveen"]],

@@ -81,7 +81,7 @@ h1{font-family:var(--f-display);font-weight:700;font-size:26px;letter-spacing:-.
 .src{font-size:12px;color:var(--muted)}
 </style></head><body>
 <div class="wrap">
-<header><div class="top"><h1>Info</h1><a class="info" href="./" onclick="if(document.referrer.indexOf(location.origin)===0&&history.length>1){history.back();return false}">← Agenda</a></div></header>
+<header><div class="top"><h1>Info</h1><a class="info" href="./" onclick="try{sessionStorage.setItem(&quot;ca-info&quot;,&quot;1&quot;)}catch(e){}if(document.referrer.indexOf(location.origin)===0&amp;&amp;history.length>1){history.back();return false}">← Agenda</a></div></header>
 <style>
 .doc h2{font:700 18px var(--f-head);margin:26px 0 8px}
 .doc p,.doc li{font-size:14.5px;line-height:1.55}
@@ -223,11 +223,11 @@ var a=/ConcertAgendaApp\/([0-9.]+)/.exec(navigator.userAgent);if(a)document.getE
 </div>
 <script>
 fetch("data/events.json").then(function(r){return r.json()}).then(function(d){
- var c={},rooms={};d.events.forEach(function(e){c[e.v]=(c[e.v]||0)+1;if(e.r){rooms[e.v]=rooms[e.v]||{};rooms[e.v][e.r]=1;}});
- var t=Object.keys(c).sort().map(function(k){return k+": "+c[k]}).join(" · ");
- document.getElementById("counts").textContent="Nu in de agenda: "+d.events.length+" concerten ("+t+").";
- var rk=Object.keys(rooms).map(function(k){return k+": "+Object.keys(rooms[k]).sort().join(", ")}).join(" | ");
- if(rk){var p=document.createElement("p");p.className="rooms";p.textContent="Zalen/locaties zoals die in de gegevens voorkomen: "+rk;document.getElementById("counts").after(p);}
+ var today=new Date().toISOString().slice(0,10),ev=d.events.filter(function(e){return e.d>=today}),own={},tm={};
+ ev.forEach(function(e){(e.v.indexOf("tm-")===0?tm:own)[e.v]=1;});
+ var ntm=ev.filter(function(e){return e.v.indexOf("tm-")===0}).length;
+ document.getElementById("counts").textContent="Nu in de agenda: "+(ev.length-ntm).toLocaleString("nl-NL")+" concerten bij "+Object.keys(own).length+" zalen en festivals, plus "+ntm.toLocaleString("nl-NL")+" bij "+Object.keys(tm).length+" andere locaties via Ticketmaster.";
 }).catch(function(){});
 </script>
+<script>try{sessionStorage.setItem("ca-info","1")}catch(e){}</script>
 </body></html>

@@ -581,6 +581,14 @@ $("tabs").addEventListener("click", function (e) {
   Array.prototype.forEach.call(document.querySelectorAll(".tab"), function (t) { t.setAttribute("aria-selected", String(t === b)); });
   render(); window.scrollTo(0, 0);
 });
+/* terug van Info (ook met de terugknop van de telefoon): altijd naar de tab Agenda */
+window.addEventListener("pageshow", function (e) {
+  var fromInfo = false; try { fromInfo = sessionStorage.getItem("ca-info") === "1"; sessionStorage.removeItem("ca-info"); } catch (x) {}
+  if (!fromInfo || state.tab === "all") return;
+  state.tab = "all"; state.limit = 300;
+  Array.prototype.forEach.call(document.querySelectorAll(".tab"), function (t) { t.setAttribute("aria-selected", String(t.getAttribute("data-tab") === "all")); });
+  render(); window.scrollTo(0, 0);
+});
 $("sbtn").addEventListener("click", function () { var q = $("q"); q.classList.toggle("on"); if (q.classList.contains("on")) q.focus(); sizeHeader(); });
 $("q").addEventListener("input", function (e) { state.q = e.target.value; state.limit = 300; render(); });
 $("f-mine").addEventListener("click", function () {

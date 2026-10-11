@@ -2,7 +2,7 @@ import json, os, sys, time, traceback, importlib
 from datetime import date, datetime, timedelta, timezone
 sys.path.insert(0, os.path.dirname(__file__))
 from common import *
-import venues1, venues2, venues3, venues4, venues5, venues6, venues7, feedimport, ticketmaster, tsmap, times, images
+import venues1, venues2, venues3, venues4, venues5, venues6, venues7, venues8, feedimport, ticketmaster, tsmap, times, images
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 DATA = os.path.join(ROOT, "data")
@@ -22,6 +22,8 @@ VENUES = [  # key, label, fn
     ("luxor", venues7.luxor), ("w2", venues7.w2), ("gigant", venues7.gigant), ("fluor", venues7.fluor), ("vorstin", venues7.vorstin), ("p3", venues7.p3),
     ("meester", venues7.meester), ("occii", venues7.occii), ("cinetol", venues7.cinetol), ("engel", venues7.engel), ("bridges", venues7.bridges), ("muziekgieterij", venues7.muziekgieterij),
     ("volt", venues7.volt), ("kade", venues7.kade), ("nor", venues7.nor), ("annabel", venues7.annabel), ("hof", venues7.hof), ("vanpolanen", venues7.vanpolanen), ("walhalla", venues7.walhalla),
+    ("vierad", venues8.vierad), ("ab", venues8.ab), ("botanique", venues8.botanique), ("trix", venues8.trix), ("roma", venues8.roma), ("depot", venues8.depot),
+    ("ha", venues8.ha), ("kreun", venues8.kreun), ("n9", venues8.n9), ("casino", venues8.casino), ("reflektor", venues8.reflektor), ("bos", venues8.bos),
 ]
 
 def load(path, default):

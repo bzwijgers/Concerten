@@ -112,6 +112,8 @@ body.arch #days{display:none}
 .rs.on{color:var(--star)}.rs.on svg path{fill:currentColor}
 .rs.half{color:var(--star)}.rs.half svg path{fill:url(#halfgrad)}
 #halfgrad stop:first-child{stop-color:var(--star)}
+.hflags{display:inline-flex;gap:4px;vertical-align:3px;margin-left:4px}
+.hflags .flag{width:18px;height:12px}
 .flag{width:15px;height:10px;vertical-align:-1px;border-radius:2px;box-shadow:0 0 0 .5px rgba(0,0,0,.25)}
 .trv{align-self:center;font-size:12.5px;color:var(--muted);margin-right:4px}
 .map .be{fill:var(--hover)}
@@ -169,7 +171,7 @@ body.arch #days{display:none}
 <div class="wrap">
   <header id="hdr">
     <div class="top">
-      <div class="tt"><h1>Barry's concert agenda</h1><div class="stamp"><span id="stamp"></span></div></div>
+      <div class="tt"><h1>Barry's concert agenda <span class="hflags"><svg class="flag" viewBox="0 0 9 6" aria-label="Nederland"><rect width="9" height="2" fill="#AE1C28"/><rect y="2" width="9" height="2" fill="#fff"/><rect y="4" width="9" height="2" fill="#21468B"/></svg><svg class="flag" viewBox="0 0 9 6" aria-label="België"><rect width="3" height="6" fill="#000"/><rect x="3" width="3" height="6" fill="#FDDA24"/><rect x="6" width="3" height="6" fill="#EF3340"/></svg></span></h1><div class="stamp"><span id="stamp"></span></div></div>
       <button class="ib" id="sbtn" aria-label="Zoeken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
       <a class="ib" href="info.html" aria-label="Info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></a>
     </div>
@@ -184,10 +186,10 @@ body.arch #days{display:none}
     </div>
     <div class="filters" id="filters">
       <button class="chip" id="f-mine" aria-pressed="false">Mijn zalen</button>
-      <button class="chip" id="f-near" aria-pressed="false">Binnen 1,5 uur</button>
       <button class="chip" id="f-weekend" aria-pressed="false">Dit weekend</button>
       <button class="chip" id="f-date" aria-pressed="false">Datum <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg></button>
       <button class="chip" id="f-ov" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg> Overzicht</button>
+      <button class="chip" id="f-near" aria-pressed="false">Binnen 1,5 uur</button>
       <button class="chip" id="f-zalen" aria-pressed="false">Zalen en regio <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg></button>
     </div>
     <div class="daterow" id="daterow">
@@ -232,5 +234,5 @@ sp.addEventListener("click",function(){if(ready)hide();});
 setTimeout(function(){if(!ready)window.__splashReady("Laden duurt lang; tik om toch verder te gaan");},15000);})();
 </script>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="halfgrad"><stop offset="50%" stop-color="currentColor"/><stop offset="50%" stop-color="transparent"/></linearGradient></defs></svg>
-<script src="app.js?v=17"></script>
+<script src="app.js?v=18"></script>
 </body></html>

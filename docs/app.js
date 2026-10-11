@@ -65,7 +65,6 @@ var VENUES = {
   roma:{label:"De Roma",home:"https://www.deroma.be/nl/",city:"Borgerhout",cc:"BE"},
   depot:{label:"Het Depot",home:"https://www.hetdepot.be/programma",city:"Leuven",cc:"BE"},
   ha:{label:"Handelsbeurs",home:"https://www.haconcerts.be/nl/concertagenda",city:"Gent",cc:"BE"},
-  cactus:{label:"Cactus",home:"https://www.cactusmusic.be/NL/Concerten/Kalender",city:"Brugge",cc:"BE"},
   kreun:{label:"De Kreun",home:"https://www.wildewesten.be/nl/agenda",city:"Kortrijk",cc:"BE"},
   vierad:{label:"4AD",home:"https://www.4ad.be/",city:"Diksmuide",cc:"BE"},
   n9:{label:"N9",home:"https://www.n9.be/agenda/",city:"Eeklo",cc:"BE"},

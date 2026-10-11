@@ -11,12 +11,14 @@ from PIL import Image  # noqa: E402
 
 OUT = os.path.join(ROOT, "docs", "logos")
 INDEX = os.path.join(ROOT, "docs", "data", "logos.json")
-SKIP = {"grenswerk", "occii", "vanpolanen"}   # site-icoon is het standaard WordPress-logo of een foto: dan liever de letter
+# zelf gekozen logo's: {"zaal": "https://..."} (een plaatje van de eigen site van de zaal); die gaan voor
+OWN = os.path.join(ROOT, "data", "logo_urls.json")
+SKIP = {"grenswerk", "occii", "vanpolanen", "bos"}   # site-icoon is het standaard WordPress-logo, een foto of wit op wit: dan liever de letter
 
 
 def venues():
     js = open(os.path.join(ROOT, "docs", "app.js"), encoding="utf-8").read()
-    return dict(re.findall(r'^\s*([a-z0-9]+):\{label:"[^"]*",home:"([^"]+)"', js, re.M))
+    return dict(re.findall(r'^\s*([a-z0-9_]+):\{label:"[^"]*",home:"([^"]+)"', js, re.M))
 
 
 # met cookies, zoals een browser: sommige zalen (be•at) sturen eerst door naar een stille aanmeldstap
@@ -76,7 +78,18 @@ def main(force=()):
     try: index = json.load(open(INDEX, encoding="utf-8"))
     except Exception: index = {}
     vs = venues()
+    try: own = json.load(open(OWN, encoding="utf-8"))
+    except Exception: own = {}
+    for k, u in own.items():                                          # eigen keuze: ophalen als die nieuw of gewijzigd is
+        if k not in vs or index.get(k + "@") == u: continue
+        try:
+            square(load(u)).save(os.path.join(OUT, k + ".webp"), "WEBP", quality=80, method=6)
+            index[k] = "logos/" + k + ".webp"; index[k + "@"] = u
+            print("logo (eigen keuze)", k, u)
+        except Exception as e:
+            print("eigen logo mislukt", k, u, type(e).__name__)
     for k, home in sorted(vs.items()):
+        if k in own and index.get(k + "@") == own[k]: continue
         if k in SKIP:
             index.pop(k, None)
             if os.path.exists(os.path.join(OUT, k + ".webp")): os.remove(os.path.join(OUT, k + ".webp"))
@@ -95,9 +108,9 @@ def main(force=()):
                 print("geen logo", k)
         except Exception as e:
             print("geen logo", k, type(e).__name__)
-    index = {k: v for k, v in index.items() if k in vs}
+    index = {k: v for k, v in index.items() if k.rstrip("@") in vs}
     json.dump(index, open(INDEX, "w", encoding="utf-8"), separators=(",", ":"), sort_keys=True)
-    print(len(index), "van", len(vs), "zalen met logo")
+    print(sum(1 for k in index if not k.endswith("@")), "van", len(vs), "zalen met logo")
 
 
 if __name__ == "__main__":

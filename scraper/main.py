@@ -2,12 +2,14 @@ import json, os, sys, time, traceback, importlib
 from datetime import date, datetime, timedelta, timezone
 sys.path.insert(0, os.path.dirname(__file__))
 from common import *
-import venues1, venues2, venues3, venues4, venues5, venues6, venues7, venues8, feedimport, ticketmaster, tsmap, times, images
+import venues1, venues2, venues3, venues4, venues5, venues6, venues7, venues8, festivals, feedimport, ticketmaster, tsmap, times, images
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 DATA = os.path.join(ROOT, "data")
 OUT = os.path.join(ROOT, "docs", "data")
 
+# zo weinig concerten is verdacht (storing); zomerzalen en festivals zonder nieuwe data mogen leeg zijn
+MIN_EVENTS = {"tolhuistuin": 1, "olt": 0, **{k: 0 for k in festivals.FEST}}
 VENUES = [  # key, label, fn
     ("baroeg", venues2.baroeg), ("rotown", venues1.rotown), ("paradiso", None), ("melkweg", venues1.melkweg),
     ("o13", venues1.o13), ("paard", venues1.paard), ("mezz", venues1.mezz), ("effenaar", venues2.effenaar),
@@ -25,6 +27,7 @@ VENUES = [  # key, label, fn
     ("vierad", venues8.vierad), ("ab", venues8.ab), ("botanique", venues8.botanique), ("trix", venues8.trix), ("roma", venues8.roma), ("depot", venues8.depot),
     ("ha", venues8.ha), ("kreun", venues8.kreun), ("n9", venues8.n9), ("casino", venues8.casino), ("reflektor", venues8.reflektor), ("bos", venues8.bos),
     ("afasdome", venues8.afasdome), ("lottoarena", venues8.lottoarena), ("vorst", venues8.vorst), ("olt", venues8.olt),
+] + [(k, festivals.make(k)) for k in festivals.FEST] + [
 ]
 
 def load(path, default):
@@ -108,7 +111,7 @@ def main():
         try:
             got = venues1.paradiso(pcache) if key == "paradiso" else fn()
             got = [e for e in got if e["d"] >= today and e["d"] <= (date.today() + timedelta(days=600)).isoformat()]
-            if len(got) < {"tolhuistuin": 1}.get(key, 3):
+            if len(got) < MIN_EVENTS.get(key, 3):
                 raise RuntimeError(f"only {len(got)} events")
             fresh[key] = got
             status[key] = {"ok": True, "count": len(got), "at": now}
@@ -126,7 +129,7 @@ def main():
         for key, fn in failed:
             try:
                 got = [e for e in fn() if today <= e["d"] <= (date.today() + timedelta(days=600)).isoformat()]
-                if len(got) >= {"tolhuistuin": 1}.get(key, 3):
+                if len(got) >= MIN_EVENTS.get(key, 3):
                     fresh[key] = got
                     status[key] = {"ok": True, "count": len(got), "at": now}
                     print(f"{key}: {len(got)} (tweede poging)")
@@ -246,6 +249,7 @@ def main():
                 raise RuntimeError(f"only {n} events")
             for k in {v["v"] for v in events.values() if v["v"].startswith("tm-")} - set(got):
                 got[k] = []   # locatie staat niet meer bij Ticketmaster: oude concerten opruimen
+            festivals.drop_tm_duplicates(got, [e for k in festivals.FEST for e in (fresh.get(k) or [x for x in events.values() if x["v"] == k])])
             fresh.update(got)
             tm_venues = {k: v for k, v in tm_venues.items() if k in got and got[k]}
             tm_venues.update(info)

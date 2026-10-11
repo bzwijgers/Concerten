@@ -57,7 +57,7 @@ var VENUES = {
   nor:{label:"Nieuwe Nor",home:"https://nieuwenor.nl/programma",city:"Heerlen"},
   annabel:{label:"Annabel",home:"https://annabel.nu/agenda/",city:"Rotterdam"},
   hof:{label:"Hall of Fame",home:"https://hall-fame.nl/programma",city:"Tilburg"},
-  vanpolanen:{label:"Van Polanen Presenteert",home:"https://www.vanpolanenpresenteert.com/",city:"Leiden"},
+  vanpolanen:{label:"Qbus",home:"https://www.vanpolanenpresenteert.com/",city:"Leiden"},
   walhalla:{label:"Theater Walhalla",home:"https://www.theaterwalhalla.nl/programma/",city:"Rotterdam"},
   ab:{label:"AB",home:"https://www.abconcerts.be/nl/agenda",city:"Brussel",cc:"BE"},
   botanique:{label:"Botanique",home:"https://botanique.be/nl/concerts",city:"Brussel",cc:"BE"},
@@ -115,6 +115,8 @@ function canonCity(c) {
 }
 var REGION_OF = {};
 REGIONS.forEach(function (r) { r[1].forEach(function (c) { REGION_OF[c.toLowerCase()] = r[0]; }); });
+REGION_OF["festivals"] = "Festivals";
+function vregion(v) { return v.fest ? "Festivals" : regionOf(v.city); }   /* festivals vormen een eigen groep */
 function regionOf(city) { return REGION_OF[(city || "").toLowerCase()] || "Overig"; }
 var RCOL = { "België": "#E2B33C", "Noord": "#1D9E75", "Oost": "#BA7517", "Midden": "#7F77DD", "Noord-Holland": "#378ADD", "Zuid-Holland": "#D4537E", "Zuid": "#D85A30", "Overig": "#888780" };
 function rcol(city) { return RCOL[regionOf(city)]; }
@@ -172,6 +174,18 @@ function nice(t) {
   }).join("");
 }
 
+/* zaalnamen van Ticketmaster in hoofdletters netjes maken: DE VEREENIGING -> De Vereeniging (merknamen zoals AFAS en ING blijven) */
+var VKEEP = /^(AFAS|ING|SPOT|PHIL|ZIGGO|AB|OLT|HMH|GMM|TT|NDSM|RAI|DNA|KVS|CC|KC)$/, VSMALL = /^(de|du|des|da|di|la|le|les|a|à|van|het|en|et|op|aan|der|den)$/i;
+function venueName(l) {
+  var allCaps = l === l.toUpperCase();
+  return l.replace(/\s+/g, " ").trim().split(" ").map(function (w, i) {
+    var bare = w.replace(/[^A-Za-zÀ-ÿ]/g, "");
+    if (allCaps && i > 0 && VSMALL.test(bare)) return w.toLowerCase();
+    if (VKEEP.test(bare) || bare.length < 2 || w !== w.toUpperCase()) return w;
+    if (!allCaps && bare.length < 4) return w;                       /* korte afkorting midden in een gewone naam */
+    return w.charAt(0) + w.slice(1).toLowerCase();
+  }).join(" ");
+}
 var LOGO = {};   /* logo per zaal (docs/logos), voor concerten zonder foto */
 var ALL = [], DATA = null, marks = load("ca-marks", {}), mine = load("ca-mine", []);
 Object.keys(marks).forEach(function (id) { var m = marks[id]; if (m && m.k) { m[m.k] = true; delete m.k; } });   /* oud formaat */
@@ -198,7 +212,7 @@ function baseFilter(c, noDates, noCity) {
   if (state.near) { var tt = travel(v.city); if (tt === null || tt > 90) return false; }
   if (state.useMine && mine.length) { if (mine.indexOf(c.v) < 0) return false; }
   else if (state.sel.length && state.sel.indexOf(c.v) < 0) return false;
-  if (state.regions.length && state.regions.indexOf(regionOf(v.city)) < 0) return false;
+  if (state.regions.length && state.regions.indexOf(vregion(v)) < 0) return false;
   if (state.hideSold && c.s) return false;
   if (!noDates && state.from && c.d < state.from) return false;
   if (!noDates && state.to && c.d > state.to) return false;
@@ -400,14 +414,14 @@ function buildSheet() {
   var byCity = {};
   Object.keys(VENUES).forEach(function (k) {
     if (VENUES[k].linkOnly) return;
-    var c = VENUES[k].city || "Overig"; (byCity[c] = byCity[c] || []).push(k);
+    var c = VENUES[k].fest ? "Festivals" : VENUES[k].city || "Overig"; (byCity[c] = byCity[c] || []).push(k);
   });
   var cnt = {}; ALL.forEach(function (c) { if (c.d >= TODAY) cnt[c.v] = (cnt[c.v] || 0) + 1; });
   var hasOther = Object.keys(byCity).some(function (c) { return regionOf(c) === "Overig"; });
-  $("regions").innerHTML = REGIONS.map(function (r) { return r[0]; }).concat(hasOther ? ["Overig"] : []).map(function (r) {
+  $("regions").innerHTML = REGIONS.map(function (r) { return r[0]; }).concat(["Festivals"], hasOther ? ["Overig"] : []).map(function (r) {
     return '<button class="chip" data-region="' + r + '" aria-pressed="' + (state.regions.indexOf(r) >= 0) + '">' + r + "</button>";
   }).join("");
-  var order = REGIONS.map(function (r) { return r[0]; }).concat(["Overig"]);
+  var order = REGIONS.map(function (r) { return r[0]; }).concat(["Festivals", "Overig"]);
   var cities = Object.keys(byCity).sort(function (a, b) {
     var ra = order.indexOf(regionOf(a)), rb = order.indexOf(regionOf(b)); return ra - rb || a.localeCompare(b);
   });
@@ -416,8 +430,9 @@ function buildSheet() {
     var reg = regionOf(city), head = reg !== lastReg ? '<div style="font:700 15px var(--f-display);margin-top:16px">' + reg + "</div>" : "";
     lastReg = reg;
     var ks = byCity[city].sort(function (a, b) { return VENUES[a].label.localeCompare(VENUES[b].label); });
-    return head + '<div class="city"><h3>' + esc(city) + ' <button data-city="' + esc(city) + '">alles</button></h3><div class="vl">' + ks.map(function (k) {
-      return '<label><input type="checkbox" value="' + k + '"' + (state.sel.indexOf(k) >= 0 ? " checked" : "") + ">" + esc(VENUES[k].label) + '<span class="c">' + (cnt[k] || 0) + "</span></label>";
+    return head + '<div class="city"><h3>' + (city === "Festivals" ? "" : esc(city)) + ' <button data-city="' + esc(city) + '">alles</button></h3><div class="vl' + (city === "Festivals" ? " one" : "") + '">' + ks.map(function (k) {
+      return '<label><input type="checkbox" value="' + k + '"' + (state.sel.indexOf(k) >= 0 ? " checked" : "") + ">" + esc(VENUES[k].label) +
+        (VENUES[k].fest ? ' <small style="color:var(--muted)">' + esc(VENUES[k].city) + "</small>" : "") + '<span class="c">' + (cnt[k] || 0) + "</span></label>";
     }).join("") + "</div></div>";
   }).join("");
   $("hideSold").checked = !!state.hideSold;
@@ -444,20 +459,37 @@ function drawMap() {
   var poly = function (P) { return "M" + P.map(function (p) { return ovX(p[1]).toFixed(2) + " " + ovY(p[0]).toFixed(2); }).join(" L") + "Z"; };
   var svg = '<svg viewBox="' + [x0, y0, w, h].map(function (n) { return n.toFixed(2); }).join(" ") + '" class="map" role="img" aria-label="Concerten per stad">' +
     '<path class="nl" d="' + poly(NL) + '"/><path class="nl be" d="' + poly(BE) + '"/>';
+  var km = ((90 - 8) / 60 * 100) / 1.2, ring = [];
+  for (var deg = 0; deg < 360; deg += 6) { var t = deg * Math.PI / 180;
+    ring.push([HOME[0] + km / 111.2 * Math.cos(t), HOME[1] + km / (111.2 * Math.cos(HOME[0] * Math.PI / 180)) * Math.sin(t)]); }
+  svg += '<clipPath id="land"><path d="' + poly(NL) + '"/><path d="' + poly(BE) + '"/></clipPath>' +
+    '<path class="reach' + (state.near ? " on" : "") + '" clip-path="url(#land)" d="' + poly(ring) + '"/>' +
+    '<circle class="home" cx="' + ovX(HOME[1]).toFixed(2) + '" cy="' + ovY(HOME[0]).toFixed(2) + '" r="' + (3.2 * k).toFixed(2) + '"/>' +
+    '<text class="rl" style="font-size:' + (9.5 * k).toFixed(2) + 'px" x="' + ovX(HOME[1]).toFixed(2) + '" y="' + (ovY(HOME[0] + km / 111.2) - 4 * k).toFixed(2) + '" text-anchor="middle">binnen 1,5 uur</text>';
   cities.slice().reverse().forEach(function (ct) {
     var r = Math.max(4, Math.sqrt(per[ct] / max) * 24) * rk, on = state.city === ct, col = rcol(ct);
     svg += '<circle data-city="' + esc(ct) + '" cx="' + ovX(COORD[ct][1]).toFixed(2) + '" cy="' + ovY(COORD[ct][0]).toFixed(2) + '" r="' + r.toFixed(2) + '" fill="' + col +
       '" fill-opacity="' + (on ? ".85" : ".32") + '" stroke="' + col + '" stroke-width="' + ((on ? 3 : 1) * k).toFixed(2) + '"><title>' + esc(ct) + ": " + per[ct] + " concerten</title></circle>";
   });
-  var boxes = [];   /* plaatsnamen (zonder aantallen) alleen waar ze niet over elkaar vallen; inzoomen laat er meer zien */
+  var dots = cities.map(function (ct) { return [ovX(COORD[ct][1]), ovY(COORD[ct][0]), ct, Math.max(4, Math.sqrt(per[ct] / max) * 24) * rk]; });
+  var boxes = [[x0, y0 + h - 122 * k, x0 + 44 * k, y0 + h]];   /* hoek met de zoomknoppen vrijhouden; plaatsnamen (zonder aantallen) alleen waar ze niet over elkaar vallen; inzoomen laat er meer zien */
   cities.forEach(function (ct) {
     var r = Math.max(4, Math.sqrt(per[ct] / max) * 24) * rk, cx = ovX(COORD[ct][1]), cy = ovY(COORD[ct][0]);
     if (cx < x0 || cx > x0 + w || cy < y0 || cy > y0 + h) return;
-    var cw = 5.6 * k, tw = ct.length * cw, left = cx > x0 + w * 0.62, bx = left ? cx - r - 3 * k - tw : cx + r + 3 * k, bb = [bx, cy - 7 * k, bx + tw, cy + 5 * k];
-    if (bb[0] < x0 + 2 * k || bb[2] > x0 + w - 2 * k || boxes.some(function (o) { return !(bb[2] < o[0] || bb[0] > o[2] || bb[3] < o[1] || bb[1] > o[3]); })) return;
-    boxes.push(bb);
-    svg += '<text x="' + (left ? cx - r - 3 * k : cx + r + 3 * k).toFixed(2) + '" y="' + (cy + 3.5 * k).toFixed(2) + '" class="ml" style="font-size:' + (10 * k).toFixed(2) + 'px"' +
-      (left ? ' text-anchor="end"' : "") + (state.city === ct ? ' font-weight="700"' : "") + ">" + esc(ct) + "</text>";
+    var cw = 6.2 * k, tw = ct.length * cw, g = 3 * k, pref = cx > x0 + w * 0.62 ? "l" : "r";
+    var opts = { r: [cx + r + g, cy - 7 * k, cx + r + g + tw, cy + 5 * k, "start", cx + r + g, cy + 3.5 * k],
+                 l: [cx - r - g - tw, cy - 7 * k, cx - r - g, cy + 5 * k, "end", cx - r - g, cy + 3.5 * k],
+                 b: [cx - tw / 2, cy + r + g, cx + tw / 2, cy + r + g + 11 * k, "middle", cx, cy + r + g + 8.5 * k],
+                 t: [cx - tw / 2, cy - r - g - 11 * k, cx + tw / 2, cy - r - g, "middle", cx, cy - r - g - 2.5 * k] };
+    var pick = [pref, pref === "l" ? "r" : "l", "b", "t"].map(function (o) { return opts[o]; }).filter(function (bb) {
+      if (bb[0] < x0 + 2 * k || bb[2] > x0 + w - 2 * k || bb[1] < y0 + 2 * k || bb[3] > y0 + h - 2 * k) return false;
+      if (boxes.some(function (o) { return !(bb[2] < o[0] || bb[0] > o[2] || bb[3] < o[1] || bb[1] > o[3]); })) return false;
+      return !dots.some(function (d) { return d[2] !== ct && d[0] > bb[0] - d[3] * 0.5 && d[0] < bb[2] + d[3] * 0.5 && d[1] > bb[1] - d[3] * 0.5 && d[1] < bb[3] + d[3] * 0.5; });
+    })[0];
+    if (!pick) return;
+    boxes.push(pick);
+    svg += '<text x="' + pick[5].toFixed(2) + '" y="' + pick[6].toFixed(2) + '" class="ml" style="font-size:' + (10 * k).toFixed(2) + 'px" text-anchor="' + pick[4] + '"' +
+      (state.city === ct ? ' font-weight="700"' : "") + ">" + esc(ct) + "</text>";
   });
   if (z < 2.2) svg += '<text class="cl" style="font-size:' + (11 * k).toFixed(2) + 'px" x="' + ovX(3.3).toFixed(1) + '" y="' + ovY(53.25).toFixed(1) + '">Nederland</text>' +
     '<text class="cl" style="font-size:' + (11 * k).toFixed(2) + 'px" x="' + ovX(4.6).toFixed(1) + '" y="' + ovY(49.85).toFixed(1) + '">België</text>';
@@ -532,7 +564,7 @@ function closeSheet() { $("sheet").classList.remove("on"); $("sheet").setAttribu
 function init(data) {
   DATA = data;
   var tmv = data.venues || {};
-  Object.keys(tmv).forEach(function (k) { if (!VENUES[k]) VENUES[k] = { label: tmv[k].label, home: tmv[k].home, city: canonCity(tmv[k].city), cc: tmv[k].cc || "NL", tm: true }; });
+  Object.keys(tmv).forEach(function (k) { if (!VENUES[k]) VENUES[k] = { label: venueName(tmv[k].label), home: tmv[k].home, city: canonCity(tmv[k].city), cc: tmv[k].cc || "NL", tm: true }; });
   Object.keys(VENUES).forEach(function (k) { var v = VENUES[k]; if (v.cc === "BE" && v.city) REGION_OF[v.city.toLowerCase()] = "België"; });   /* heel België is één regio */
   ALL = data.events.filter(function (e) { return VENUES[e.v]; }).map(function (e) { e.id = eid(e); e.ts = (e.t || "").replace("deuren ", "") || "99"; if (e.ts < "06") e.ts = "3" + e.ts; return e; });
   ALL.sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : 0; });

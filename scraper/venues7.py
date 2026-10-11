@@ -170,7 +170,7 @@ def vanpolanen():
             name = re.sub(r'^["“][^"”]+["”]\s*', "", name)            # reeksnaam vooraan ('"HALL OF FAME" ...')
             name = re.split(r"\s+[\"“”']|\s*:\s", name)[0].strip(" -–:") or name   # ondertitel weg
             city = (re.search(r"\d{4}\s?[A-Z]{2}\s+(.+)$", addr) or [None, ""])[1].strip()
-            e = ev("vanpolanen", d, name, u, t, place.title() + (", " + city.replace(", Nederland", "") if city else ""), sold_from_offers(o))
+            e = ev("vanpolanen", d, name, u, t, "Van Polanen presenteert", sold_from_offers(o))
             img = o.get("image"); img = img.get("url") if isinstance(img, dict) else img
             if isinstance(img, str) and img.startswith("http"): e["img"] = img
             if d: out.append(e)

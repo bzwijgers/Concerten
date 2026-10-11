@@ -100,7 +100,11 @@ h1{font-family:var(--f-display);font-weight:700;font-size:clamp(14px,4.4vw,20px)
 .map .ml{font:500 10px var(--f-body);fill:var(--muted);pointer-events:none}
 .mapwrap{position:relative}#map{touch-action:none}
 .map path{vector-effect:non-scaling-stroke}
-.zoom{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:4px}
+.map .reach{fill:var(--fg);fill-opacity:.05;stroke:var(--muted);stroke-width:1.2;stroke-dasharray:4 3}
+.map .reach.on{fill:var(--accent);fill-opacity:.12;stroke:var(--accent)}
+.map .home{fill:var(--fg)}
+.map .rl{fill:var(--muted);font-family:var(--f-body);font-weight:600;pointer-events:none}
+.zoom{position:absolute;left:8px;bottom:8px;display:flex;flex-direction:column;gap:4px}
 .zoom button{appearance:none;width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:600 17px var(--f-body);cursor:pointer}
 .ovh b{color:var(--fg);font-size:14px}
 .mb.on span,.mb.on em{color:var(--accent);font-weight:700}
@@ -162,9 +166,11 @@ body.arch #days{display:none}
 .pb{overflow:auto;padding:6px 16px 16px}
 .reg{display:flex;gap:6px;flex-wrap:wrap;padding:10px 0}
 .city{margin-top:10px}
-.city h3{font:600 12px var(--f-mono);text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:0 0 4px;display:flex;gap:8px;align-items:center}
+.city h3{font:600 13px var(--f-body);color:var(--muted);margin:0 0 4px;display:flex;gap:8px;align-items:center}
 .city h3 button{appearance:none;border:0;background:none;color:var(--accent);font:500 12px var(--f-body);cursor:pointer;padding:0}
 .vl{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px 10px}
+.vl.one{grid-template-columns:1fr}
+.vl label small{margin-left:4px}
 .vl label{display:flex;gap:8px;align-items:center;padding:6px 0;font-size:14px;cursor:pointer}
 .vl input{width:18px;height:18px;accent-color:var(--accent)}
 .vl .c{margin-left:auto;font:400 11px var(--f-mono);color:var(--faint)}
@@ -254,5 +260,5 @@ sp.addEventListener("click",function(){if(ready)hide();});
 setTimeout(function(){if(!ready)window.__splashReady("Laden duurt lang; tik om toch verder te gaan");},15000);})();
 </script>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="halfgrad"><stop offset="50%" stop-color="currentColor"/><stop offset="50%" stop-color="transparent"/></linearGradient></defs></svg>
-<script src="app.js?v=29"></script>
+<script src="app.js?v=36"></script>
 </body></html>

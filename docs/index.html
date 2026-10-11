@@ -204,7 +204,7 @@ body.arch #days{display:none}
   <div class="panel" role="dialog" aria-label="Overzicht">
     <div class="ph"><h2>Overzicht</h2><button class="btn" data-close>Sluiten</button></div>
     <div class="pb">
-      <p class="ovh">Tik op een stad om alleen die stad te zien</p>
+      <p class="ovh">Tik op een stad om alleen die stad te zien <button class="lnk" id="ovclear">Alle steden</button></p>
       <div id="map"></div>
       <p class="ovh">Concerten per maand · tik om naar die maand te gaan</p>
       <div id="months"></div>
@@ -231,5 +231,5 @@ sp.addEventListener("click",function(){if(ready)hide();});
 setTimeout(function(){if(!ready)window.__splashReady("Laden duurt lang; tik om toch verder te gaan");},15000);})();
 </script>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="halfgrad"><stop offset="50%" stop-color="currentColor"/><stop offset="50%" stop-color="transparent"/></linearGradient></defs></svg>
-<script src="app.js?v=15"></script>
+<script src="app.js?v=16"></script>
 </body></html>

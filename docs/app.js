@@ -294,7 +294,7 @@ function render(keepScroll) {
   $("f-zalen").firstChild.textContent = nz ? "Zalen en regio (" + nz + ") " : "Zalen en regio ";
   $("f-ov").setAttribute("aria-pressed", String(!!state.city));
   $("f-near").setAttribute("aria-pressed", String(state.near));
-  $("f-ov").lastChild.textContent = state.city ? " " + state.city : " Overzicht";
+  $("f-ov").lastChild.textContent = state.city ? " " + state.city + " \u2715" : " Overzicht";
   document.body.classList.toggle("arch", state.tab === "a");
   renderDays(state.tab === "a" ? [] : ALL.filter(function (c) { return c.d >= TODAY && baseFilter(c, true) && tabFilter(c, state.tab); }));
   var out = $("out");
@@ -359,6 +359,7 @@ function buildSheet() {
   }).join("");
   $("hideSold").checked = !!state.hideSold;
 }
+var ovOpenedAt = 0;
 function openOverview() {
   var list = ALL.filter(function (c) { return c.d >= TODAY && baseFilter(c, false, true) && tabFilter(c, state.tab); });
   var per = {}; list.forEach(function (c) { var ct = venue(c).city; if (COORD[ct]) per[ct] = (per[ct] || 0) + 1; });
@@ -394,6 +395,8 @@ function openOverview() {
     return '<button class="mb' + (on ? " on" : "") + '" data-month="' + k + '"><span>' + MON[m] + (y !== NOW.getFullYear() ? " " + String(y).slice(2) : "") +
       '</span><i><b style="width:' + Math.round(mon[k] / mm * 100) + '%"></b></i><em>' + mon[k] + "</em></button>";
   }).join("");
+  $("ovclear").style.display = state.city ? "" : "none";
+  ovOpenedAt = Date.now();   /* tikken op de kaart pas na een halve seconde: een doorgevallen tik kiest geen stad */
   $("ovsheet").classList.add("on"); $("ovsheet").setAttribute("aria-hidden", "false"); document.body.style.overflow = "hidden";
 }
 function closeOverview() { $("ovsheet").classList.remove("on"); $("ovsheet").setAttribute("aria-hidden", "true"); document.body.style.overflow = ""; }
@@ -444,11 +447,16 @@ $("daterow").addEventListener("click", function (e) {
   else setRange("", "");
 });
 $("f-zalen").addEventListener("click", openSheet);
-$("f-ov").addEventListener("click", openOverview);
+$("f-ov").addEventListener("click", function () {
+  if (state.city) { state.city = ""; state.limit = 300; render(); return; }   /* stad aan: de knop zet het filter uit */
+  openOverview();
+});
 $("f-near").addEventListener("click", function () { state.near = !state.near; state.limit = 300; render(); window.scrollTo(0, 0); });
 $("ovsheet").addEventListener("click", function (e) {
   if (e.target.hasAttribute("data-close")) { closeOverview(); return; }
   var c = e.target.closest("[data-city]");
+  if (e.target.id === "ovclear") { state.city = ""; closeOverview(); render(); return; }
+  if (c && Date.now() - ovOpenedAt < 500) return;
   if (c) { var ct = c.getAttribute("data-city"); state.city = state.city === ct ? "" : ct; state.limit = 300; closeOverview(); render(); window.scrollTo(0, 0); return; }
   var m = e.target.closest("[data-month]");
   if (m) {

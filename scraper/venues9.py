@@ -113,3 +113,32 @@ def corneel():   # de agenda van Corneel heeft schema.org-gegevens per voorstell
         if not re.match(r"\d{4}-\d\d-\d\d$", d): continue
         out.append(ev("corneel", d, html.unescape(o.get("name", "")), o.get("url") or "https://www.corneel.nl/agenda/", t, "", sold_from_offers(o)))
     return out
+
+
+# Vessel 11 (Rotterdam, schip in de Wijnhaven): ook spelletjes, comedy, swing en open decks; die laten we weg
+SITES["v11"] = (["https://www.vessel11.nl/nl/agenda/", "https://www.vessel11.nl/nl/"], r"vessel11\.nl/nl/events/[^/]+/?$", "Vessel 11|V11")
+BASES["v11"] = "https://www.vessel11.nl"
+V11_NOT = re.compile(r"board ?game|comedy|jokes|open decks|swing|quiz|karaoke|bingo|halloween|silent disco|workshop|markt|market|yoga|lezing|dance ?class|salsa", re.I)
+
+
+def v11():
+    return [e for e in _site("v11") if not V11_NOT.search(e["n"] + " " + e["u"])]
+
+
+def manifesto():
+    """Manifesto (Hoorn): de RSS-feed 'upcoming_events' van hun site, met per evenement titel, link en datum in de tekst."""
+    from datetime import date
+    mons = {"januari": 1, "februari": 2, "maart": 3, "april": 4, "mei": 5, "juni": 6, "juli": 7, "augustus": 8,
+            "september": 9, "oktober": 10, "november": 11, "december": 12}
+    feed = fetch("https://manifesto-hoorn.nl/upcoming_events")
+    out = []
+    for item in re.findall(r"<item>(.*?)</item>", feed, re.S):
+        title = html.unescape(re.sub(r"<!\[CDATA\[|\]\]>", "", (re.search(r"<title>(.*?)</title>", item, re.S) or [None, ""])[1])).strip()
+        link = (re.search(r"<link>\s*([^<\s]+)", item) or [None, "https://manifesto-hoorn.nl/"])[1]
+        body = re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", html.unescape(re.sub(r"<!\[CDATA\[|\]\]>", " ", item)))))
+        m = re.search(r"\b(\d{1,2}) (" + "|".join(mons) + r") (20\d\d)\b", body, re.I)
+        if not title or not m: continue
+        t = re.search(r"(?:aanvang|tijd:?|start)\s*(\d{1,2})[.:](\d\d)", body, re.I)
+        out.append(ev("manifesto", date(int(m.group(3)), mons[m.group(2).lower()], int(m.group(1))).isoformat(), title, link,
+                      f"{int(t.group(1)):02d}:{t.group(2)}" if t else "", "", bool(re.search(r"uitverkocht", title, re.I))))
+    return [e for e in out if not re.search(r"quiz|open mic|bingo|karaoke|club festo|haunted|spookhuis|kom en dans|burlesque", e["n"], re.I)]

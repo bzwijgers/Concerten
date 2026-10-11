@@ -33,7 +33,7 @@ header{position:sticky;top:0;z-index:6;background:var(--bg);margin:0 -16px;paddi
 .tt{flex:1;min-width:0}
 .tt h1{display:block}
 .stamp{font:400 11px var(--f-mono);color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-h1{font-family:var(--f-display);font-weight:700;font-size:20px;letter-spacing:-.02em;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(16px,4.6vw,20px);letter-spacing:-.02em;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ib{appearance:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;width:34px;height:34px;display:grid;place-items:center;cursor:pointer;color:var(--fg);text-decoration:none;flex:none}
 .ib svg{width:17px;height:17px}
 .search{display:none;width:100%;margin-top:10px;font:400 15px var(--f-body);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 12px}
@@ -65,6 +65,7 @@ h1{font-family:var(--f-display);font-weight:700;font-size:20px;letter-spacing:-.
 .presets{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:8px -16px 0;padding:0 16px}.presets::-webkit-scrollbar{display:none}
 .resinfo{margin:14px 0 0;font-size:13px;color:var(--muted)}
 .resinfo b{color:var(--fg)}
+.aseg{display:flex;gap:6px;align-items:center;margin-top:10px;font-size:13px;color:var(--muted)}
 .lnk{appearance:none;border:0;background:none;color:var(--accent);font:500 13px var(--f-body);cursor:pointer;padding:0 0 0 6px}
 .warn{border:1px solid var(--star);border-radius:10px;padding:9px 12px;font-size:13px;margin-top:12px}
 .dayhead{position:sticky;top:var(--hh,150px);z-index:4;background:var(--bg);display:flex;align-items:baseline;gap:8px;padding:14px 0 6px;font-family:var(--f-display);font-weight:700;font-size:15px}
@@ -112,11 +113,12 @@ body.arch #days{display:none}
 .rs.on{color:var(--star)}.rs.on svg path{fill:currentColor}
 .rs.half{color:var(--star)}.rs.half svg path{fill:url(#halfgrad)}
 #halfgrad stop:first-child{stop-color:var(--star)}
-.hflags{display:inline-flex;gap:4px;vertical-align:3px;margin-left:4px}
-.hflags .flag{width:18px;height:12px}
+.hflags{display:inline-flex;gap:3px;vertical-align:2px;margin-left:3px}
+.hflags .flag{width:16px;height:11px}
 .flag{width:15px;height:10px;vertical-align:-1px;border-radius:2px;box-shadow:0 0 0 .5px rgba(0,0,0,.25)}
 .trv{align-self:center;font-size:12.5px;color:var(--muted);margin-right:4px}
 .map .be{fill:var(--hover)}
+.map .cl{font:700 11px var(--f-display);fill:var(--muted);opacity:.7;letter-spacing:.06em;text-transform:uppercase;pointer-events:none}
 .rz{font:600 12px var(--f-mono);border:1px solid var(--line);border-radius:6px;width:28px;height:24px;margin-left:6px}
 .rz.on{background:var(--star);color:var(--surface);border-color:var(--star)}
 .rvin{width:100%;font:400 14px var(--f-body);color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;resize:vertical}
@@ -186,8 +188,8 @@ body.arch #days{display:none}
     </div>
     <div class="filters" id="filters">
       <button class="chip" id="f-mine" aria-pressed="false">Mijn zalen</button>
-      <button class="chip" id="f-weekend" aria-pressed="false">Dit weekend</button>
       <button class="chip" id="f-date" aria-pressed="false">Datum <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button class="chip" id="f-weekend" aria-pressed="false">Dit weekend</button>
       <button class="chip" id="f-ov" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg> Overzicht</button>
       <button class="chip" id="f-near" aria-pressed="false">Binnen 1,5 uur</button>
       <button class="chip" id="f-zalen" aria-pressed="false">Zalen en regio <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg></button>
@@ -234,5 +236,5 @@ sp.addEventListener("click",function(){if(ready)hide();});
 setTimeout(function(){if(!ready)window.__splashReady("Laden duurt lang; tik om toch verder te gaan");},15000);})();
 </script>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="halfgrad"><stop offset="50%" stop-color="currentColor"/><stop offset="50%" stop-color="transparent"/></linearGradient></defs></svg>
-<script src="app.js?v=18"></script>
+<script src="app.js?v=20"></script>
 </body></html>

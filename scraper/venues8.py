@@ -12,7 +12,6 @@ SITES = {
     "roma": (["https://www.deroma.be/nl/", "https://www.deroma.be/nl/agenda"], r"deroma\.be/nl/event/[^/]+$", "De Roma"),
     "depot": (["https://www.hetdepot.be/programma"], r"hetdepot\.be/concert/20\d\d/[^/]+$", "Het Depot"),
     "ha": (["https://www.haconcerts.be/nl/concertagenda"], r"haconcerts\.be/nl/concertagenda/concerten/[^/]+$", "Handelsbeurs|HA Concerts"),
-    "cactus": (["https://www.cactusmusic.be/NL/Concerten/Kalender"], r"cactusmusic\.be/NL/Concerten/Kalender/[^/]+$", "Cactus"),
     "kreun": (["https://www.wildewesten.be/nl/agenda"], r"wildewesten\.be/nl/event/[^/]+$", "Wilde Westen|De Kreun"),
     "n9": (["https://www.n9.be/agenda/"], r"n9\.be/agenda/\d+-[^/]+/?$", "N9"),
     "casino": (["https://decasino.be/"], r"decasino\.be/concert/[^/]+/?$", "De Casino"),
@@ -65,7 +64,6 @@ def trix(): return _site("trix")
 def roma(): return _site("roma")
 def depot(): return _site("depot")
 def ha(): return _site("ha")
-def cactus(): return _site("cactus")
 def kreun(): return _site("kreun")
 def n9(): return _site("n9")
 def casino(): return _site("casino")

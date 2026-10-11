@@ -102,7 +102,7 @@ function fmtTravel(m) { return m < 60 ? m + " min" : Math.floor(m / 60) + " u " 
 var FLAG = {
   NL: '<svg class="flag" viewBox="0 0 9 6" aria-label="Nederland"><rect width="9" height="2" fill="#AE1C28"/><rect y="2" width="9" height="2" fill="#fff"/><rect y="4" width="9" height="2" fill="#21468B"/></svg>',
   BE: '<svg class="flag" viewBox="0 0 9 6" aria-label="België"><rect width="3" height="6" fill="#000"/><rect x="3" width="3" height="6" fill="#FDDA24"/><rect x="6" width="3" height="6" fill="#EF3340"/></svg>' };
-function place(v) { return v.city ? " · " + esc(v.city) + " " + (FLAG[v.cc || "NL"] || "") : ""; }
+function place(v) { return v.city ? " · " + esc(v.city) + (state.tab === "c" ? "" : " " + (FLAG[v.cc || "NL"] || "")) : ""; }   /* Rotown club: geen vlag */
 /* ligging van de steden (breedte, lengte) voor de kaart */
 var COORD = { "Amsterdam": [52.37, 4.90], "Utrecht": [52.09, 5.12], "Groningen": [53.22, 6.57], "Den Haag": [52.08, 4.30], "Rotterdam": [51.92, 4.48],
   "Eindhoven": [51.44, 5.47], "Tilburg": [51.56, 5.09], "Nijmegen": [51.84, 5.86], "Haarlem": [52.38, 4.64], "Breda": [51.59, 4.78], "Arnhem": [51.98, 5.91],
@@ -142,7 +142,7 @@ function nice(t) {
 var ALL = [], DATA = null, marks = load("ca-marks", {}), mine = load("ca-mine", []);
 Object.keys(marks).forEach(function (id) { var m = marks[id]; if (m && m.k) { m[m.k] = true; delete m.k; } });   /* oud formaat */
 function has(id, f) { return !!(marks[id] && marks[id][f]); }
-var state = { near: false, city: "", tab: "all", q: "", hideSold: load("ca-hidesold", false), useMine: mine.length > 0, from: "", to: "", sel: [], regions: [], limit: 300, open: null, showDate: false };
+var state = { asort: load("ca-asort", "d"), near: false, city: "", tab: "all", q: "", hideSold: load("ca-hidesold", false), useMine: mine.length > 0, from: "", to: "", sel: [], regions: [], limit: 300, open: null, showDate: false };
 
 function venue(c) { return VENUES[c.v] || { label: c.v, city: "" }; }
 function eid(c) { return c.v + "|" + c.d + "|" + c.u; }
@@ -304,7 +304,15 @@ function render(keepScroll) {
     var rated = arch.filter(function (a) { return typeof a.rv.r === "number"; });
     var head = arch.length ? '<div class="resinfo"><b>' + arch.length + "</b> bezochte concerten" + (rated.length ? " · gemiddeld <b>" +
       (rated.reduce(function (t, a) { return t + a.rv.r; }, 0) / rated.length).toFixed(1).replace(".", ",") + "</b>/10 over " + rated.length : "") + "</div>" : "";
-    out.innerHTML = arch.length ? head + '<div class="list">' + arch.map(archRow).join("") + "</div>" :
+    /* archief sorteren op datum, naam of cijfer; het zoekveld werkt hier ook */
+    var srt = state.asort, qa = state.q.trim().toLowerCase(), shown = arch.filter(function (a) {
+      return !qa || (a.s.n + " " + venue(a.s).label + " " + (venue(a.s).city || "")).toLowerCase().indexOf(qa) >= 0; });
+    if (srt === "n") shown.sort(function (a, b) { return nice(a.s.n).localeCompare(nice(b.s.n), "nl"); });
+    if (srt === "r") shown.sort(function (a, b) { var x = typeof a.rv.r === "number" ? a.rv.r : -1, y = typeof b.rv.r === "number" ? b.rv.r : -1; return y - x || (a.s.d < b.s.d ? 1 : -1); });
+    var seg = arch.length > 1 ? '<div class="aseg">Sorteer: ' + [["d", "Datum"], ["n", "Naam"], ["r", "Cijfer"]].map(function (o) {
+      return '<button class="chip" data-asort="' + o[0] + '" aria-pressed="' + (srt === o[0]) + '">' + o[1] + "</button>"; }).join("") + "</div>" : "";
+    out.innerHTML = arch.length ? head + seg + (shown.length ? '<div class="list">' + shown.map(archRow).join("") + "</div>" :
+      '<div class="empty"><b>Niets gevonden</b>Geen bezocht concert met ‘' + esc(state.q.trim()) + '’.</div>') :
       '<div class="empty"><b>Nog niets in het archief</b>Concerten waar je een kaartje voor had, komen hier na afloop.</div>';
     return;
   }
@@ -388,6 +396,7 @@ function openOverview() {
     boxes.push(b);
     svg += '<text x="' + (left ? cx - r - 3 : cx + r + 3).toFixed(1) + '" y="' + (cy + 4).toFixed(1) + '" class="ml"' + (left ? ' text-anchor="end"' : "") + ">" + esc(txt) + "</text>";
   });
+  svg += '<text class="cl" x="' + X(3.3).toFixed(1) + '" y="' + Y(53.25).toFixed(1) + '">Nederland</text><text class="cl" x="' + X(4.6).toFixed(1) + '" y="' + Y(49.85).toFixed(1) + '">België</text>';
   $("map").innerHTML = svg + "</svg>";
   var mon = {};
   ALL.filter(function (c) { return c.d >= TODAY && baseFilter(c, true) && tabFilter(c, state.tab); }).forEach(function (c) { var k = c.d.slice(0, 7); mon[k] = (mon[k] || 0) + 1; });
@@ -489,6 +498,8 @@ $("out").addEventListener("click", function (e) {
     else if (act0 === "del") { delete marks[aid]; save("ca-marks", marks); state.aconfirm = null; state.aopen = null; }
     render(true); return;
   }
+  var as = e.target.closest && e.target.closest("[data-asort]");
+  if (as) { state.asort = as.getAttribute("data-asort"); try { localStorage.setItem("ca-asort", JSON.stringify(state.asort)); } catch (x) {} render(); return; }
   if (e.target.id === "clearall") { state.q = ""; $("q").value = ""; state.city = ""; state.near = false; setRange("", ""); return; }
   var a = e.target.closest("[data-act]"); if (!a) return;
   var ev = a.closest(".ev"), id = ev && ev.getAttribute("data-id"), act = a.getAttribute("data-act");

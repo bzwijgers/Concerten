@@ -163,7 +163,7 @@ function parse(s) { var p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2
 var TODAY = iso(NOW), WEEK_AGO = iso(new Date(NOW.getTime() - 7 * 864e5)), IN7 = iso(new Date(NOW.getTime() + 7 * 864e5));
 var VENUES = {}, COORD = {}, LOGO = {}, ALL = [], NL = [], BE = [], marks = load("ca-marks", {}), mine = load("ca-mine", []);
 var HOME = [51.958, 4.476];
-var st = { from: "", to: "", tab: "agenda", sub: "t", f: {}, q: "", city: "", month: "", limit: 250, open: null, more: {} };
+var st = { asort: load("ca-asort", "d"), from: "", to: "", tab: "agenda", sub: "t", f: {}, q: "", city: "", month: "", limit: 250, open: null, more: {} };
 var CHIPS = [["today", "Vandaag"], ["weekend", "Dit weekend"], ["date", "Datum"], ["mine", "Mijn zalen"], ["near", "Binnen 1,5 uur"], ["fest", "Festivals"]];
 function travel(city) {
   var c = COORD[city]; if (!c) return null;
@@ -280,8 +280,13 @@ function renderMine() {
 function renderArchive() {
   var out = Object.keys(marks).filter(function (id) { var m = marks[id]; return m.t && m.s && m.s.d < TODAY; }).map(function (id) { return { id: id, s: marks[id].s, rv: marks[id].rv || {} }; })
     .sort(function (a, b) { return a.s.d < b.s.d ? 1 : -1; });
+  var q = st.q.trim().toLowerCase();
+  if (q) out = out.filter(function (a) { var v = VENUES[a.s.v] || { label: "", city: "" }; return (a.s.n + " " + v.label + " " + v.city).toLowerCase().indexOf(q) >= 0; });
+  if (st.asort === "n") out.sort(function (a, b) { return nice(a.s.n).localeCompare(nice(b.s.n), "nl"); });
+  if (st.asort === "r") out.sort(function (a, b) { var x = typeof a.rv.r === "number" ? a.rv.r : -1, y = typeof b.rv.r === "number" ? b.rv.r : -1; return y - x || (a.s.d < b.s.d ? 1 : -1); });
   var rated = out.filter(function (a) { return typeof a.rv.r === "number"; });
-  return '<div class="hl">Gezien · ' + out.length + (rated.length ? " · gemiddeld " + (rated.reduce(function (t, a) { return t + a.rv.r; }, 0) / rated.length).toFixed(1).replace(".", ",") : "") + "</div>" +
+  var seg = '<div class="seg">' + [["d", "Datum"], ["n", "Artiest"], ["r", "Beoordeling"]].map(function (o) { return '<button data-asort="' + o[0] + '" aria-pressed="' + (st.asort === o[0]) + '">' + o[1] + "</button>"; }).join("") + "</div>";
+  return seg + '<div class="hl">Gezien · ' + out.length + (rated.length ? " · gemiddeld " + (rated.reduce(function (t, a) { return t + a.rv.r; }, 0) / rated.length).toFixed(1).replace(".", ",") : "") + "</div>" +
     (out.length ? out.map(function (a) { var d = parse(a.s.d), v = VENUES[a.s.v] || { label: a.s.v, city: "" }, r = a.rv.r;
       return '<div class="ev"><span class="lt" style="font-size:13px;line-height:1.1;text-align:center">' + d.getDate() + "<br>" + MON[d.getMonth()] + '</span><div class="b"><div class="n">' + esc(nice(a.s.n)) + '</div><div class="s">' + esc(v.label) + " · " + d.getFullYear() + '</div></div><div class="tm" style="color:var(--gold)">' + (typeof r === "number" ? "★ " + String(r).replace(".", ",") : "–") + "</div></div>"; }).join("")
     : '<div class="empty">Concerten met een kaartje komen hier na afloop.</div>');
@@ -328,7 +333,7 @@ function renderOv() {
       return '<button class="mrow' + (st.month === m ? " on" : "") + '" data-month="' + m + '"><span>' + MON[+m.slice(5) - 1] + (y !== NOW.getFullYear() ? " " + String(y).slice(2) : "") + '</span><i><b style="width:' + Math.round(mon[m] / mm * 100) + '%"></b></i><em>' + mon[m] + "</em></button>"; }).join("");
 }
 function render() {
-  chips();
+  chips(); $("chips").style.display = st.tab === "a" ? "none" : "";
   $("main").innerHTML = st.tab === "mine" ? renderMine() : st.tab === "a" ? renderArchive() : st.tab === "ov" ? renderOv() : renderAgenda();
   document.documentElement.style.setProperty("--hh", $("hdr").offsetHeight + "px");
 }
@@ -366,6 +371,7 @@ $("main").addEventListener("click", function (e) {
   var t = e.target;
   if (t.closest("[data-more]")) { st.more[t.closest("[data-more]").getAttribute("data-more")] = true; render(); return; }
   if (t.closest("[data-clear]")) { st.f = {}; st.q = ""; $("q").value = ""; st.city = ""; st.month = ""; st.from = st.to = ""; render(); return; }
+  if (t.closest("[data-asort]")) { st.asort = t.closest("[data-asort]").getAttribute("data-asort"); save("ca-asort", st.asort); render(); return; }
   if (t.closest("[data-sub]")) { st.sub = t.closest("[data-sub]").getAttribute("data-sub"); render(); return; }
   if (t.closest("[data-zoom]")) { var zz = +t.closest("[data-zoom]").getAttribute("data-zoom"); if (!zz) { OV = { z: 1, cx: 160, cy: 220 }; } else OV.z = Math.min(8, Math.max(1, OV.z * zz)); render(); return; }
   if (t.closest("[data-city]") && OV.dragged) { OV.dragged = false; return; }

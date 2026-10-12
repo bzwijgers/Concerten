@@ -118,8 +118,18 @@ def main(force=()):
     for k, home in vs.items():
         if home.startswith("=") and home[1:] in index: index[k] = index[home[1:]]
     index = {k: v for k, v in index.items() if k.rstrip("@") in vs}
+    # lichte logo's (gemiddeld helder): het nieuwe donkere uiterlijk keert die om, zodat de lijst rustig blijft
+    light = []
+    for k, v in index.items():
+        if k.endswith("@") or k.startswith("_") or not isinstance(v, str): continue
+        try:
+            px = list(Image.open(os.path.join(ROOT, "docs", v)).convert("L").resize((16, 16)).getdata())
+            if sum(px) / len(px) > 165: light.append(k)
+        except Exception:
+            pass
+    index["_light"] = sorted(light)
     json.dump(index, open(INDEX, "w", encoding="utf-8"), separators=(",", ":"), sort_keys=True)
-    print(sum(1 for k in index if not k.endswith("@")), "van", len(vs), "zalen met logo")
+    print(sum(1 for k in index if not k.endswith("@") and not k.startswith("_")), "van", len(vs), "zalen met logo,", len(index.get("_light", [])), "licht")
 
 
 if __name__ == "__main__":

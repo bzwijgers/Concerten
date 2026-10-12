@@ -440,6 +440,12 @@ $("sb").addEventListener("click", function () {
 });
 var qt; $("q").addEventListener("input", function () { $("qx").style.display = $("q").value ? "block" : "none"; clearTimeout(qt); qt = setTimeout(function () { st.q = $("q").value; render(); }, 150); });
 $("qx").addEventListener("click", function (e) { e.preventDefault(); $("q").value = ""; st.q = ""; $("qx").style.display = "none"; render(); });
+/* terug van Info (ook met de terugknop van de telefoon): altijd naar de Agenda */
+window.addEventListener("pageshow", function () {
+  var fromInfo = false; try { fromInfo = sessionStorage.getItem("ca-info") === "1"; sessionStorage.removeItem("ca-info"); } catch (x) {}
+  if (!fromInfo || st.tab === "agenda") return;
+  st.tab = "agenda"; setNav(); closeSheet(); if (ALL.length) render(); window.scrollTo(0, 0);
+});
 window.addEventListener("scroll", function () {
   $("hdr").classList.toggle("sc", scrollY > 4);
   if (st.tab === "agenda" && innerHeight + scrollY > document.body.scrollHeight - 900 && !st.loading) {   /* verder scrollen laadt vanzelf meer */

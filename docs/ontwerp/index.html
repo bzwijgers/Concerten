@@ -164,7 +164,7 @@ var TODAY = iso(NOW), WEEK_AGO = iso(new Date(NOW.getTime() - 7 * 864e5)), IN7 =
 var VENUES = {}, COORD = {}, LOGO = {}, ALL = [], NL = [], BE = [], marks = load("ca-marks", {}), mine = load("ca-mine", []);
 var HOME = [51.958, 4.476];
 var st = { tab: "agenda", sub: "t", f: {}, q: "", city: "", month: "", limit: 250, open: null, more: {} };
-var CHIPS = [["today", "Vandaag"], ["weekend", "Dit weekend"], ["near", "Binnen 1,5 uur"], ["mine", "Mijn zalen"], ["fest", "Festivals"], ["new", "Nieuw"]];
+var CHIPS = [["today", "Vandaag"], ["new", "Nieuw"], ["weekend", "Dit weekend"], ["mine", "Mijn zalen"], ["near", "Binnen 1,5 uur"], ["fest", "Festivals"]];
 function travel(city) {
   var c = COORD[city]; if (!c) return null;
   var a = Math.pow(Math.sin((c[0] - HOME[0]) * Math.PI / 360), 2) + Math.cos(HOME[0] * Math.PI / 180) * Math.cos(c[0] * Math.PI / 180) * Math.pow(Math.sin((c[1] - HOME[1]) * Math.PI / 360), 2);

@@ -164,6 +164,9 @@ function parse(s) { var p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2
 var TODAY = iso(NOW), WEEK_AGO = iso(new Date(NOW.getTime() - 7 * 864e5)), IN7 = iso(new Date(NOW.getTime() + 7 * 864e5));
 var VENUES = {}, COORD = {}, LOGO = {}, ALL = [], NL = [], BE = [], marks = load("ca-marks", {}), mine = load("ca-mine", []);
 var HOME = [51.958, 4.476];
+Object.keys(marks).forEach(function (id) { var m = marks[id]; if (m && m.k) { m[m.k] = true; delete m.k; } });   /* oud formaat, zoals in de app */
+var ORPH = {};   /* gemarkeerde concerten die (nog) niet in de huidige agenda staan, bv. omdat de zaal de link wijzigde */
+function findC(id) { return ALL.filter(function (x) { return x.id === id; })[0] || ORPH[id]; }
 var st = { asort: load("ca-asort", "d"), from: "", to: "", tab: "agenda", sub: "t", f: {}, q: "", city: "", month: "", limit: 250, open: null, more: {} };
 var CHIPS = [["today", "Vandaag"], ["weekend", "Dit weekend"], ["date", "Datum"], ["mine", "Mijn zalen"], ["near", "Binnen 1,5 uur"], ["fest", "Festivals"]];
 function travel(city) {
@@ -270,8 +273,16 @@ function renderAgenda() {
   return html;
 }
 function renderMine() {
-  var list = ALL.filter(function (c) { return c.d >= TODAY && has(c.id, st.sub) && pass(c); });
-  var html = '<div class="seg"><button data-sub="t" aria-pressed="' + (st.sub === "t") + '">Kaartjes</button><button data-sub="i" aria-pressed="' + (st.sub === "i") + '">Interesse</button></div>';
+  var list = ALL.filter(function (c) { return c.d >= TODAY && has(c.id, st.sub) && pass(c); }), known = {};
+  ALL.forEach(function (c) { known[c.id] = 1; });
+  Object.keys(marks).forEach(function (id) {
+    var m = marks[id]; if (known[id] || !m[st.sub] || !m.s || m.s.d < TODAY) return;
+    var c = ORPH[id] = { id: id, v: m.s.v, d: m.s.d, n: m.s.n, u: m.s.u || "", t: "", r: m.s.r || "", s: false, orphan: true };
+    if (pass(c)) list.push(c);
+  });
+  list.sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; });
+  var cntm = function (f) { return Object.keys(marks).filter(function (id) { var m = marks[id]; return m[f] && ((m.s && m.s.d >= TODAY) || ALL.some(function (c) { return c.id === id && c.d >= TODAY; })); }).length; };
+  var html = '<div class="seg"><button data-sub="t" aria-pressed="' + (st.sub === "t") + '">Kaartjes · ' + cntm("t") + '</button><button data-sub="i" aria-pressed="' + (st.sub === "i") + '">Interesse · ' + cntm("i") + "</button></div>";
   if (!list.length) return html + '<div class="empty">' + (st.sub === "t" ? "Nog geen kaartjes. Tik een concert aan en kies ‘Ik heb een kaartje’." : "Nog niets met een ster.") + "</div>";
   var last = "";
   if (st.sub === "t") { html += '<div class="hl">Jouw volgende concert</div>' + card(list[0], true) + (list.length > 1 ? '<div class="hl">Daarna</div>' : ""); list = list.slice(1); }
@@ -348,7 +359,7 @@ function ics(c) {
   var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([txt], { type: "text/calendar" })); a.download = "concert.ics"; a.click();
 }
 function openSheet(id) {
-  var c = ALL.filter(function (x) { return x.id === id; })[0]; if (!c) return;
+  var c = findC(id); if (!c) return;
   st.open = id;
   var v = venue(c), d = parse(c.d), tt = travel(v.city), tk = has(id, "t"), it = has(id, "i"), big = c.th ? "../" + c.th : "";
   $("panel").innerHTML = '<div class="ph" style="' + (big ? "background-image:url(" + esc(big) + ")" : "") + '"><span class="grab"></span></div><div class="pb">' + lg(c) + "<h2>" + esc(nice(c.n)) + "</h2><div>" + badges(c) + "</div>" +
@@ -365,7 +376,7 @@ function openSheet(id) {
 }
 function closeSheet() { $("sheet").classList.remove("on"); document.body.style.overflow = ""; st.open = null; }
 function toggle(id, k) {
-  var c = ALL.filter(function (x) { return x.id === id; })[0], m = marks[id] || {};
+  var c = findC(id), m = marks[id] || {};
   m[k] = !m[k]; if (c) m.s = { n: c.n, d: c.d, v: c.v, r: c.r, u: c.u };
   if (!m.i && !m.t) delete marks[id]; else marks[id] = m;
   save("ca-marks", marks); render(); openSheet(id);
@@ -419,7 +430,7 @@ $("sheet").addEventListener("click", function (e) {
   if (e.target.closest("[data-dok]")) { var a = $("dfrom").value, b = $("dto").value; if (b && a && b < a) b = a; setDate(a || (b ? TODAY : ""), b); return; }
   if (e.target.closest("[data-dclear]")) { setDate("", ""); return; }
   var a = e.target.closest("[data-a]"); if (!a) return;
-  if (a.getAttribute("data-a") === "cal") { ics(ALL.filter(function (x) { return x.id === st.open; })[0]); return; }
+  if (a.getAttribute("data-a") === "cal") { ics(findC(st.open)); return; }
   toggle(st.open, a.getAttribute("data-a"));
 });
 $("chips").addEventListener("click", function (e) {

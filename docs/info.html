@@ -101,34 +101,30 @@ h1{font-family:var(--f-display);font-weight:700;font-size:26px;letter-spacing:-.
 .doc .rooms{color:var(--muted);font-size:12.5px}
 </style>
 <main class="doc">
-<p class="rooms" style="margin-top:14px">Versie 2.5 · 11 oktober 2026 · <a href="v1/">vorige versie</a><br>
+<p class="rooms" style="margin-top:14px">Versie 3.0 · 13 oktober 2026 · <a href="klassiek.html">klassieke weergave</a><br>
 Agenda bijgewerkt: <b id="upd">onbekend</b><span id="appv"></span><br>
 <a href="https://github.com/bzwijgers/Concerten/actions/workflows/update.yml" target="_blank" rel="noopener">Nu bijwerken ↗</a> (op GitHub: ‘Run workflow’, duurt 20 tot 60 minuten)</p>
 <script>(function(){try{var u=localStorage.getItem("ca-updated");if(u){var d=new Date(u),M=["jan","feb","mrt","apr","mei","jun","jul","aug","sep","okt","nov","dec"],p=function(n){return(n<10?"0":"")+n};
 document.getElementById("upd").textContent=d.getDate()+" "+M[d.getMonth()]+" "+d.getFullYear()+", "+p(d.getHours())+":"+p(d.getMinutes());}}catch(e){}
 var a=/ConcertAgendaApp\/([0-9.]+)/.exec(navigator.userAgent);if(a)document.getElementById("appv").textContent=" · telefoon-app "+a[1];})();</script>
-<p><a class="ontw" href="ontwerp/">Nieuw ontwerp bekijken →</a></p>
 <h2>Doel van de app</h2>
 <p>Barry's concert agenda zet het concertprogramma van Nederlandse &amp; Belgische poppodia, zalen en festivals op één plek. Het is een persoonlijk hulpmiddel, geen ticketverkoper.</p>
 
 <h2>Bediening</h2>
 <ul>
-<li><b>Ster</b>: markeer een concert als Interesse.</li>
-<li><b>Tik op een concert</b> voor meer: <b>Ik heb een kaartje</b>, de pagina van de zaal en TicketSwap. Kaartje en Interesse staan los van elkaar.</li>
-<li><b>Dagstrook</b>: tik op een dag om alleen die dag te zien, nog eens tikken toont weer alles. De strook loopt door tot het laatste concert.</li>
-<li><b>Datum</b>: kies een dag of een periode (van/tot); vul je alleen <i>Van</i> in, dan zie je alles vanaf die dag. Of kies een snelkeuze zoals Komende 7 dagen of Volgende maand. <b>Dit weekend</b> doet dat in één tik.</li>
-<li><b>Zalen en regio</b>: kies regio's of zalen per stad. Met <b>Bewaar als mijn zalen</b> onthoudt de app je keuze; de knop <b>Mijn zalen</b> zet die snel aan en uit. Het kruisje op de knop wist je selectie.</li>
-<li><b>Overzicht</b>: kaart en maanden voor wat je nu ziet (tab en filters). Knijp of tik dubbel om in te zoomen, tik op een stad of een maand om die te kiezen.</li>
-<li><b>Vergrootglas</b>: zoek op artiest, zaal of stad.</li>
+<li><b>Filters</b> bovenaan: <b>Vandaag</b>, <b>Dit weekend</b>, <b>Datum</b> (snelkeuzes, een maand, of zelf van/tot; alleen <i>van</i> = alles vanaf die dag), <b>Mijn zalen</b>, <b>Binnen 1,5 uur</b> en <b>Festivals</b>. Een gekozen filter tik je opnieuw aan om hem uit te zetten.</li>
+<li><b>Per dag</b> staan eerst de concerten in je eigen zalen (of binnen 1,5 uur), daaronder ‘nog … andere concerten’ om uit te klappen.</li>
+<li><b>Tik op een concert</b> voor de details: wanneer, waar, reistijd, <b>Ik heb een kaartje</b>, <b>Interesse</b>, de pagina van de zaal, TicketSwap en <b>Zet in mijn agenda</b> (met een herinnering een dag van tevoren). De terugknop van je telefoon sluit het weer.</li>
+<li><b>Vergrootglas</b> rechtsboven: zoek op artiest, zaal of stad.</li>
+<li><b>Menu (⋯)</b> rechtsboven: Info, <b>Mijn zalen kiezen</b>, Nu bijwerken en de klassieke weergave.</li>
 </ul>
 
-<h2>Tabs</h2>
+<h2>Onderaan</h2>
 <ul>
 <li><b>Agenda</b>: alle komende concerten.</li>
-<li><b>Nieuw</b>: concerten die de afgelopen 7 dagen aan een zaalprogramma zijn toegevoegd.</li>
-<li><b>Interesse</b> en <b>Kaartje</b>: je eigen markeringen.</li>
-<li><b>Rotown club</b>: Rotown-concerten waarvoor de Clubcard geldt.</li>
-<li><b>Archief</b>: concerten waarvoor je een kaartje had, na de concertdatum.</li>
+<li><b>Mijn concerten</b>: je <b>kaartjes</b> (met bovenaan je volgende concert en het aftellen), je <b>interesse</b> en de Rotown-<b>clubcard</b>-concerten.</li>
+<li><b>Overzicht</b>: de kaart met het gebied binnen 1,5 uur rijden en de concerten per maand. Knijp om in te zoomen; tik op een stad of maand om die te kiezen.</li>
+<li><b>Archief</b>: concerten waarvoor je een kaartje had, na de concertdatum. Sorteer op datum, artiest of beoordeling; tik een concert aan voor sterren (ook halve), een review of verwijderen.</li>
 </ul>
 
 <h2>Welke zalen worden doorzocht</h2>
@@ -256,6 +252,4 @@ fetch("data/events.json").then(function(r){return r.json()}).then(function(d){
 }).catch(function(){});
 </script>
 <script>try{sessionStorage.setItem("ca-info","1")}catch(e){}</script>
-<script>/* geopend vanuit het voorbeeld van het nieuwe uiterlijk: terug naar dat voorbeeld */
-if(/[?&]van=ontwerp/.test(location.search)){var b=document.querySelector("a.info");if(b){b.href="ontwerp/";b.onclick=null;}}</script>
 </body></html>

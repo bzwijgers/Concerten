@@ -229,7 +229,7 @@ function dayHead(d0, n) { var d = parse(d0);
   return '<div class="day"><b>' + (d0 === TODAY ? "Vandaag" : DOWL[d.getDay()].replace(/^./, function (x) { return x.toUpperCase(); }) + " " + d.getDate() + " " + MONL[d.getMonth()]) + "</b><span>" + n + " concerten</span></div>"; }
 function renderAgenda() {
   var list = ALL.filter(function (c) { return c.d >= TODAY && pass(c); });
-  var html = anyFilter() ? "" : hero(), days = {}, order = [];
+  var html = "", days = {}, order = [];
   list.forEach(function (c) { if (!days[c.d]) { days[c.d] = []; order.push(c.d); } days[c.d].push(c); });
   var shown = 0;
   if (!list.length) html += '<div class="empty">Niets gevonden. ' + (anyFilter() ? '<button class="others" data-clear style="margin-top:12px">Alle filters uit</button>' : "") + "</div>";
@@ -249,6 +249,7 @@ function renderMine() {
   var html = '<div class="seg"><button data-sub="t" aria-pressed="' + (st.sub === "t") + '">Kaartjes</button><button data-sub="i" aria-pressed="' + (st.sub === "i") + '">Interesse</button></div>';
   if (!list.length) return html + '<div class="empty">' + (st.sub === "t" ? "Nog geen kaartjes. Tik een concert aan en kies ‘Ik heb een kaartje’." : "Nog niets met een ster.") + "</div>";
   var last = "";
+  if (st.sub === "t") { html += '<div class="hl">Jouw volgende concert</div>' + card(list[0], true) + (list.length > 1 ? '<div class="hl">Daarna</div>' : ""); list = list.slice(1); }
   list.forEach(function (c) { if (c.d !== last) { html += dayHead(c.d, list.filter(function (x) { return x.d === c.d; }).length); last = c.d; } html += row(c); });
   return html;
 }

@@ -79,7 +79,7 @@ header.sc{border-bottom-color:var(--line)}
 .seg button[aria-pressed=true]{background:var(--card2);color:var(--fg)}
 /* overzicht */
 .mapbox{position:relative;background:var(--bg2);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-top:6px}
-.map{display:block;width:100%;height:auto;touch-action:none}
+.map{display:block;width:100%;height:auto;touch-action:none;user-select:none}
 .map .land{fill:#1d1b26;stroke:#3a3548;stroke-width:1;vector-effect:non-scaling-stroke}
 .map .be{fill:#191722}
 .map .reach{fill:var(--gold);fill-opacity:.06;stroke:var(--gold);stroke-opacity:.6;stroke-dasharray:4 3;stroke-width:1.2;vector-effect:non-scaling-stroke}
@@ -163,8 +163,8 @@ function parse(s) { var p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2
 var TODAY = iso(NOW), WEEK_AGO = iso(new Date(NOW.getTime() - 7 * 864e5)), IN7 = iso(new Date(NOW.getTime() + 7 * 864e5));
 var VENUES = {}, COORD = {}, LOGO = {}, ALL = [], NL = [], BE = [], marks = load("ca-marks", {}), mine = load("ca-mine", []);
 var HOME = [51.958, 4.476];
-var st = { tab: "agenda", sub: "t", f: {}, q: "", city: "", month: "", limit: 250, open: null, more: {} };
-var CHIPS = [["today", "Vandaag"], ["new", "Nieuw"], ["weekend", "Dit weekend"], ["mine", "Mijn zalen"], ["near", "Binnen 1,5 uur"], ["fest", "Festivals"]];
+var st = { from: "", to: "", tab: "agenda", sub: "t", f: {}, q: "", city: "", month: "", limit: 250, open: null, more: {} };
+var CHIPS = [["today", "Vandaag"], ["weekend", "Dit weekend"], ["date", "Datum"], ["mine", "Mijn zalen"], ["near", "Binnen 1,5 uur"], ["fest", "Festivals"]];
 function travel(city) {
   var c = COORD[city]; if (!c) return null;
   var a = Math.pow(Math.sin((c[0] - HOME[0]) * Math.PI / 360), 2) + Math.cos(HOME[0] * Math.PI / 180) * Math.cos(c[0] * Math.PI / 180) * Math.pow(Math.sin((c[1] - HOME[1]) * Math.PI / 360), 2);
@@ -186,6 +186,8 @@ function pass(c, noDate) {
   if (q && (c.n + " " + v.label + " " + v.city).toLowerCase().indexOf(q) < 0) return false;
   if (st.city && v.city !== st.city) return false;
   if (!noDate && st.month && c.d.slice(0, 7) !== st.month) return false;
+  if (!noDate && st.from && c.d < st.from) return false;
+  if (!noDate && st.to && c.d > st.to) return false;
   if (!noDate && st.f.today && c.d !== TODAY) return false;
   if (!noDate && st.f.weekend) { var w = weekend(); if (c.d < w[0] || c.d > w[1]) return false; }
   if (st.f.near) { var t = travel(v.city); if (t === null || t > 90) return false; }
@@ -194,7 +196,7 @@ function pass(c, noDate) {
   if (st.f["new"] && !(c.first && c.first !== "base" && c.first >= WEEK_AGO)) return false;
   return true;
 }
-function anyFilter() { return !!(st.q.trim() || st.city || st.month || Object.keys(st.f).some(function (k) { return st.f[k]; })); }
+function anyFilter() { return !!(st.q.trim() || st.city || st.month || st.from || Object.keys(st.f).some(function (k) { return st.f[k]; })); }
 function badges(c) {
   return (has(c.id, "t") ? '<span class="bd tk">✓ kaartje</span>' : "") + (c.s ? '<span class="bd so">uitverkocht</span>' : "") +
     (c.c && c.v === "rotown" ? '<span class="bd cl">clubcard</span>' : "") + (venue(c).fest ? '<span class="bd fe">festival</span>' : "") +
@@ -209,8 +211,30 @@ function row(c) {
 function chips() {
   $("chips").innerHTML = (st.city ? '<button class="chip city" data-city-x>' + esc(st.city) + " ✕</button>" : "") +
     (st.month ? '<button class="chip city" data-month-x>' + MONL[+st.month.slice(5) - 1] + " ✕</button>" : "") +
-    CHIPS.map(function (c) { return '<button class="chip" data-f="' + c[0] + '" aria-pressed="' + !!st.f[c[0]] + '">' + c[1] + "</button>"; }).join("");
+    CHIPS.map(function (c) {
+      if (c[0] === "date") return '<button class="chip" data-date aria-pressed="' + !!st.from + '">' + (st.from ? fmtD(st.from) + (st.to && st.to !== st.from ? " – " + fmtD(st.to) : st.to ? "" : " →") + " ✕" : "Datum ▾") + "</button>";
+      return '<button class="chip" data-f="' + c[0] + '" aria-pressed="' + !!st.f[c[0]] + '">' + c[1] + "</button>"; }).join("");
 }
+function fmtD(k) { var d = parse(k); return DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()]; }
+/* datumkeuze: snelkeuzes of zelf van/tot; alleen 'van' = alles vanaf die dag */
+function openDate() {
+  var t = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate()), add = function (n) { var d = new Date(t); d.setDate(d.getDate() + n); return iso(d); };
+  var em = iso(new Date(t.getFullYear(), t.getMonth() + 1, 0)), nm1 = iso(new Date(t.getFullYear(), t.getMonth() + 1, 1)), nm2 = iso(new Date(t.getFullYear(), t.getMonth() + 2, 0));
+  var cnt = {}; ALL.forEach(function (c) { if (c.d >= TODAY && pass(c, true)) { var m = c.d.slice(0, 7); cnt[m] = (cnt[m] || 0) + 1; } });
+  var months = [];
+  for (var i = 0; i < 12; i++) { var a0 = new Date(t.getFullYear(), t.getMonth() + i, 1), b0 = new Date(t.getFullYear(), t.getMonth() + i + 1, 0), key = iso(a0).slice(0, 7);
+    months.push([MON[a0.getMonth()] + (a0.getFullYear() !== t.getFullYear() ? " '" + String(a0.getFullYear()).slice(2) : ""), i ? iso(a0) : TODAY, iso(b0), cnt[key] || 0]); }
+  var pre = [["Komende 7 dagen", TODAY, add(6)], ["Komende 30 dagen", TODAY, add(29)], ["Rest van " + MONL[t.getMonth()], TODAY, em], [MONL[(t.getMonth() + 1) % 12].replace(/^./, function (x) { return x.toUpperCase(); }), nm1, nm2]];
+  $("panel").innerHTML = '<div class="pb" style="margin-top:0;padding-top:22px"><h2>Datum kiezen</h2>' +
+    '<div class="acts" style="margin:14px 0">' + pre.map(function (p) { return '<button class="btn" data-pre="' + p[1] + "|" + p[2] + '">' + p[0] + "</button>"; }).join("") + "</div>" +
+    '<div class="hl" style="margin-top:4px">Per maand</div><div class="acts" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px">' + months.map(function (m) {
+      return '<button class="btn" style="padding:10px 4px;flex-direction:column;gap:0" data-pre="' + m[1] + "|" + m[2] + '"><b style="font:700 14px var(--f-d)">' + m[0] + '</b><small style="color:var(--faint);font-size:11px">' + m[3] + "</small></button>"; }).join("") + "</div>" +
+    '<div class="facts" style="margin:0 0 14px"><label class="fact"><span>Van</span><input type="date" id="dfrom" value="' + st.from + '" min="' + TODAY + '" style="width:100%;background:none;border:0;color:var(--fg);font:700 15px var(--f-d);color-scheme:dark"></label>' +
+    '<label class="fact"><span>Tot en met (leeg = alles daarna)</span><input type="date" id="dto" value="' + st.to + '" min="' + TODAY + '" style="width:100%;background:none;border:0;color:var(--fg);font:700 15px var(--f-d);color-scheme:dark"></label></div>' +
+    '<div class="acts"><button class="btn pri" data-dok>Toon</button><button class="btn" data-dclear>Geen datum</button></div></div>';
+  $("sheet").classList.add("on"); document.body.style.overflow = "hidden";
+}
+function setDate(a, b) { st.from = a || ""; st.to = b || ""; st.f.today = st.f.weekend = false; st.month = ""; closeSheet(); render(); window.scrollTo(0, 0); }
 function card(c, big) {
   var v = venue(c), d = parse(c.d), days = Math.round((parse(c.d) - parse(TODAY)) / 864e5), tt = travel(v.city);
   if (!big) return '<div class="mc" data-id="' + esc(c.id) + '">' + lg(c) + '<div><b>' + esc(nice(c.n)) + "</b><span>" + DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()] + " · " + esc(v.label) + "</span></div></div>";
@@ -234,7 +258,7 @@ function renderAgenda() {
   var shown = 0;
   if (!list.length) html += '<div class="empty">Niets gevonden. ' + (anyFilter() ? '<button class="others" data-clear style="margin-top:12px">Alle filters uit</button>' : "") + "</div>";
   order.forEach(function (d) {
-    if (shown > st.limit) return;
+    if (!anyFilter() && shown > st.limit) return;   /* met een filter: alles in die periode tonen */
     var all = days[d], top = anyFilter() || st.more[d] ? all : all.filter(function (c) { return inMine(c) || has(c.id, "t") || has(c.id, "i"); });
     if (!top.length) top = all.slice(0, 5);
     html += dayHead(d, all.length) + top.map(row).join("");
@@ -300,7 +324,7 @@ function renderOv() {
   var ms = Object.keys(mon).sort().slice(0, 12), mm = Math.max.apply(null, ms.map(function (m) { return mon[m]; }).concat([1]));
   return '<div class="hl">' + (st.city ? esc(st.city) : "Waar is wat") + " · " + list.length + ' concerten</div><div class="mapbox" id="mapbox">' + svg +
     '<div class="zoom"><button data-zoom="1.6">+</button><button data-zoom="0.625">−</button><button data-zoom="0">⟲</button></div></div>' +
-    '<div class="hl">Per maand · tik om te kiezen</div>' + ms.map(function (m) { var y = +m.slice(0, 4);
+    '<div class="hl">Per maand · tik om te kiezen (knijp op de kaart om te zoomen)</div>' + ms.map(function (m) { var y = +m.slice(0, 4);
       return '<button class="mrow' + (st.month === m ? " on" : "") + '" data-month="' + m + '"><span>' + MON[+m.slice(5) - 1] + (y !== NOW.getFullYear() ? " " + String(y).slice(2) : "") + '</span><i><b style="width:' + Math.round(mon[m] / mm * 100) + '%"></b></i><em>' + mon[m] + "</em></button>"; }).join("");
 }
 function render() {
@@ -341,15 +365,50 @@ function toggle(id, k) {
 $("main").addEventListener("click", function (e) {
   var t = e.target;
   if (t.closest("[data-more]")) { st.more[t.closest("[data-more]").getAttribute("data-more")] = true; render(); return; }
-  if (t.closest("[data-clear]")) { st.f = {}; st.q = ""; $("q").value = ""; st.city = ""; st.month = ""; render(); return; }
+  if (t.closest("[data-clear]")) { st.f = {}; st.q = ""; $("q").value = ""; st.city = ""; st.month = ""; st.from = st.to = ""; render(); return; }
   if (t.closest("[data-sub]")) { st.sub = t.closest("[data-sub]").getAttribute("data-sub"); render(); return; }
   if (t.closest("[data-zoom]")) { var zz = +t.closest("[data-zoom]").getAttribute("data-zoom"); if (!zz) { OV = { z: 1, cx: 160, cy: 220 }; } else OV.z = Math.min(8, Math.max(1, OV.z * zz)); render(); return; }
+  if (t.closest("[data-city]") && OV.dragged) { OV.dragged = false; return; }
   if (t.closest("[data-city]")) { var ct = t.closest("[data-city]").getAttribute("data-city"); st.city = st.city === ct ? "" : ct; st.tab = "agenda"; setNav(); render(); window.scrollTo(0, 0); return; }
-  if (t.closest("[data-month]")) { var m = t.closest("[data-month]").getAttribute("data-month"); st.month = st.month === m ? "" : m; st.f.today = st.f.weekend = false; render(); return; }
+  if (t.closest("[data-month]")) { var m = t.closest("[data-month]").getAttribute("data-month"); st.month = st.month === m ? "" : m; st.f.today = st.f.weekend = false; st.from = st.to = ""; render(); return; }
   var r = t.closest("[data-id]"); if (r) openSheet(r.getAttribute("data-id"));
 });
+(function () {   /* overzicht: met twee vingers knijpen om te zoomen, met één vinger slepen */
+  var pts = {}, start = null, raf = 0;
+  function svgPt(x, y) { var m = document.querySelector(".map"); if (!m) return null; var r = m.getBoundingClientRect(), w = 320 / OV.z, h = 440 / OV.z;
+    return [OV.cx - w / 2 + (x - r.left) / r.width * w, OV.cy - h / 2 + (y - r.top) / r.height * h, w / r.width]; }
+  function redraw() { if (!raf) raf = setTimeout(function () { raf = 0; if (st.tab === "ov") render(); }, 16); }
+  document.addEventListener("pointerdown", function (e) {
+    if (!e.target.closest || !e.target.closest(".map")) return;
+    pts[e.pointerId] = [e.clientX, e.clientY]; var ids = Object.keys(pts), p0 = svgPt(e.clientX, e.clientY);
+    start = { cx: OV.cx, cy: OV.cy, z: OV.z, x: e.clientX, y: e.clientY, s: p0 ? p0[2] : 1 };
+    if (ids.length === 2) { var a = pts[ids[0]], b = pts[ids[1]]; start.d = Math.hypot(a[0] - b[0], a[1] - b[1]); start.mid = svgPt((a[0] + b[0]) / 2, (a[1] + b[1]) / 2); }
+    OV.dragged = false;
+  });
+  document.addEventListener("pointermove", function (e) {
+    if (!pts[e.pointerId] || !start) return;
+    pts[e.pointerId] = [e.clientX, e.clientY]; var ids = Object.keys(pts);
+    if (ids.length >= 2 && start.d && start.mid) {
+      var a = pts[ids[0]], b = pts[ids[1]], z = Math.min(8, Math.max(1, start.z * Math.hypot(a[0] - b[0], a[1] - b[1]) / start.d)), r = start.z / z;
+      OV.z = z; OV.cx = start.mid[0] + (start.cx - start.mid[0]) * r; OV.cy = start.mid[1] + (start.cy - start.mid[1]) * r; OV.dragged = true; redraw();
+    } else if (ids.length === 1 && OV.z > 1) {
+      var dx = e.clientX - start.x, dy = e.clientY - start.y;
+      if (Math.abs(dx) + Math.abs(dy) > 6) { OV.cx = start.cx - dx * start.s; OV.cy = start.cy - dy * start.s; OV.dragged = true; redraw(); }
+    }
+  });
+  function up(e) { delete pts[e.pointerId]; if (!Object.keys(pts).length) start = null; }
+  document.addEventListener("pointerup", up); document.addEventListener("pointercancel", up);
+  document.addEventListener("wheel", function (e) {
+    if (!e.target.closest || !e.target.closest(".map")) return; e.preventDefault();
+    var p = svgPt(e.clientX, e.clientY), z = Math.min(8, Math.max(1, OV.z * (e.deltaY < 0 ? 1.25 : 0.8))), r = OV.z / z;
+    OV.cx = p[0] + (OV.cx - p[0]) * r; OV.cy = p[1] + (OV.cy - p[1]) * r; OV.z = z; redraw();
+  }, { passive: false });
+})();
 $("sheet").addEventListener("click", function (e) {
   if (e.target.hasAttribute("data-close")) { closeSheet(); return; }
+  var pr = e.target.closest("[data-pre]"); if (pr) { var ab = pr.getAttribute("data-pre").split("|"); setDate(ab[0], ab[1]); return; }
+  if (e.target.closest("[data-dok]")) { var a = $("dfrom").value, b = $("dto").value; if (b && a && b < a) b = a; setDate(a || (b ? TODAY : ""), b); return; }
+  if (e.target.closest("[data-dclear]")) { setDate("", ""); return; }
   var a = e.target.closest("[data-a]"); if (!a) return;
   if (a.getAttribute("data-a") === "cal") { ics(ALL.filter(function (x) { return x.id === st.open; })[0]); return; }
   toggle(st.open, a.getAttribute("data-a"));
@@ -357,9 +416,10 @@ $("sheet").addEventListener("click", function (e) {
 $("chips").addEventListener("click", function (e) {
   if (e.target.closest("[data-city-x]")) { st.city = ""; render(); return; }
   if (e.target.closest("[data-month-x]")) { st.month = ""; render(); return; }
+  if (e.target.closest("[data-date]")) { if (st.from) { st.from = st.to = ""; render(); } else openDate(); return; }
   var b = e.target.closest("[data-f]"); if (!b) return;
   var f = b.getAttribute("data-f"); st.f[f] = !st.f[f];
-  if (f === "today" && st.f.today) { st.f.weekend = false; st.month = ""; } if (f === "weekend" && st.f.weekend) { st.f.today = false; st.month = ""; }
+  if (f === "today" && st.f.today) { st.f.weekend = false; st.month = ""; st.from = st.to = ""; } if (f === "weekend" && st.f.weekend) { st.f.today = false; st.month = ""; st.from = st.to = ""; }
   st.limit = 250; render(); window.scrollTo(0, 0);
 });
 function setNav() { Array.prototype.forEach.call(document.querySelectorAll("nav [data-tab]"), function (x) { x.setAttribute("aria-selected", String(x.getAttribute("data-tab") === st.tab)); }); }
@@ -371,7 +431,12 @@ $("sb").addEventListener("click", function () {
 });
 var qt; $("q").addEventListener("input", function () { $("qx").style.display = $("q").value ? "block" : "none"; clearTimeout(qt); qt = setTimeout(function () { st.q = $("q").value; render(); }, 150); });
 $("qx").addEventListener("click", function (e) { e.preventDefault(); $("q").value = ""; st.q = ""; $("qx").style.display = "none"; render(); });
-window.addEventListener("scroll", function () { $("hdr").classList.toggle("sc", scrollY > 4); }, { passive: true });
+window.addEventListener("scroll", function () {
+  $("hdr").classList.toggle("sc", scrollY > 4);
+  if (st.tab === "agenda" && innerHeight + scrollY > document.body.scrollHeight - 900 && !st.loading) {   /* verder scrollen laadt vanzelf meer */
+    st.loading = true; st.limit += 300; var y = scrollY; render(); window.scrollTo(0, y); st.loading = false;
+  }
+}, { passive: true });
 Promise.all([fetch("../app.js", { cache: "no-cache" }).then(function (r) { return r.text(); }),
   fetch("../data/events.json", { cache: "no-cache" }).then(function (r) { return r.json(); }),
   fetch("../data/logos.json", { cache: "no-cache" }).then(function (r) { return r.json(); }).catch(function () { return {}; })]).then(function (x) {

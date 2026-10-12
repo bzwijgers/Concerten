@@ -64,21 +64,24 @@ def maassilo():
             out.append(ev("maassilo", date(y, mm, dd).isoformat(), title, u))
     return out
 def lockkeepers():
-    """The Lock Keepers (Maassluis): naam en datum staan in de link, bv. /Concert-agenda/The-Rusty-Zippers-15-oktober/."""
+    """The Lock Keepers (Maassluis): de agendapagina noemt elk concert als tekst, bv.
+    '29-4-2027. Jim Keller met band ( donderdag 20.30, ...'. Heeft het concert een eigen pagina, dan linken we die."""
     from datetime import date
-    mons = {"januari": 1, "februari": 2, "maart": 3, "april": 4, "mei": 5, "juni": 6, "juli": 7, "augustus": 8, "september": 9, "oktober": 10, "november": 11, "december": 12}
-    out, seen, today = [], set(), date.today()
-    for p in SITES["lockkeepers"][0]:
-        for slug in re.findall(r'href="(?:https://thelockkeepers\.nl)?/Concert-agenda/([^/"]+)/?"', fetch(p)):
-            m = re.match(r"(.+?)-(\d{1,2})-(" + "|".join(mons) + r")(?:-(\d{4,5}))?$", slug, re.I)   # '20227' (tikfout op de site): dan het eerstvolgende jaar
-            if not m or slug in seen: continue
-            seen.add(slug)
-            dd, mm = int(m.group(2)), mons[m.group(3).lower()]
-            y = int(m.group(4)) if m.group(4) and m.group(4).startswith("20") and len(m.group(4)) == 4 else (today.year if (mm, dd) >= (today.month, today.day) else today.year + 1)
-            try: d = date(y, mm, dd).isoformat()
-            except ValueError: continue
-            out.append(ev("lockkeepers", d, m.group(1).replace("-", " "), "https://thelockkeepers.nl/Concert-agenda/" + slug + "/"))
+    agenda = "https://thelockkeepers.nl/Concert-agenda-The-Lock-Keepers/"
+    page = fetch(agenda)
+    links = re.findall(r'href="(?:https://thelockkeepers\.nl)?(/Concert-agenda/[^"/]+/?)"', page)
+    text = re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", page)))
+    out = []
+    for dd, mm, yy, title, hh, mi in re.findall(r"\b(\d{1,2})-(\d{1,2})-(20\d\d)\. ([^(]{3,90}?)\s*\(\s*[a-z]+ (\d{1,2})[.:](\d\d)", text):
+        try: d = date(int(yy), int(mm), int(dd)).isoformat()
+        except ValueError: continue
+        title = title.strip(" .,")
+        words = [w for w in re.findall(r"[a-z]{4,}", title.lower())][:2]
+        own = [l for l in links if words and all(w in l.lower() for w in words)]
+        out.append(ev("lockkeepers", d, title, "https://thelockkeepers.nl" + own[0] if own else agenda, f"{int(hh):02d}:{mi}"))
     return out
+
+
 def carre(): return _site("carre", limit=80)
 
 

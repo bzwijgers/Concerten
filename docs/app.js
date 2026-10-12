@@ -82,6 +82,7 @@ var VENUES = {
   worm:{label:"WORM",home:"https://worm.org/agenda/",city:"Rotterdam"},
   maassilo:{label:"Maassilo",home:"https://maassilo.com/agenda/",city:"Rotterdam"},
   lockkeepers:{label:"The Lock Keepers",home:"https://thelockkeepers.nl/Concert-agenda-The-Lock-Keepers/",city:"Maassluis"},
+  concertgebouw:{label:"Het Concertgebouw",home:"https://www.concertgebouw.nl/concerten-en-tickets",city:"Amsterdam"},
   v11:{label:"V11",home:"https://www.vessel11.nl/nl/agenda/",city:"Rotterdam"},
   manifesto:{label:"Manifesto",home:"https://manifesto-hoorn.nl/",city:"Hoorn"},
   olt:{label:"OLT Rivierenhof",home:"https://www.oltrivierenhof.be/nl/programma",city:"Antwerpen",cc:"BE"},
@@ -388,6 +389,8 @@ function render(keepScroll) {
   $("zx").style.display = nz ? "" : "none";
   $("f-ov").setAttribute("aria-pressed", String(!!state.city));
   $("f-near").setAttribute("aria-pressed", String(state.near));
+  var any = !!(state.q.trim() || state.from || state.city || state.near || state.sel.length || state.regions.length || (state.useMine && mine.length));
+  $("f-clear").style.display = any ? "" : "none";   /* één tik zet alle filters uit */
   $("f-ov").lastChild.textContent = state.city ? " " + state.city + " \u2715" : " Overzicht";
   document.body.classList.toggle("arch", state.tab === "a");
   renderDays(state.tab === "a" ? [] : ALL.filter(function (c) { return c.d >= TODAY && baseFilter(c, true) && tabFilter(c, state.tab); }));
@@ -502,7 +505,7 @@ function drawMap() {
   OV.cx = Math.min(Math.max(OV.cx, w / 2), OVW - w / 2); OV.cy = Math.min(Math.max(OV.cy, h / 2), OVH - h / 2);
   var x0 = OV.cx - w / 2, y0 = OV.cy - h / 2, k = 1 / z, rk = 1 / Math.pow(z, 0.7);
   var NL = [[52.96,4.73],[53.18,5.40],[53.40,5.95],[53.45,6.60],[53.33,7.20],[53.18,7.21],[52.65,7.05],[52.42,7.07],[52.22,7.06],[52.04,6.69],[51.85,6.15],
-    [51.83,5.95],[51.65,6.10],[51.37,6.20],[51.17,6.08],[51.02,5.90],[50.76,6.02],[50.75,5.69],[51.05,5.62],[51.15,5.55],[51.27,5.23],[51.43,5.00],[51.45,4.55],
+    [51.83,5.95],[51.65,6.10],[51.37,6.20],[51.17,6.08],[51.08,6.00],[51.03,5.87],[50.97,5.93],[50.93,6.03],[50.90,6.12],[50.84,6.11],[50.76,6.02],[50.75,5.69],[51.05,5.62],[51.15,5.55],[51.27,5.23],[51.43,5.00],[51.45,4.55],
     [51.37,4.23],[51.30,3.95],[51.37,3.37],[51.60,3.70],[51.85,4.05],[52.10,4.25],[52.45,4.57],[52.96,4.73]];
   var BE = [[51.37,3.37],[51.30,3.95],[51.37,4.23],[51.45,4.55],[51.43,5.00],[51.27,5.23],[51.15,5.55],[51.05,5.62],[50.75,5.69],[50.76,6.02],[50.32,6.40],
     [50.13,6.13],[49.55,5.85],[49.50,5.47],[49.80,4.85],[50.15,4.20],[50.35,4.05],[50.73,3.25],[50.80,2.85],[51.00,2.55],[51.37,3.37]];
@@ -658,6 +661,10 @@ $("daterow").addEventListener("click", function (e) {
   else if (k === "month") { setRange(TODAY, iso(new Date(t.getFullYear(), t.getMonth() + 1, 0))); }
   else if (k === "next") { setRange(iso(new Date(t.getFullYear(), t.getMonth() + 1, 1)), iso(new Date(t.getFullYear(), t.getMonth() + 2, 0))); }
   else setRange("", "");
+});
+$("f-clear").addEventListener("click", function () {
+  state.q = ""; $("q").value = ""; state.city = ""; state.near = false; state.sel = []; state.regions = []; state.useMine = false;
+  $("q").classList.remove("on"); setRange("", "");
 });
 $("f-zalen").addEventListener("click", function (e) {
   if (e.target.closest("#zx")) { state.sel = []; state.regions = []; state.limit = 300; render(); return; }   /* kruisje: selectie wissen */

@@ -118,6 +118,7 @@ h1{font-family:var(--f-display);font-weight:700;font-size:clamp(14px,4.4vw,20px)
 .score{flex:none;font:600 13px var(--f-mono);color:var(--star);padding:0 8px}
 .score.none{font:400 11px var(--f-body);color:var(--faint)}
 .rvtxt{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip.clr{background:var(--fg);color:var(--bg);border-color:var(--fg);font-weight:600}
 .zx{margin-left:2px;padding:0 2px 0 6px;border-left:1px solid var(--line);font-size:12px}
 .amore{flex-direction:column;align-items:stretch;padding-left:12px}
 .rate{display:flex;gap:0;align-items:center;flex-wrap:wrap}
@@ -225,6 +226,7 @@ html.inapp #splash{background:transparent}
       <button class="tab" role="tab" data-tab="a" aria-selected="false">Archief <span class="n" id="n-a"></span></button>
     </div>
     <div class="filters" id="filters">
+      <button class="chip clr" id="f-clear" style="display:none">✕ Alles uit</button>
       <button class="chip" id="f-mine" aria-pressed="false">Mijn zalen</button>
       <button class="chip" id="f-date" aria-pressed="false">Datum <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg></button>
       <button class="chip" id="f-weekend" aria-pressed="false">Dit weekend</button>
@@ -277,5 +279,5 @@ sp.addEventListener("click",function(){if(ready)hide();});
 setTimeout(function(){if(!ready)window.__splashReady("Laden duurt lang; tik om toch verder te gaan");},15000);})();
 </script>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="halfgrad"><stop offset="50%" stop-color="currentColor"/><stop offset="50%" stop-color="transparent"/></linearGradient></defs></svg>
-<script src="app.js?v=42"></script>
+<script src="app.js?v=43"></script>
 </body></html>

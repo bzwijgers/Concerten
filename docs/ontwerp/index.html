@@ -26,6 +26,14 @@ header.sc{border-bottom-color:var(--line)}
 .ib svg{width:19px;height:19px}
 .ib[aria-pressed=true]{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}
 .brand svg{width:20px;height:13px;border-radius:2px;box-shadow:0 0 0 .5px rgba(255,255,255,.25)}
+.top{position:relative}
+.menu{position:absolute;right:16px;top:58px;z-index:40;min-width:220px;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:6px;box-shadow:0 12px 30px rgba(0,0,0,.5)}
+.menu a,.menu button{display:flex;align-items:center;gap:12px;width:100%;padding:12px;border:0;background:none;border-radius:10px;color:var(--fg);text-decoration:none;font:600 14px var(--f-b);cursor:pointer;text-align:left}
+.menu a:active,.menu button:active{background:var(--card)}
+.menu svg{width:18px;height:18px;color:var(--muted)}
+.vrow{display:flex;align-items:center;gap:12px;padding:10px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+.vrow input{width:20px;height:20px;accent-color:var(--acc)}
+.vrow b{flex:1;font:600 14px var(--f-b)}.vrow span{font-size:12px;color:var(--faint)}
 .sbar{display:none;margin-top:10px;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:0 12px}
 .sbar.on{display:flex}
 .sbar svg{width:18px;height:18px;color:var(--faint);flex:none}
@@ -129,12 +137,18 @@ nav [aria-selected=true] svg{stroke-width:2.4}
 </style>
 </head>
 <body>
-<header id="hdr"><div class="wrap">
+<header id="hdr"><div class="wrap" style="position:relative">
   <div class="top"><div class="brand">Barry's concerten
     <svg viewBox="0 0 9 6" aria-label="Nederland"><rect width="9" height="2" fill="#AE1C28"/><rect y="2" width="9" height="2" fill="#fff"/><rect y="4" width="9" height="2" fill="#21468B"/></svg>
     <svg viewBox="0 0 9 6" aria-label="België"><rect width="3" height="6" fill="#000"/><rect x="3" width="3" height="6" fill="#FDDA24"/><rect x="6" width="3" height="6" fill="#EF3340"/></svg></div>
     <button class="ib" id="sb" aria-label="Zoeken" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
-    <a class="ib" href="../info.html?van=ontwerp" aria-label="Info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></a></div>
+    <button class="ib" id="mb" aria-label="Menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button></div>
+  <div class="menu" id="menu" hidden>
+    <a href="../info.html?van=ontwerp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>Info</a>
+    <button data-m="zalen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V10l7-5 7 5v11M9 21v-6h6v6"/></svg>Mijn zalen kiezen</button>
+    <a href="https://github.com/bzwijgers/Concerten/actions/workflows/update.yml" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5"/></svg>Nu bijwerken</a>
+    <a href="../"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg>Naar de huidige app</a>
+  </div>
   <label class="sbar" id="sbar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
     <input id="q" type="search" placeholder="Zoek artiest, zaal of stad" autocomplete="off"><button class="x" id="qx" aria-label="Wissen">✕</button></label>
   <div class="chips" id="chips"></div>
@@ -425,6 +439,8 @@ $("main").addEventListener("click", function (e) {
 })();
 $("sheet").addEventListener("click", function (e) {
   if (e.target.hasAttribute("data-close")) { closeSheet(); return; }
+  if (e.target.closest("[data-vsave]")) { mine = Array.prototype.map.call(document.querySelectorAll(".vrow input:checked"), function (x) { return x.value; }); save("ca-mine", mine); closeSheet(); render(); return; }
+  if (e.target.closest("[data-vnone]")) { Array.prototype.forEach.call(document.querySelectorAll(".vrow input"), function (x) { x.checked = false; }); return; }
   var pr = e.target.closest("[data-pre]"); if (pr) { var ab = pr.getAttribute("data-pre").split("|"); setDate(ab[0], ab[1]); return; }
   if (e.target.closest("[data-dok]")) { var a = $("dfrom").value, b = $("dto").value; if (b && a && b < a) b = a; setDate(a || (b ? TODAY : ""), b); return; }
   if (e.target.closest("[data-dclear]")) { setDate("", ""); return; }
@@ -443,6 +459,20 @@ $("chips").addEventListener("click", function (e) {
 });
 function setNav() { Array.prototype.forEach.call(document.querySelectorAll("nav [data-tab]"), function (x) { x.setAttribute("aria-selected", String(x.getAttribute("data-tab") === st.tab)); }); }
 $("nav").addEventListener("click", function (e) { var b = e.target.closest("[data-tab]"); if (!b) return; st.tab = b.getAttribute("data-tab"); setNav(); render(); window.scrollTo(0, 0); });
+$("mb").addEventListener("click", function (e) { e.stopPropagation(); var open = $("menu").hidden; $("menu").hidden = !open; $("mb").setAttribute("aria-expanded", String(open)); });
+document.addEventListener("click", function (e) { if (!$("menu").hidden && !e.target.closest("#menu")) { $("menu").hidden = true; $("mb").setAttribute("aria-expanded", "false"); } });
+$("menu").addEventListener("click", function (e) { var b = e.target.closest("[data-m]"); if (!b) return; $("menu").hidden = true; if (b.getAttribute("data-m") === "zalen") openVenues(); });
+function openVenues() {   /* mijn zalen kiezen: per plaats, aangevinkt = in 'Mijn zalen' */
+  var cnt = {}; ALL.forEach(function (c) { if (c.d >= TODAY) cnt[c.v] = (cnt[c.v] || 0) + 1; });
+  var ks = Object.keys(VENUES).filter(function (k) { return cnt[k] && !VENUES[k].fest; }).sort(function (a, b) {
+    var A = VENUES[a], B = VENUES[b]; return (A.cc || "NL").localeCompare(B.cc || "NL") || A.city.localeCompare(B.city) || A.label.localeCompare(B.label); });
+  var last = "";
+  $("panel").innerHTML = '<div class="pb" style="margin-top:0;padding-top:22px"><h2>Mijn zalen</h2><p style="color:var(--muted);margin:4px 0 12px">Vink je zalen aan; de filter ‘Mijn zalen’ toont dan alleen die.</p>' +
+    ks.map(function (k) { var v = VENUES[k], head = v.city !== last ? '<div class="hl" style="margin:16px 0 2px">' + esc(v.city) + "</div>" : ""; last = v.city;
+      return head + '<label class="vrow"><input type="checkbox" value="' + k + '"' + (mine.indexOf(k) >= 0 ? " checked" : "") + "><b>" + esc(v.label) + "</b><span>" + cnt[k] + "</span></label>"; }).join("") +
+    '<div class="acts" style="margin-top:16px;position:sticky;bottom:0;background:var(--bg2);padding:10px 0"><button class="btn pri" data-vsave>Bewaar</button><button class="btn" data-vnone>Niets aangevinkt</button></div></div>';
+  $("sheet").classList.add("on"); document.body.style.overflow = "hidden";
+}
 $("sb").addEventListener("click", function () {
   var on = !$("sbar").classList.contains("on"); $("sbar").classList.toggle("on", on); $("sb").setAttribute("aria-pressed", String(on));
   if (on) $("q").focus(); else { $("q").value = ""; st.q = ""; render(); }

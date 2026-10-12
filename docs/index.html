@@ -150,6 +150,7 @@ html.inapp #splash{background:transparent}
 #splash .st{font:500 13px var(--f-b);letter-spacing:.04em;opacity:.85}
 #splash .go{display:none;margin-top:8px;font:600 15px var(--f-b);letter-spacing:.02em}
 #splash.ready .go{display:block}
+#splash.ready .st:empty{display:none}#splash.ready .go{margin-top:0}
 @media (prefers-reduced-motion:reduce){#splash{transition:none}}
 .arow.open{background:var(--card);border-radius:14px;margin:4px -10px;padding:0 10px 12px}
 .aedit{padding:4px 0 0}
@@ -197,7 +198,7 @@ try{seen=sessionStorage.getItem("ca-splash")==="1";sessionStorage.setItem("ca-sp
 if(seen){document.documentElement.classList.remove("splashing");sp.remove();try{window.AndroidApp&&AndroidApp.splashDone();}catch(e){}window.__splashReady=function(){};return;}   /* terug van Info: geen startscherm */
 function hide(){if(done)return;done=true;document.documentElement.classList.remove("splashing");try{window.AndroidApp&&AndroidApp.splashDone();}catch(e){}sp.classList.add("gone");setTimeout(function(){sp.remove();},500);}
 /* het startscherm blijft staan tot je tikt; zodra de agenda geladen is staat er wanneer die is bijgewerkt */
-window.__splashReady=function(msg){ready=true;document.getElementById("spst").textContent=msg||"Agenda geladen";sp.classList.add("ready");};
+window.__splashReady=function(msg){ready=true;document.getElementById("spst").textContent=msg||"";sp.classList.add("ready");};
 sp.addEventListener("click",function(){if(ready)hide();});
 setTimeout(function(){if(!ready)window.__splashReady("Laden duurt lang; tik om toch verder te gaan");},15000);})();
 </script>
@@ -591,7 +592,7 @@ Promise.all([fetch("app.js", { cache: "no-cache" }).then(function (r) { return r
   render();
   var u = new Date(data.updated);
   try { localStorage.setItem("ca-updated", data.updated); } catch (e) {}
-  if (window.__splashReady) window.__splashReady("Agenda bijgewerkt " + DOW[u.getDay()] + " " + u.getDate() + " " + MON[u.getMonth()] + " " + pad(u.getHours()) + ":" + pad(u.getMinutes()));
+  if (window.__splashReady) window.__splashReady("");   /* alleen 'Tik om verder te gaan'; wanneer bijgewerkt staat op de infopagina */
 }).catch(function () {
   if (window.__splashReady) window.__splashReady("Geen verbinding: je ziet de laatst bekende agenda");
   $("main").innerHTML = '<div class="empty">Kon de agenda niet laden. Controleer je verbinding.</div>';

@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d0c12">
+<title>Barry's concerten · ontwerp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap">
+<style>
+/* Voorstel nieuw uiterlijk: donker zoals de startfoto, goud van de lampjes als accent */
+:root{--bg:#0d0c12;--bg2:#15131c;--card:#1c1a25;--card2:#24212f;--line:#2e2a3a;--fg:#f3efe6;--muted:#a49db3;--faint:#6f6880;
+  --gold:#f2b84b;--gold2:#ffd27a;--red:#ff5d5d;--green:#4fd18b;--blue:#7aa7ff;
+  --f-d:"Bricolage Grotesque",system-ui,sans-serif;--f-b:"Instrument Sans",system-ui,sans-serif;--nav:64px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--fg);font:400 15px/1.4 var(--f-b)}
+body{padding-bottom:calc(var(--nav) + env(safe-area-inset-bottom))}
+button{font:inherit;color:inherit}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px}
+/* kop */
+header{position:sticky;top:0;z-index:10;background:linear-gradient(var(--bg) 70%,rgba(13,12,18,0));padding:14px 0 10px}
+.top{display:flex;align-items:center;gap:10px}
+.brand{font:800 22px var(--f-d);letter-spacing:-.02em;flex:1;display:flex;align-items:center;gap:8px}
+.brand .dot{width:9px;height:9px;border-radius:50%;background:var(--gold);box-shadow:0 0 12px var(--gold)}
+.ib{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--card);display:grid;place-items:center;cursor:pointer}
+.ib svg{width:19px;height:19px}
+.search{display:none;margin-top:10px;width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--fg);font:500 15px var(--f-b);outline:none}
+.search.on{display:block}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:12px -16px 0;padding:0 16px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);font:600 13px var(--f-b);cursor:pointer;color:var(--muted)}
+.chip[aria-pressed=true]{background:var(--gold);border-color:var(--gold);color:#1a1405}
+/* volgende concert */
+.hero{margin:6px 0 18px}
+.hl{font:700 13px var(--f-b);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:18px 0 10px;display:flex;justify-content:space-between}
+.hl a{color:var(--gold);text-decoration:none;text-transform:none;letter-spacing:0;font-weight:600}
+.next{position:relative;border-radius:20px;overflow:hidden;min-height:190px;padding:18px;display:flex;flex-direction:column;justify-content:flex-end;
+  background:var(--card);border:1px solid var(--line);cursor:pointer}
+.next .bgimg{position:absolute;inset:0;background-size:cover;background-position:center;filter:blur(14px) brightness(.45);transform:scale(1.2)}
+.next>*{position:relative}
+.next .cd{position:absolute;top:16px;right:16px;background:var(--gold);color:#1a1405;font:800 13px var(--f-d);padding:6px 10px;border-radius:10px}
+.next .nn{font:800 26px/1.1 var(--f-d);letter-spacing:-.02em}
+.next .nv{color:var(--muted);margin-top:6px;font-size:14px}
+.next .lg{width:58px;height:58px;border-radius:14px;margin-bottom:12px;box-shadow:0 4px 18px rgba(0,0,0,.4)}
+.more{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;margin:10px -16px 0;padding:0 16px}
+.more::-webkit-scrollbar{display:none}
+.mc{flex:none;width:200px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;display:flex;gap:10px;align-items:center;cursor:pointer}
+.mc img{width:40px;height:40px;border-radius:10px}
+.mc b{display:block;font:700 14px var(--f-d);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px}
+.mc span{font-size:12px;color:var(--muted)}
+/* lijst */
+.day{position:sticky;top:var(--hh,118px);z-index:5;background:var(--bg);padding:16px 0 8px;display:flex;align-items:baseline;gap:10px}
+.day b{font:800 19px var(--f-d)}
+.day span{color:var(--faint);font-size:13px}
+.ev{display:flex;gap:12px;align-items:center;padding:10px;margin:0 -10px;border-radius:14px;cursor:pointer}
+.ev:active{background:var(--card)}
+.ev img,.ev .lt{width:52px;height:52px;border-radius:13px;flex:none;object-fit:cover;background:var(--card2)}
+.ev .lt{display:grid;place-items:center;font:800 20px var(--f-d);color:var(--gold)}
+.ev .b{flex:1;min-width:0}
+.ev .n{font:700 16px/1.25 var(--f-d);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev .s{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.ev .tm{font:700 14px var(--f-d);color:var(--fg);text-align:right;flex:none;min-width:44px}
+.ev .tm small{display:block;font:500 11px var(--f-b);color:var(--faint)}
+.bd{display:inline-block;font:700 10px var(--f-b);text-transform:uppercase;letter-spacing:.06em;padding:2px 6px;border-radius:6px;margin-right:5px;vertical-align:1px}
+.bd.tk{background:var(--green);color:#06210f}.bd.so{background:rgba(255,93,93,.18);color:var(--red)}
+.bd.nw{background:rgba(242,184,75,.18);color:var(--gold)}.bd.fe{background:rgba(122,167,255,.18);color:var(--blue)}.bd.cl{background:rgba(79,209,139,.15);color:var(--green)}
+.ev.star .n::after{content:" ★";color:var(--gold)}
+.loadmore{display:block;margin:20px auto;padding:12px 20px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer}
+/* concertscherm */
+.sheet{position:fixed;inset:0;z-index:30;display:none}
+.sheet.on{display:block}
+.sheet .bk{position:absolute;inset:0;background:rgba(0,0,0,.6)}
+.panel{position:absolute;left:0;right:0;bottom:0;max-height:92vh;overflow:auto;background:var(--bg2);border-radius:24px 24px 0 0;padding:0 0 calc(20px + env(safe-area-inset-bottom));
+  max-width:720px;margin:0 auto;animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+.ph{position:relative;height:200px;background:var(--card2) center/cover;border-radius:24px 24px 0 0}
+.ph::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(21,19,28,0) 40%,var(--bg2));border-radius:24px 24px 0 0}
+.grab{position:absolute;top:8px;left:50%;width:40px;height:5px;margin-left:-20px;border-radius:3px;background:rgba(255,255,255,.4);z-index:2}
+.pb{padding:0 18px;margin-top:-50px;position:relative}
+.pb .lg{width:64px;height:64px;border-radius:16px;box-shadow:0 6px 20px rgba(0,0,0,.5)}
+.pb h2{font:800 26px/1.1 var(--f-d);margin:12px 0 4px;letter-spacing:-.02em}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0}
+.fact{background:var(--card);border-radius:14px;padding:12px}
+.fact span{display:block;font-size:12px;color:var(--faint)}
+.fact b{font:700 15px var(--f-d)}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn{padding:14px;border-radius:14px;border:1px solid var(--line);background:var(--card);font:600 14px var(--f-b);cursor:pointer;text-align:center;text-decoration:none;color:var(--fg);display:flex;align-items:center;justify-content:center;gap:6px}
+.btn.pri{background:var(--gold);color:#1a1405;border-color:var(--gold)}
+.btn.on{background:var(--green);border-color:var(--green);color:#06210f}
+.btn.wide{grid-column:1/-1}
+/* onderbalk */
+nav{position:fixed;left:0;right:0;bottom:0;z-index:20;height:calc(var(--nav) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);
+  background:rgba(21,19,28,.92);backdrop-filter:blur(14px);border-top:1px solid var(--line);display:flex}
+nav button{flex:1;border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font:600 11px var(--f-b);color:var(--faint);cursor:pointer}
+nav button svg{width:22px;height:22px}
+nav button[aria-selected=true]{color:var(--gold)}
+nav .n{position:absolute;margin:-18px 0 0 24px;background:var(--gold);color:#1a1405;font:800 10px var(--f-b);border-radius:8px;padding:1px 5px}
+.note{margin:24px 0;padding:14px;border-radius:14px;background:var(--card);color:var(--muted);font-size:13px;border:1px dashed var(--line)}
+.empty{padding:40px 0;text-align:center;color:var(--muted)}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="top"><div class="brand"><span class="dot"></span>Barry's concerten</div>
+    <button class="ib" id="sb" aria-label="Zoeken"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button></div>
+  <input class="search" id="q" type="search" placeholder="Artiest, zaal of stad">
+  <div class="chips" id="chips">
+    <button class="chip" data-f="today" aria-pressed="false">Vandaag</button>
+    <button class="chip" data-f="weekend" aria-pressed="false">Dit weekend</button>
+    <button class="chip" data-f="near" aria-pressed="false">Binnen 1,5 uur</button>
+    <button class="chip" data-f="mine" aria-pressed="false">Mijn zalen</button>
+    <button class="chip" data-f="fest" aria-pressed="false">Festivals</button>
+    <button class="chip" data-f="new" aria-pressed="false">Nieuw</button>
+  </div>
+</div></header>
+<main class="wrap" id="main"><div class="empty">Laden…</div></main>
+<div class="sheet" id="sheet"><div class="bk" data-close></div><div class="panel" id="panel"></div></div>
+<nav id="nav">
+  <button data-tab="agenda" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Agenda</button>
+  <button data-tab="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9V6a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v3a3 3 0 0 0 0 6v3a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-3a3 3 0 0 0 0-6Z"/><path d="M14 5v14" stroke-dasharray="2 2"/></svg>Kaartjes</button>
+  <button data-tab="i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z" stroke-linejoin="round"/></svg>Interesse</button>
+  <button data-tab="a"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16v13H4zM3 4h18v3H3zM10 11h4"/></svg>Archief</button>
+</nav>
+<script>
+(function () {
+"use strict";
+var $ = function (id) { return document.getElementById(id); };
+function esc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+function load(k, d) { try { var r = localStorage.getItem(k); return r ? JSON.parse(r) : d; } catch (e) { return d; } }
+function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+var DOW = ["zo", "ma", "di", "wo", "do", "vr", "za"], DOWL = ["zondag", "maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag"];
+var MON = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
+var MONL = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"];
+var NOW = new Date(), pad = function (n) { return (n < 10 ? "0" : "") + n; };
+function iso(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+function parse(s) { var p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+var TODAY = iso(NOW), WEEK_AGO = iso(new Date(NOW.getTime() - 7 * 864e5));
+var VENUES = {}, COORD = {}, LOGO = {}, ALL = [], marks = load("ca-marks", {}), mine = load("ca-mine", []);
+var HOME = [51.958, 4.476];
+var st = { tab: "agenda", f: {}, q: "", limit: 250, open: null };
+function travel(city) {
+  var c = COORD[city]; if (!c) return null;
+  var R = 6371, a = Math.pow(Math.sin((c[0] - HOME[0]) * Math.PI / 360), 2) + Math.cos(HOME[0] * Math.PI / 180) * Math.cos(c[0] * Math.PI / 180) * Math.pow(Math.sin((c[1] - HOME[1]) * Math.PI / 360), 2);
+  return Math.round(2 * R * Math.asin(Math.sqrt(a)) * 1.2 / 100 * 60 + 8);
+}
+function fmtT(m) { return m < 60 ? m + " min" : Math.floor(m / 60) + " u" + (m % 60 ? " " + m % 60 + " min" : ""); }
+function nice(t) { return t === t.toUpperCase() && /[A-Z]{4}/.test(t) ? t.replace(/\b([A-Z])([A-Z']+)\b/g, function (m, a, b) { return /^(DJ|MC|UK|US|USA|NL|II|III|ABBA|AC|DC|ADE)$/.test(m) ? m : a + b.toLowerCase(); }) : t; }
+function has(id, f) { return !!(marks[id] && marks[id][f]); }
+function venue(c) { return VENUES[c.v] || { label: c.v, city: "" }; }
+function logo(c) { return LOGO[c.v] ? "../" + LOGO[c.v] : c.th ? "../" + c.th : ""; }
+function pic(c) { var l = logo(c); return l ? '<img src="' + esc(l) + '" alt="" loading="lazy">' : '<span class="lt">' + esc((nice(c.n).replace(/^[^A-Za-z0-9]+/, "").charAt(0) || "*").toUpperCase()) + "</span>"; }
+function weekend() { var d = new Date(NOW), w = d.getDay(), f = new Date(d), s = new Date(d);
+  if (w === 0) { f.setDate(d.getDate() - 2); } else if (w === 6) { f.setDate(d.getDate() - 1); } else { f.setDate(d.getDate() + (5 - w)); }
+  s.setDate(f.getDate() + 2); return [iso(f) < TODAY ? TODAY : iso(f), iso(s)]; }
+function pass(c) {
+  var v = venue(c), q = st.q.trim().toLowerCase();
+  if (q && (c.n + " " + v.label + " " + v.city).toLowerCase().indexOf(q) < 0) return false;
+  if (st.f.today && c.d !== TODAY) return false;
+  if (st.f.weekend) { var w = weekend(); if (c.d < w[0] || c.d > w[1]) return false; }
+  if (st.f.near) { var t = travel(v.city); if (t === null || t > 90) return false; }
+  if (st.f.mine && mine.length && mine.indexOf(c.v) < 0) return false;
+  if (st.f.fest && !v.fest) return false;
+  if (st.f["new"] && !(c.first && c.first !== "base" && c.first >= WEEK_AGO)) return false;
+  if (st.tab === "t" && !has(c.id, "t")) return false;
+  if (st.tab === "i" && !has(c.id, "i")) return false;
+  return true;
+}
+function badges(c) {
+  return (has(c.id, "t") ? '<span class="bd tk">✓ kaartje</span>' : "") + (c.s ? '<span class="bd so">uitverkocht</span>' : "") +
+    (c.c && c.v === "rotown" ? '<span class="bd cl">clubcard</span>' : "") + (venue(c).fest ? '<span class="bd fe">festival</span>' : "") +
+    (c.first && c.first !== "base" && c.first >= WEEK_AGO ? '<span class="bd nw">nieuw</span>' : "");
+}
+function row(c) {
+  var v = venue(c), t = (c.t || "").replace("deuren ", "");
+  return '<div class="ev' + (has(c.id, "i") ? " star" : "") + '" data-id="' + esc(c.id) + '">' + pic(c) +
+    '<div class="b"><div class="n">' + esc(nice(c.n)) + '</div><div class="s">' + badges(c) + esc(v.label) + " · " + esc(v.city) + "</div></div>" +
+    '<div class="tm">' + (t ? esc(t) + (/deuren/.test(c.t || "") ? "<small>deur</small>" : "") : "") + "</div></div>";
+}
+function hero() {
+  var tk = ALL.filter(function (c) { return c.d >= TODAY && has(c.id, "t"); });
+  if (!tk.length) return "";
+  var c = tk[0], v = venue(c), days = Math.round((parse(c.d) - parse(TODAY)) / 864e5), tt = travel(v.city), d = parse(c.d);
+  var bg = c.th ? "../" + c.th : logo(c);
+  var h = '<div class="hl">Jouw volgende concert</div><div class="next" data-id="' + esc(c.id) + '">' + (bg ? '<div class="bgimg" style="background-image:url(' + esc(bg) + ')"></div>' : "") +
+    '<div class="cd">' + (days === 0 ? "VANDAAG" : days === 1 ? "MORGEN" : "nog " + days + " dagen") + "</div>" +
+    (logo(c) ? '<img class="lg" src="' + esc(logo(c)) + '" alt="">' : "") +
+    '<div class="nn">' + esc(nice(c.n)) + '</div><div class="nv">' + DOWL[d.getDay()] + " " + d.getDate() + " " + MONL[d.getMonth()] + (c.t ? " · " + esc(c.t) : "") +
+    "<br>" + esc(v.label) + " · " + esc(v.city) + (tt !== null ? " · ± " + fmtT(tt) + " rijden" : "") + "</div></div>";
+  if (tk.length > 1) h += '<div class="more">' + tk.slice(1, 8).map(function (c) { var d = parse(c.d);
+    return '<div class="mc" data-id="' + esc(c.id) + '">' + (logo(c) ? '<img src="' + esc(logo(c)) + '" alt="">' : "") + '<div><b>' + esc(nice(c.n)) + "</b><span>" + DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()] + " · " + esc(venue(c).label) + "</span></div></div>"; }).join("") + "</div>";
+  return '<section class="hero">' + h + "</section>";
+}
+function render() {
+  if (st.tab === "a") { renderArchive(); return; }
+  var list = ALL.filter(function (c) { return c.d >= TODAY && pass(c); });
+  var html = st.tab === "agenda" && !st.q && !Object.keys(st.f).some(function (k) { return st.f[k]; }) ? hero() : "";
+  var last = "", n = 0;
+  if (!list.length) html += '<div class="empty">' + (st.tab === "t" ? "Nog geen kaartjes" : st.tab === "i" ? "Nog niets met een ster" : "Niets gevonden") + "</div>";
+  list.slice(0, st.limit).forEach(function (c) {
+    if (c.d !== last) { var d = parse(c.d), cnt = list.filter(function (x) { return x.d === c.d; }).length;
+      html += '<div class="day"><b>' + (c.d === TODAY ? "Vandaag" : DOWL[d.getDay()].replace(/^./, function (x) { return x.toUpperCase(); }) + " " + d.getDate() + " " + MONL[d.getMonth()]) + "</b><span>" + cnt + " concerten</span></div>"; last = c.d; }
+    html += row(c); n++;
+  });
+  if (list.length > st.limit) html += '<button class="loadmore" id="lm">Meer laden</button>';
+  html += '<div class="note">Dit is een <b>voorbeeld</b> van een nieuw uiterlijk, met je echte agenda, logo\'s en kaartjes. De echte app blijft zoals hij is tot je kiest. <a href="../" style="color:var(--gold)">Terug naar de app</a></div>';
+  $("main").innerHTML = html;
+  document.documentElement.style.setProperty("--hh", document.querySelector("header").offsetHeight + "px");
+}
+function renderArchive() {
+  var out = Object.keys(marks).filter(function (id) { var m = marks[id]; return m.t && m.s && m.s.d < TODAY; }).map(function (id) { return { id: id, s: marks[id].s, rv: marks[id].rv || {} }; })
+    .sort(function (a, b) { return a.s.d < b.s.d ? 1 : -1; });
+  $("main").innerHTML = '<div class="hl" style="margin-top:8px">Gezien · ' + out.length + "</div>" + (out.length ? out.map(function (a) {
+    var d = parse(a.s.d), v = VENUES[a.s.v] || { label: a.s.v, city: "" }, r = a.rv.r;
+    return '<div class="ev"><span class="lt" style="font-size:14px;line-height:1.1;text-align:center">' + d.getDate() + "<br>" + MON[d.getMonth()] + '</span><div class="b"><div class="n">' + esc(nice(a.s.n)) + '</div><div class="s">' + esc(v.label) + " · " + d.getFullYear() + '</div></div><div class="tm" style="color:var(--gold)">' + (typeof r === "number" ? String(r).replace(".", ",") : "–") + "</div></div>";
+  }).join("") : '<div class="empty">Concerten met een kaartje komen hier na afloop.</div>');
+}
+function ics(c) {   /* 'Zet in mijn agenda': een agenda-afspraak die de telefoon zelf opent */
+  var v = venue(c), t = ((c.t || "").match(/\d\d:\d\d/) || ["20:00"])[0], s = c.d.replace(/-/g, "") + "T" + t.replace(":", "") + "00";
+  var e = c.d.replace(/-/g, "") + "T" + pad(Math.min(23, +t.slice(0, 2) + 3)) + t.slice(3) + "00";
+  var txt = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Barrys concerten//NL", "BEGIN:VEVENT", "UID:" + encodeURIComponent(c.id) + "@barry", "DTSTART:" + s, "DTEND:" + e,
+    "SUMMARY:" + nice(c.n), "LOCATION:" + v.label + ", " + v.city, "URL:" + c.u, "BEGIN:VALARM", "TRIGGER:-P1D", "ACTION:DISPLAY", "DESCRIPTION:Morgen: " + nice(c.n), "END:VALARM", "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+  var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([txt], { type: "text/calendar" })); a.download = "concert.ics"; a.click();
+}
+function openSheet(id) {
+  var c = ALL.filter(function (x) { return x.id === id; })[0]; if (!c) return;
+  st.open = id;
+  var v = venue(c), d = parse(c.d), tt = travel(v.city), tk = has(id, "t"), it = has(id, "i");
+  var big = c.th ? "../" + c.th : "";
+  $("panel").innerHTML = '<div class="ph" style="' + (big ? "background-image:url(" + esc(big) + ")" : "") + '"><span class="grab"></span></div><div class="pb">' +
+    (logo(c) ? '<img class="lg" src="' + esc(logo(c)) + '" alt="">' : "") + "<h2>" + esc(nice(c.n)) + '</h2><div style="color:var(--muted)">' + badges(c) + "</div>" +
+    '<div class="facts"><div class="fact"><span>Wanneer</span><b>' + DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()] + (c.t ? " · " + esc(c.t.replace("deuren ", "")) : "") + "</b></div>" +
+    '<div class="fact"><span>Waar</span><b>' + esc(v.label) + "</b><br><span>" + esc(v.city) + "</span></div>" +
+    '<div class="fact"><span>Reistijd</span><b>' + (tt !== null ? "± " + fmtT(tt) : "–") + "</b></div>" +
+    '<div class="fact"><span>Status</span><b>' + (c.s ? "uitverkocht" : "kaarten te koop") + "</b></div></div>" +
+    '<div class="acts"><button class="btn' + (tk ? " on" : " pri") + '" data-a="t">' + (tk ? "✓ Kaartje gekocht" : "Ik heb een kaartje") + "</button>" +
+    '<button class="btn' + (it ? " on" : "") + '" data-a="i">' + (it ? "★ Interesse" : "☆ Interesse") + "</button>" +
+    '<a class="btn" href="' + esc(c.u) + '" target="_blank" rel="noopener">Zaal ↗</a>' +
+    '<a class="btn" href="' + esc(c.k || c.ka || "https://www.ticketswap.nl/search?q=" + encodeURIComponent(c.n)) + '" target="_blank" rel="noopener">TicketSwap ↗</a>' +
+    '<button class="btn wide" data-a="cal">📅 Zet in mijn agenda (met herinnering)</button></div></div>';
+  $("sheet").classList.add("on"); document.body.style.overflow = "hidden";
+}
+function closeSheet() { $("sheet").classList.remove("on"); document.body.style.overflow = ""; st.open = null; }
+function toggle(id, k) {
+  var c = ALL.filter(function (x) { return x.id === id; })[0], m = marks[id] || {};
+  m[k] = !m[k]; if (c) m.s = { n: c.n, d: c.d, v: c.v, r: c.r, u: c.u };
+  if (!m.i && !m.t) delete marks[id]; else marks[id] = m;
+  save("ca-marks", marks); render(); openSheet(id);
+}
+$("main").addEventListener("click", function (e) {
+  if (e.target.id === "lm") { st.limit += 400; render(); return; }
+  var r = e.target.closest("[data-id]"); if (r) openSheet(r.getAttribute("data-id"));
+});
+$("sheet").addEventListener("click", function (e) {
+  if (e.target.hasAttribute("data-close")) { closeSheet(); return; }
+  var a = e.target.closest("[data-a]"); if (!a) return;
+  var k = a.getAttribute("data-a");
+  if (k === "cal") { ics(ALL.filter(function (x) { return x.id === st.open; })[0]); return; }
+  toggle(st.open, k);
+});
+$("chips").addEventListener("click", function (e) {
+  var b = e.target.closest("[data-f]"); if (!b) return;
+  var f = b.getAttribute("data-f"); st.f[f] = !st.f[f];
+  if (f === "today" && st.f.today) st.f.weekend = false; if (f === "weekend" && st.f.weekend) st.f.today = false;
+  Array.prototype.forEach.call(document.querySelectorAll(".chip"), function (c) { c.setAttribute("aria-pressed", String(!!st.f[c.getAttribute("data-f")])); });
+  st.limit = 250; render(); window.scrollTo(0, 0);
+});
+$("nav").addEventListener("click", function (e) {
+  var b = e.target.closest("[data-tab]"); if (!b) return;
+  st.tab = b.getAttribute("data-tab");
+  Array.prototype.forEach.call(document.querySelectorAll("nav button"), function (x) { x.setAttribute("aria-selected", String(x === b)); });
+  render(); window.scrollTo(0, 0);
+});
+$("sb").addEventListener("click", function () { $("q").classList.toggle("on"); if ($("q").classList.contains("on")) $("q").focus(); });
+var qt; $("q").addEventListener("input", function () { clearTimeout(qt); qt = setTimeout(function () { st.q = $("q").value; render(); }, 150); });
+/* gegevens: dezelfde als de app (zalen en coördinaten uit app.js, concerten en logo's uit data/) */
+Promise.all([fetch("../app.js", { cache: "no-cache" }).then(function (r) { return r.text(); }),
+  fetch("../data/events.json", { cache: "no-cache" }).then(function (r) { return r.json(); }),
+  fetch("../data/logos.json", { cache: "no-cache" }).then(function (r) { return r.json(); }).catch(function () { return {}; })]).then(function (x) {
+  var js = x[0], data = x[1]; LOGO = x[2];
+  js.replace(/^\s*([a-z0-9_]+):\{label:"([^"]*)",home:"([^"]*)",city:"([^"]*)"([^}]*)\}/gm, function (m, k, l, h, c, rest) {
+    VENUES[k] = { label: l, home: h, city: c, fest: /fest:true/.test(rest), cc: /cc:"BE"/.test(rest) ? "BE" : "NL" }; return m; });
+  js.replace(/"([^"]+)": \[(-?\d+\.\d+), (-?\d+\.\d+)\]/g, function (m, c, a, b) { COORD[c] = [+a, +b]; return m; });
+  var alias = { antwerp: "Antwerpen", brussels: "Brussel", bruxelles: "Brussel", "liège": "Luik", ghent: "Gent" };
+  Object.keys(data.venues || {}).forEach(function (k) { var v = data.venues[k], c = (v.city || "").replace(/ OV$/, "").replace(/\s*\(.*\)$/, "");
+    if (!VENUES[k]) VENUES[k] = { label: v.label, city: alias[c.toLowerCase()] || c, cc: v.cc || "NL" }; });
+  ALL = data.events.filter(function (e) { return VENUES[e.v]; }).map(function (e) { e.id = e.v + "|" + e.d + "|" + e.u; e.ts = (e.t || "").replace("deuren ", "") || "99"; return e; })
+    .sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : a.ts < b.ts ? -1 : 1; });
+  render();
+}).catch(function (e) { $("main").innerHTML = '<div class="empty">Kon de agenda niet laden.</div>'; });
+})();
+</script>
+</body>
+</html>

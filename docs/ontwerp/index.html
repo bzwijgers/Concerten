@@ -249,7 +249,7 @@ function openDate() {
     '<div class="facts" style="margin:0 0 14px"><label class="fact"><span>Van</span><input type="date" id="dfrom" value="' + st.from + '" min="' + TODAY + '" style="width:100%;background:none;border:0;color:var(--fg);font:700 15px var(--f-d);color-scheme:dark"></label>' +
     '<label class="fact"><span>Tot en met (leeg = alles daarna)</span><input type="date" id="dto" value="' + st.to + '" min="' + TODAY + '" style="width:100%;background:none;border:0;color:var(--fg);font:700 15px var(--f-d);color-scheme:dark"></label></div>' +
     '<div class="acts"><button class="btn pri" data-dok>Toon</button><button class="btn" data-dclear>Geen datum</button></div></div>';
-  $("sheet").classList.add("on"); document.body.style.overflow = "hidden";
+  showSheet();
 }
 function setDate(a, b) { st.from = a || ""; st.to = b || ""; st.f.today = st.f.weekend = false; st.month = ""; closeSheet(); render(); window.scrollTo(0, 0); }
 function card(c, big) {
@@ -385,9 +385,22 @@ function openSheet(id) {
     '<a class="btn" href="' + esc(c.u) + '" target="_blank" rel="noopener">Zaal ↗</a>' +
     '<a class="btn" href="' + esc(c.k || c.ka || "https://www.ticketswap.nl/search?q=" + encodeURIComponent(c.n)) + '" target="_blank" rel="noopener">TicketSwap ↗</a>' +
     '<button class="btn wide" data-a="cal">📅 Zet in mijn agenda (met herinnering)</button></div></div>';
+  showSheet();
+}
+/* de terugknop van de telefoon sluit eerst een open scherm (concert, datum, zalen) in plaats van de pagina te verlaten */
+function showSheet() {
+  if (!$("sheet").classList.contains("on")) { try { history.pushState({ sheet: 1 }, ""); } catch (e) {} }
   $("sheet").classList.add("on"); document.body.style.overflow = "hidden";
 }
-function closeSheet() { $("sheet").classList.remove("on"); document.body.style.overflow = ""; st.open = null; }
+function closeSheet(fromBack) {
+  if (!$("sheet").classList.contains("on")) return;
+  $("sheet").classList.remove("on"); document.body.style.overflow = ""; st.open = null;
+  if (!fromBack && history.state && history.state.sheet) { try { history.back(); } catch (e) {} }
+}
+window.addEventListener("popstate", function () {
+  if ($("sheet").classList.contains("on")) closeSheet(true);
+  if (!$("menu").hidden) $("menu").hidden = true;
+});
 function toggle(id, k) {
   var c = findC(id), m = marks[id] || {};
   m[k] = !m[k]; if (c) m.s = { n: c.n, d: c.d, v: c.v, r: c.r, u: c.u };
@@ -471,7 +484,7 @@ function openVenues() {   /* mijn zalen kiezen: per plaats, aangevinkt = in 'Mij
     ks.map(function (k) { var v = VENUES[k], head = v.city !== last ? '<div class="hl" style="margin:16px 0 2px">' + esc(v.city) + "</div>" : ""; last = v.city;
       return head + '<label class="vrow"><input type="checkbox" value="' + k + '"' + (mine.indexOf(k) >= 0 ? " checked" : "") + "><b>" + esc(v.label) + "</b><span>" + cnt[k] + "</span></label>"; }).join("") +
     '<div class="acts" style="margin-top:16px;position:sticky;bottom:0;background:var(--bg2);padding:10px 0"><button class="btn pri" data-vsave>Bewaar</button><button class="btn" data-vnone>Niets aangevinkt</button></div></div>';
-  $("sheet").classList.add("on"); document.body.style.overflow = "hidden";
+  showSheet();
 }
 $("sb").addEventListener("click", function () {
   var on = !$("sbar").classList.contains("on"); $("sbar").classList.toggle("on", on); $("sb").setAttribute("aria-pressed", String(on));

@@ -330,7 +330,9 @@ function renderOv() {
   var ms = Object.keys(mon).sort().slice(0, 12), mm = Math.max.apply(null, ms.map(function (m) { return mon[m]; }).concat([1]));
   return '<div class="hl">' + (st.city ? esc(st.city) : "Waar is wat") + " · " + list.length + ' concerten</div><div class="mapbox" id="mapbox">' + svg +
     '<div class="zoom"><button data-zoom="1.6">+</button><button data-zoom="0.625">−</button><button data-zoom="0">⟲</button></div></div>' +
-    '<div class="hl">Per maand · tik om te kiezen (knijp op de kaart om te zoomen)</div>' + ms.map(function (m) { var y = +m.slice(0, 4);
+    '<div class="hl">Per maand · tik om te kiezen (knijp op de kaart om te zoomen)</div>' +
+    '<button class="mrow' + (!st.month ? " on" : "") + '" data-month=""><span>Alle</span><i><b style="width:100%"></b></i><em>' + Object.keys(mon).reduce(function (t, m) { return t + mon[m]; }, 0) + "</em></button>" +
+    ms.map(function (m) { var y = +m.slice(0, 4);
       return '<button class="mrow' + (st.month === m ? " on" : "") + '" data-month="' + m + '"><span>' + MON[+m.slice(5) - 1] + (y !== NOW.getFullYear() ? " " + String(y).slice(2) : "") + '</span><i><b style="width:' + Math.round(mon[m] / mm * 100) + '%"></b></i><em>' + mon[m] + "</em></button>"; }).join("");
 }
 function render() {
@@ -377,7 +379,7 @@ $("main").addEventListener("click", function (e) {
   if (t.closest("[data-zoom]")) { var zz = +t.closest("[data-zoom]").getAttribute("data-zoom"); if (!zz) { OV = { z: 1, cx: 160, cy: 220 }; } else OV.z = Math.min(8, Math.max(1, OV.z * zz)); render(); return; }
   if (t.closest("[data-city]") && OV.dragged) { OV.dragged = false; return; }
   if (t.closest("[data-city]")) { var ct = t.closest("[data-city]").getAttribute("data-city"); st.city = st.city === ct ? "" : ct; st.tab = "agenda"; setNav(); render(); window.scrollTo(0, 0); return; }
-  if (t.closest("[data-month]")) { var m = t.closest("[data-month]").getAttribute("data-month"); st.month = st.month === m ? "" : m; st.f.today = st.f.weekend = false; st.from = st.to = ""; render(); return; }
+  if (t.closest("[data-month]")) { var m = t.closest("[data-month]").getAttribute("data-month"); st.month = !m || st.month === m ? "" : m; st.f.today = st.f.weekend = false; st.from = st.to = ""; render(); return; }
   var r = t.closest("[data-id]"); if (r) openSheet(r.getAttribute("data-id"));
 });
 (function () {   /* overzicht: met twee vingers knijpen om te zoomen, met één vinger slepen */

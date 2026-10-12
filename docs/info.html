@@ -254,4 +254,6 @@ fetch("data/events.json").then(function(r){return r.json()}).then(function(d){
 }).catch(function(){});
 </script>
 <script>try{sessionStorage.setItem("ca-info","1")}catch(e){}</script>
+<script>/* geopend vanuit het voorbeeld van het nieuwe uiterlijk: terug naar dat voorbeeld */
+if(/[?&]van=ontwerp/.test(location.search)){var b=document.querySelector("a.info");if(b){b.href="ontwerp/";b.onclick=null;}}</script>
 </body></html>

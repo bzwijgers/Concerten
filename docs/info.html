@@ -81,6 +81,8 @@ h1{font-family:var(--f-display);font-weight:700;font-size:26px;letter-spacing:-.
 .src{font-size:12px;color:var(--muted)}
 .land{font:700 16px var(--f-head,inherit);margin:22px 0 6px}.land span{font-weight:400;font-size:13px;opacity:.6;margin-left:6px}
 .copy{margin:32px 0 8px;text-align:center;font-size:13px;opacity:.7}
+.lflag{width:30px;height:20px;border-radius:3px;box-shadow:0 0 0 1px rgba(0,0,0,.15);vertical-align:middle}
+.doc tr.tot td{font-weight:600;padding-top:8px;opacity:.75;border:0}
 </style></head><body>
 <div class="wrap">
 <header><div class="top"><h1>Info</h1><a class="info" href="./" onclick="try{sessionStorage.setItem(&quot;ca-info&quot;,&quot;1&quot;)}catch(e){}if(document.referrer.indexOf(location.origin)===0&amp;&amp;history.length>1){history.back();return false}">← Agenda</a></div></header>
@@ -125,7 +127,7 @@ var a=/ConcertAgendaApp\/([0-9.]+)/.exec(navigator.userAgent);if(a)document.getE
 </ul>
 
 <h2>Welke zalen worden doorzocht</h2>
-<h3 class="land">Nederland <span>69 zalen</span></h3>
+<h3 class="land"><svg class="lflag" viewBox="0 0 9 6" aria-label="Nederland"><rect width="9" height="2" fill="#AE1C28"/><rect y="2" width="9" height="2" fill="#fff"/><rect y="4" width="9" height="2" fill="#21468B"/></svg></h3>
 <table id="tbl"><tbody>
 <tr><td><b>013</b>, Tilburg</td><td class="rooms">013.nl, inclusief Hall en Zaal, Kleine Zaal en Backstage</td></tr>
 <tr><td><b>Amare</b>, Den Haag</td><td class="rooms">amare.nl, inclusief Concertzaal, Danstheater, Amare Studio en Conservatoriumzaal. Alleen pop, rock, wereldmuziek en vergelijkbaar; geen klassiek, workshops of rondleidingen</td></tr>
@@ -196,8 +198,9 @@ var a=/ConcertAgendaApp\/([0-9.]+)/.exec(navigator.userAgent);if(a)document.getE
 <tr><td><b>Theater Walhalla</b>, Rotterdam</td><td class="rooms">theaterwalhalla.nl, alleen theaterconcerten</td></tr>
 <tr><td><b>Willem Twee</b>, Den Bosch</td><td class="rooms">willem-twee.nl (W2), alleen het poppodium</td></tr>
 <tr><td><b>WORM</b>, Rotterdam</td><td class="rooms">worm.org</td></tr>
+<tr class="tot"><td colspan="2">69 zalen</td></tr>
 </tbody></table>
-<h3 class="land">België <span>16 zalen</span></h3>
+<h3 class="land"><svg class="lflag" viewBox="0 0 9 6" aria-label="België"><rect width="3" height="6" fill="#000"/><rect x="3" width="3" height="6" fill="#FDDA24"/><rect x="6" width="3" height="6" fill="#EF3340"/></svg></h3>
 <table id="tbl-be"><tbody>
 <tr><td><b>4AD</b>, Diksmuide</td><td class="rooms">4ad.be, via de eigen ticketwinkel</td></tr>
 <tr><td><b>AB (Ancienne Belgique)</b>, Brussel</td><td class="rooms">abconcerts.be</td></tr>
@@ -215,6 +218,7 @@ var a=/ConcertAgendaApp\/([0-9.]+)/.exec(navigator.userAgent);if(a)document.getE
 <tr><td><b>De Roma</b>, Borgerhout</td><td class="rooms">deroma.be</td></tr>
 <tr><td><b>Trix</b>, Antwerpen</td><td class="rooms">trixonline.be</td></tr>
 <tr><td><b>Vorst Nationaal</b>, Brussel</td><td class="rooms">vorst-nationaal.be, alleen concerten</td></tr>
+<tr class="tot"><td colspan="2">16 zalen</td></tr>
 </tbody></table>
 <p class="rooms" id="counts"></p>
 

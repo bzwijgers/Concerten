@@ -68,6 +68,11 @@ header.sc{border-bottom-color:var(--line)}
 .mc span{font-size:12px;color:var(--muted)}
 /* logo's: één rustig vak; lichte logo's worden omgekeerd zodat alles donker is */
 .lg{object-fit:cover;background:var(--card2);box-shadow:0 0 0 1px var(--line)}
+.lgw{position:relative;display:inline-block;flex:none;border-radius:13px;background:var(--card2)}
+.lgw::before{content:attr(data-ch);position:absolute;inset:0;display:grid;place-items:center;font:800 20px var(--f-d);color:var(--faint)}
+.lgw.ok::before{content:none}.lgw .lg{position:relative;display:block;opacity:0;transition:opacity .2s}.lgw.ok .lg{opacity:1}
+.ev .lgw,.ev .lgw .lg{width:50px;height:50px;border-radius:13px}.next .lgw,.next .lgw .lg{width:56px;height:56px;border-radius:14px}.next .lgw{margin-bottom:12px}.next .lgw .lg{margin:0}
+.mc .lgw,.mc .lgw .lg{width:42px;height:42px;border-radius:11px}.pb .lgw,.pb .lgw .lg{width:64px;height:64px;border-radius:16px}
 .lg.inv{filter:invert(1) hue-rotate(180deg) brightness(1.15)}
 /* lijst */
 .day{position:sticky;top:var(--hh,150px);z-index:5;background:var(--bg);padding:16px 0 6px;display:flex;align-items:baseline;gap:10px}
@@ -85,6 +90,7 @@ header.sc{border-bottom-color:var(--line)}
 .ev .tm.none{font:500 11px var(--f-b);color:var(--faint)}
 .bd{display:inline-block;font:700 10px var(--f-b);text-transform:uppercase;letter-spacing:.06em;padding:2px 6px;border-radius:6px;margin-right:5px;vertical-align:1px}
 .bd.tk{background:var(--green);color:#06210f}.bd.so{background:rgba(255,107,107,.18);color:var(--red)}
+.bd.sn{background:rgba(142,155,196,.2);color:#b9c3e6}.bd.ot{background:rgba(255,255,255,.06);color:var(--faint)}
 .bd.nw{background:rgba(242,184,75,.18);color:var(--gold)}.bd.fe{background:rgba(143,178,255,.18);color:var(--blue)}.bd.cl{background:rgba(79,209,139,.15);color:var(--green)}
 .ev.star .n::after{content:" ★";color:var(--gold)}
 .others{display:block;width:100%;margin:6px 0 4px;padding:12px;border-radius:12px;border:1px dashed var(--line);background:none;color:var(--muted);cursor:pointer;font:600 13px var(--f-b)}
@@ -189,6 +195,7 @@ window.onerror = function (msg, src, line) { try { var m = localStorage.getItem(
     <button class="ib" id="mb" aria-label="Menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button></div>
   <div class="menu" id="menu" hidden>
     <button data-m="zalen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V10l7-5 7 5v11M9 21v-6h6v6"/></svg>Mijn zalen kiezen</button>
+    <button data-m="other"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M7 12h10M10 17h4"/></svg><span id="otherlbl">Ook overige activiteiten tonen</span></button>
     <a href="klassiek.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Klassieke weergave</a>
     <a href="https://github.com/bzwijgers/Concerten/actions/workflows/update.yml" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5"/></svg>Nu bijwerken</a>
     <a href="info.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>Info</a>
@@ -242,7 +249,7 @@ Object.keys(marks).forEach(function (id) { var m = marks[id];   /* beschadigde o
 });   /* oud formaat, zoals in de app */
 var ORPH = {};   /* gemarkeerde concerten die (nog) niet in de huidige agenda staan, bv. omdat de zaal de link wijzigde */
 function findC(id) { return ALL.filter(function (x) { return x.id === id; })[0] || ORPH[id]; }
-var st = { ayear: String(NOW.getFullYear()), aview: "lijst", ovv: "kaart", ovreg: {}, venue: "", cc: "", asort: load("ca-asort", "d"), from: "", to: "", tab: "agenda", sub: "t", f: {}, q: "", city: "", month: "", limit: 250, open: null, more: {} };
+var st = { other: load("ca-other", false), ayear: String(NOW.getFullYear()), aview: "lijst", ovv: "kaart", ovreg: {}, venue: "", cc: "", asort: load("ca-asort", "d"), from: "", to: "", tab: "agenda", sub: "t", f: {}, q: "", city: "", month: "", limit: 250, open: null, more: {} };
 var CHIPS = [["today", "Vandaag"], ["weekend", "Dit weekend"], ["date", "Datum"], ["mine", "Mijn zalen"], ["near", "Binnen 1,5 uur"], ["fest", "Festivals"]];
 function travel(city) {
   var c = COORD[city]; if (!c) return null;
@@ -250,7 +257,41 @@ function travel(city) {
   return Math.round(2 * 6371 * Math.asin(Math.sqrt(a)) * 1.2 / 100 * 60 + 8);
 }
 function fmtT(m) { return m < 60 ? m + " min" : Math.floor(m / 60) + " u" + (m % 60 ? " " + m % 60 + " min" : ""); }
-function nice(t) { return t === t.toUpperCase() && /[A-Z]{4}/.test(t) ? t.replace(/\b([A-Z])([A-Z']+)\b/g, function (m, a, b) { return /^(DJ|MC|UK|US|USA|NL|II|III|ABBA|AC|DC|ADE)$/.test(m) ? m : a + b.toLowerCase(); }) : t; }
+function nice(t) { return t === t.toUpperCase() && /[A-Z]{4}/.test(t) && !/^[A-Z0-9]{2,4}[.!]?$/.test(t) ? t.replace(/(\()?([A-ZÀ-Þ])([A-ZÀ-Þ']+)/g, function (m, br, a, b) { var w = a + b; return br && w.length <= 3 ? m : /^(DJ|MC|UK|US|USA|NL|II|III|ABBA|AC|DC|ADE|KISS|UB40|ABC|INXS|REM|AFI|XTC|ELO)$/.test(w) || !/[AEIOUYÀ-Þ]/.test(w) ? m : (br || "") + a + b.toLowerCase(); }) : t; }
+/* titel opschonen: datum/zaal aan het eind of begin ("- do 15 okt '26", "• 19 nov 2026 • Het Depot", "18 okt 2026: ", " in Antwerpen") */
+var MONRE = "(jan|feb|mrt|maa|apr|mei|jun|jul|aug|sep|okt|nov|dec)[a-z]*\\.?";
+function cleanTitle(n, v) {
+  var t = String(n || "").replace(/\s+/g, " ").trim();
+  t = t.replace(new RegExp("\\s*[-–•✦|/]+\\s*(ma|di|wo|do|vr|za|zo)?\\.?\\s*\\d{1,2}\\s+" + MONRE + "\\s*('?\\d{2,4})?(\\s*[•✦|,]\\s*[^•✦|]*)?$", "i"), "");
+  t = t.replace(/\s*\/\/\s*\d{1,2}-\d{1,2}-\d{4}.*$/, "").replace(new RegExp("^\\d{1,2}\\s+" + MONRE + "\\s+\\d{4}\\s*:\\s*", "i"), "");
+  if (v === "trix") t = t.replace(/\s+in Antwerpen$/i, "");
+  return t || String(n || "");
+}
+/* geen concert: clubnachten, feesten, kinderactiviteiten, film, lezingen, spelletjes. Bewust smal (bands als 'Kids With Buns' of 'Bloc Party' blijven) */
+var OTHER = new RegExp([
+  "\\bacademy\\s*:", "\\b(artist|author) talk\\b", "\\bq&a\\b", "film & talk", "\\bscreening\\b", "\\bdocumentar(y|e)\\b", "nacht van de .*film", "food\\.film",
+  "spelletjesavond", "co-?working", "\\bbingo\\b", "\\bopen podium\\b", "opening expo", "\\bexpositie\\b", "tentoonstelling", "\\bjam sessions?\\b", "\\bseminar\\b", "\\bworkshop\\b",
+  "poppentheater", "verhalentheater", "kindervoorstelling", "kinderfeest", "kindercarnaval", "kinderfestival", "kids middag", "kids & kunst", "^kids halloween", "kids edition", "\\bteen party\\b", "kleine theater", "theatertroep", "theatershow",
+  "\\bclubnacht\\b", "\\bclub ?night\\b", "\\brave\\b", "silent disco", "\\bfoute?\\b.*\\b(party|feest|feestje)\\b", "\\b4 uur fout\\b", "qmusic", "techno (night|tuesday)", "history of house",
+  "\\b(halloween|pride|queer|indie|teen|thrash metal|k-pop|r&b|reggae ska|swing reunion|80'?s|90'?s|00'?s) ?(pop )?(party|feest|night)\\b", "\\bhouse party\\b", "dj party", "\\bborrel\\b", "rnborrel", "creatives cafe",
+  "^(back to the disco|disco snolly|disco del mundo|gitaardisco|singeltjes disco|ballroom blitz disco)", "house of disco", "galaxy disco", "\\bdiscq\\b"].join("|"), "i");
+var KEEP = /\b(orchestra|orkest|in concert|live on tour|tour|release ?party|birthday party|band)\b/i;
+function isOther(c) { return OTHER.test(c.n) && !KEEP.test(c.n); }
+/* eerder gezien: artiesten uit je archief (en concerten met kaartje uit de app) */
+var SEEN = {};
+function normA(n) { return nice(String(n || "")).toLowerCase().replace(/\s*\((?:[a-z]{2,3}|[a-z]{2}\/[a-z]{2})\)\s*/g, " ").replace(/^the\s+|,?\s+the$/g, "").replace(/&/g, " and ").replace(/[^a-z0-9à-ÿ]+/g, " ").trim(); }
+function buildSeen() {
+  SEEN = {};
+  var add = function (n, d) { var k = normA(n); if (k.length < 2) return; var o = SEEN[k] = SEEN[k] || { n: 0, last: "" }; o.n++; if (d > o.last) o.last = d; };
+  ((HIST && HIST.ev) || []).forEach(function (e) { e.acts.forEach(function (a) { add(a[0], e.d); }); });
+  Object.keys(marks).forEach(function (id) { var m = marks[id]; if (m.t && m.s && m.s.d < TODAY) add(m.s.n, m.s.d); });
+  ALL.forEach(function (c) { c.seen = seenOf(c); });
+}
+function seenOf(c) {
+  var parts = String(c.n).split(/\s+(?:\+|w\/|with|met|x|support:?|en)\s+|\s*[,/|:]\s+|\s+[-–]\s+/i), best = null, whole = normA(c.n);
+  [c.n].concat(parts).forEach(function (p) { var k = normA(p); if (k.length < 3 && k !== whole) return; var o = SEEN[k]; if (o && (!best || o.n > best.n)) best = { n: o.n, last: o.last, a: p.trim() }; });
+  return best;
+}
 function rescueMarks() {   /* markering waarvan het concert niet meer onder hetzelfde adres in de agenda staat: zelfde dag + zelfde naam zoeken */
   var byId = {}, moved = 0; ALL.forEach(function (c) { byId[c.id] = c; });
   var safeDec = function (x) { try { return decodeURIComponent(x); } catch (e) { return x; } };
@@ -272,7 +313,8 @@ function rescueMarks() {   /* markering waarvan het concert niet meer onder hetz
 function has(id, f) { return !!(marks[id] && marks[id][f]); }
 function venue(c) { return VENUES[c.v] || { label: c.v, city: "" }; }
 function logoSrc(c) { return LOGO[c.v] ? "" + LOGO[c.v] : c.th ? "" + c.th : ""; }
-function lg(c, cls) { var l = logoSrc(c); return l ? '<img class="lg ' + (LOGO[c.v] && LIGHT[c.v] ? "inv " : "") + (cls || "") + '" src="' + esc(l) + '" alt="" loading="lazy">' : '<span class="lt ' + (cls || "") + '">' + esc((nice(c.n).replace(/^[^A-Za-z0-9]+/, "").charAt(0) || "*").toUpperCase()) + "</span>"; }
+function lg(c, cls) { var l = logoSrc(c), ch = esc((venue(c).label || nice(c.n)).replace(/^(de|het|the)\s+/i, "").replace(/^[^A-Za-z0-9]+/, "").charAt(0).toUpperCase() || "*");
+  return l ? '<span class="lgw ' + (cls || "") + '" data-ch="' + ch + '"><img class="lg ' + (LOGO[c.v] && LIGHT[c.v] ? "inv " : "") + '" src="' + esc(l) + '" alt="" loading="lazy" onload="this.parentNode.classList.add(\'ok\')" onerror="this.remove()"></span>' : '<span class="lt ' + (cls || "") + '">' + esc((nice(c.n).replace(/^[^A-Za-z0-9]+/, "").charAt(0) || "*").toUpperCase()) + "</span>"; }
 /* lichte logo's (lijst _light uit logos.json) worden omgekeerd, zodat de lijst één rustig donker geheel is */
 var LIGHT = {};
 function weekend() { var d = new Date(NOW), w = d.getDay(), f = new Date(d), s;
@@ -281,6 +323,7 @@ function inMine(c) { return mine.length ? mine.indexOf(c.v) >= 0 : (travel(venue
 function pass(c, noDate) {
   var v = venue(c), q = st.q.trim().toLowerCase();
   if (q && (c.n + " " + v.label + " " + v.city).toLowerCase().indexOf(q) < 0) return false;
+  if (c.o && !q && !st.other && !has(c.id, "t") && !has(c.id, "i")) return false;   /* geen concert: verborgen tenzij gevraagd */
   if (st.city && v.city !== st.city) return false;
   if (st.venue && c.v !== st.venue) return false;
   if (st.cc && (v.cc || "NL") !== st.cc) return false;   /* tik op een vlag: alleen dat land */
@@ -299,13 +342,14 @@ function anyFilter() { return !!(st.q.trim() || st.venue || st.cc || st.city || 
 function badges(c) {
   return (has(c.id, "t") ? '<span class="bd tk">✓ kaartje</span>' : "") + (c.s ? '<span class="bd so">uitverkocht</span>' : "") +
     (c.c && c.v === "rotown" ? '<span class="bd cl">clubcard</span>' : "") + (venue(c).fest ? '<span class="bd fe">festival</span>' : "") +
-    (c.first && c.first !== "base" && c.first >= WEEK_AGO ? '<span class="bd nw">nieuw</span>' : "");
+    (c.first && c.first !== "base" && c.first >= WEEK_AGO ? '<span class="bd nw">nieuw</span>' : "") +
+    (c.seen ? '<span class="bd sn">' + c.seen.n + "× gezien</span>" : "") + (c.o ? '<span class="bd ot">geen concert</span>' : "");
 }
 function row(c) {
   var v = venue(c), t = (c.t || "").replace("deuren ", "");
   return '<div class="ev' + (has(c.id, "i") ? " star" : "") + '" data-id="' + esc(c.id) + '">' + lg(c) +
     '<div class="b"><div class="n">' + esc(nice(c.n)) + '</div><div class="s">' + badges(c) + esc(v.label) + " · " + esc(v.city) + "</div></div>" +
-    (t ? '<div class="tm">' + esc(t) + (/deuren/.test(c.t || "") ? "<small>deur</small>" : "") + "</div>" : '<div class="tm none">tijd<br>volgt</div>') + "</div>";
+    (t ? '<div class="tm">' + esc(t) + (/deuren/.test(c.t || "") ? "<small>deur</small>" : "") + "</div>" : '<div class="tm none">–</div>') + "</div>";
 }
 function chips() {
   $("chips").innerHTML = (st.venue ? '<button class="chip city" data-venue-x>' + esc((VENUES[st.venue] || {}).label || st.venue) + " ✕</button>" : "") +
@@ -359,8 +403,10 @@ function renderAgenda() {
   if (!list.length) html += '<div class="empty">Niets gevonden. ' + (anyFilter() ? '<button class="others" data-clear style="margin-top:12px">Alle filters uit</button>' : "") + "</div>";
   order.forEach(function (d) {
     if (!anyFilter() && shown > st.limit) return;   /* met een filter: alles in die periode tonen */
-    var all = days[d], top = anyFilter() || st.more[d] ? all : all.filter(function (c) { return inMine(c) || has(c.id, "t") || has(c.id, "i"); });
-    if (!top.length) top = all.slice(0, 5);
+    var all = days[d], score = function (c) { return (has(c.id, "t") ? 8 : 0) + (has(c.id, "i") ? 4 : 0) + (c.seen ? 2 : 0) + (inMine(c) ? 1 : 0); };
+    all = all.slice().sort(function (a, b) { return score(b) - score(a) || (a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : 0); });
+    var top = anyFilter() || st.more[d] ? all : all.filter(function (c) { return score(c) > 0; }).slice(0, 10);
+    if (top.length < 5) top = all.slice(0, Math.min(all.length, 5));
     html += dayHead(d, all.length) + top.map(row).join("");
     if (top.length < all.length) html += '<button class="others" data-more="' + d + '">nog ' + (all.length - top.length) + " andere concerten</button>";
     shown += top.length;
@@ -525,7 +571,7 @@ function importHist(file) {   /* Excel of CSV inlezen op dit apparaat; er gaat n
   var done = function (rows) {
     try { var h = histFromRows(rows); } catch (e) { fail(e); return; }
     if (!h.ev.length) { alert("In dit bestand vond ik geen concerten. Verwacht: artiest, H/V/F, locatie, plaats, datum, land."); return; }
-    HIST = h; festPrep(h.ev); try { localStorage.setItem("ca-hist", JSON.stringify(h)); } catch (e) { alert("Bewaren lukte niet (te weinig opslagruimte)."); return; }
+    HIST = h; festPrep(h.ev); try { buildSeen(); } catch (e) {} try { localStorage.setItem("ca-hist", JSON.stringify(h)); } catch (e) { alert("Bewaren lukte niet (te weinig opslagruimte)."); return; }
     st.ayear = "arch"; render();
   };
   var rd = new FileReader();
@@ -809,6 +855,7 @@ function renderOv() {
       return '<button class="mrow' + (st.month === m ? " on" : "") + '" data-month="' + m + '"><span>' + MON[+m.slice(5) - 1] + (y !== NOW.getFullYear() ? " " + String(y).slice(2) : "") + '</span><i><b style="width:' + Math.round(mon[m] / mm * 100) + '%"></b></i><em>' + mon[m] + "</em></button>"; }).join("");
 }
 function render() {
+  if ($("otherlbl")) $("otherlbl").textContent = st.other ? "Alleen concerten tonen" : "Ook overige activiteiten tonen";
   Array.prototype.forEach.call(document.querySelectorAll(".flagb"), function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-cc") === st.cc)); });
   document.querySelector(".brand").classList.toggle("cc", !!st.cc);
   chips(); $("chips").style.display = st.tab === "a" || st.tab === "mine" ? "none" : "";
@@ -828,6 +875,7 @@ function openSheet(id) {
   st.open = id;
   var v = venue(c), d = parse(c.d), tt = travel(v.city), tk = has(id, "t"), it = has(id, "i"), big = c.th ? "" + c.th : "";
   $("panel").innerHTML = '<div class="ph" style="' + (big ? "background-image:url(" + esc(big) + ")" : "") + '"><span class="grab"></span></div><div class="pb">' + lg(c) + "<h2>" + esc(nice(c.n)) + "</h2><div>" + badges(c) + "</div>" +
+    (c.seen ? '<p style="color:var(--soft);margin:8px 0 0">Je zag ' + esc(nice(c.seen.a)) + " al " + c.seen.n + "× (laatst " + parse(c.seen.last).getFullYear() + ")</p>" : "") +
     '<div class="facts"><div class="fact"><span>Wanneer</span><b>' + DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()] + (c.t ? " · " + esc(c.t.replace("deuren ", "")) + (/deuren/.test(c.t) ? " deur" : "") : " · tijd volgt") + "</b></div>" +
     '<div class="fact"><span>Waar</span><b>' + esc(v.label) + "</b><br><span>" + esc(v.city) + "</span></div>" +
     '<div class="fact"><span>Reistijd</span><b>' + (tt !== null ? "± " + fmtT(tt) : "–") + "</b></div>" +
@@ -1000,7 +1048,8 @@ Array.prototype.forEach.call(document.querySelectorAll(".flagb"), function (b) {
 });
 $("mb").addEventListener("click", function (e) { e.stopPropagation(); var open = $("menu").hidden; $("menu").hidden = !open; $("mb").setAttribute("aria-expanded", String(open)); });
 document.addEventListener("click", function (e) { if (!$("menu").hidden && !e.target.closest("#menu")) { $("menu").hidden = true; $("mb").setAttribute("aria-expanded", "false"); } });
-$("menu").addEventListener("click", function (e) { var b = e.target.closest("[data-m]"); if (!b) return; $("menu").hidden = true; if (b.getAttribute("data-m") === "zalen") openVenues(); });
+$("menu").addEventListener("click", function (e) { var b = e.target.closest("[data-m]"); if (!b) return; $("menu").hidden = true; if (b.getAttribute("data-m") === "zalen") openVenues();
+  if (b.getAttribute("data-m") === "other") { st.other = !st.other; save("ca-other", st.other); render(); } });
 function openVenues() {   /* mijn zalen kiezen: per plaats, aangevinkt = in 'Mijn zalen' */
   var cnt = {}; ALL.forEach(function (c) { if (c.d >= TODAY) cnt[c.v] = (cnt[c.v] || 0) + 1; });
   var ks = Object.keys(VENUES).filter(function (k) { return cnt[k] || VENUES[k].fest; }).sort(function (a, b) {
@@ -1044,9 +1093,10 @@ Promise.all([fetch("app.js", { cache: "no-cache" }).then(function (r) { return r
   var alias = { antwerp: "Antwerpen", "antwerpen 1": "Antwerpen", merksem: "Antwerpen", brussels: "Brussel", bruxelles: "Brussel", elsene: "Brussel", forest: "Brussel", "woluwe-saint-pierre": "Brussel", "liège": "Luik", ghent: "Gent" };
   Object.keys(data.venues || {}).forEach(function (k) { var v = data.venues[k], c = (v.city || "").replace(/ OV$/, ""), m = /^(.*?)\s*\((.*)\)$/.exec(c);
     if (m) c = alias[m[2].toLowerCase()] || m[2]; if (!VENUES[k]) VENUES[k] = { label: v.label, city: alias[c.toLowerCase()] || c, cc: v.cc || "NL" }; });
-  ALL = data.events.filter(function (e) { return VENUES[e.v]; }).map(function (e) { e.id = e.v + "|" + e.d + "|" + e.u; e.ts = (e.t || "").replace("deuren ", "") || "99"; return e; })
+  ALL = data.events.filter(function (e) { return VENUES[e.v]; }).map(function (e) { e.id = e.v + "|" + e.d + "|" + e.u; e.ts = (e.t || "").replace("deuren ", "") || "99"; e.n = cleanTitle(e.n, e.v); e.o = isOther(e); return e; })
     .sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : a.ts < b.ts ? -1 : 1; });
   rescueMarks();
+  try { buildSeen(); } catch (e) {}
   render();
   var u = new Date(data.updated);
   try { localStorage.setItem("ca-updated", data.updated); } catch (e) {}

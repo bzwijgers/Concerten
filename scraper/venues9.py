@@ -145,3 +145,12 @@ def manifesto():
         out.append(ev("manifesto", date(int(m.group(3)), mons[m.group(2).lower()], int(m.group(1))).isoformat(), title, link,
                       f"{int(t.group(1)):02d}:{t.group(2)}" if t else "", "", bool(re.search(r"uitverkocht", title, re.I))))
     return [e for e in out if not re.search(r"quiz|open mic|bingo|karaoke|club festo|haunted|spookhuis|kom en dans|burlesque", e["n"], re.I)]
+
+
+# CAPSLOC (Capelle aan den IJssel)
+SITES["capsloc"] = (["https://www.capsloc.nl/programma/"], r"capsloc\.nl/programma/[a-z0-9-]+/?$", "CAPSLOC|Capsloc")
+BASES["capsloc"] = "https://www.capsloc.nl"
+
+
+def capsloc():
+    return [e for e in _site("capsloc") if not re.search(r"/feed/?$", e["u"])]

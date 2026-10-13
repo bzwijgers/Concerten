@@ -9,7 +9,7 @@ DATA = os.path.join(ROOT, "data")
 OUT = os.path.join(ROOT, "docs", "data")
 
 # zo weinig concerten is verdacht (storing); zomerzalen en festivals zonder nieuwe data mogen leeg zijn
-MIN_EVENTS = {"tolhuistuin": 1, "olt": 0, "bitterzoet": 1, "lockkeepers": 1, **{k: 0 for k in festivals.FEST}}
+MIN_EVENTS = {"tolhuistuin": 1, "olt": 0, "bitterzoet": 1, "lockkeepers": 1, "botanique": 0, **{k: 0 for k in festivals.FEST}}
 VENUES = [  # key, label, fn
     ("baroeg", venues2.baroeg), ("rotown", venues1.rotown), ("paradiso", None), ("melkweg", venues1.melkweg),
     ("o13", venues1.o13), ("paard", venues1.paard), ("mezz", venues1.mezz), ("effenaar", venues2.effenaar),
@@ -27,7 +27,7 @@ VENUES = [  # key, label, fn
     ("vierad", venues8.vierad), ("ab", venues8.ab), ("botanique", venues8.botanique), ("trix", venues8.trix), ("roma", venues8.roma), ("depot", venues8.depot),
     ("ha", venues8.ha), ("kreun", venues8.kreun), ("n9", venues8.n9), ("casino", venues8.casino), ("reflektor", venues8.reflektor), ("bos", venues8.bos),
     ("afasdome", venues8.afasdome), ("lottoarena", venues8.lottoarena), ("vorst", venues8.vorst), ("olt", venues8.olt),
-    ("bitterzoet", venues9.bitterzoet), ("sowhat", venues9.sowhat), ("corneel", venues9.corneel), ("kroepoek", venues9.kroepoek), ("cacao", venues9.cacao), ("worm", venues9.worm), ("maassilo", venues9.maassilo), ("lockkeepers", venues9.lockkeepers), ("v11", venues9.v11), ("manifesto", venues9.manifesto), ("concertgebouw", concertgebouw.concertgebouw),
+    ("bitterzoet", venues9.bitterzoet), ("sowhat", venues9.sowhat), ("corneel", venues9.corneel), ("kroepoek", venues9.kroepoek), ("cacao", venues9.cacao), ("worm", venues9.worm), ("maassilo", venues9.maassilo), ("lockkeepers", venues9.lockkeepers), ("v11", venues9.v11), ("manifesto", venues9.manifesto), ("concertgebouw", concertgebouw.concertgebouw), ("capsloc", venues9.capsloc),
 ] + [(k, festivals.make(k)) for k in festivals.FEST] + [
 ]
 

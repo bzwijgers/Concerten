@@ -109,6 +109,7 @@ header.sc{border-bottom-color:var(--line)}
 .mrow i{flex:1;height:10px;border-radius:5px;background:var(--card);overflow:hidden}
 .mrow i b{display:block;height:100%;background:var(--soft);border-radius:5px}
 .mrow em{width:46px;text-align:right;font:600 13px var(--f-b);font-style:normal;color:var(--muted)}
+.regrow{border-top:1px solid var(--line);padding:12px 2px}.regrow span{font-weight:700}
 .mrow.on span,.mrow.on em{color:var(--fg);font-weight:700}
 /* concertscherm */
 .sheet{position:fixed;inset:0;z-index:30;display:none}
@@ -219,12 +220,13 @@ var NOW = new Date(), pad = function (n) { return (n < 10 ? "0" : "") + n; };
 function iso(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
 function parse(s) { var p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
 var TODAY = iso(NOW), WEEK_AGO = iso(new Date(NOW.getTime() - 7 * 864e5)), IN7 = iso(new Date(NOW.getTime() + 7 * 864e5));
+var REGION_OF = {}, REGION_ORDER = [];
 var VENUES = {}, COORD = {}, LOGO = {}, ALL = [], NL = [], BE = [], marks = load("ca-marks", {}), mine = load("ca-mine", []);
 var HOME = [51.958, 4.476];
 Object.keys(marks).forEach(function (id) { var m = marks[id]; if (m && m.k) { m[m.k] = true; delete m.k; } });   /* oud formaat, zoals in de app */
 var ORPH = {};   /* gemarkeerde concerten die (nog) niet in de huidige agenda staan, bv. omdat de zaal de link wijzigde */
 function findC(id) { return ALL.filter(function (x) { return x.id === id; })[0] || ORPH[id]; }
-var st = { venue: "", cc: "", asort: load("ca-asort", "d"), from: "", to: "", tab: "agenda", sub: "t", f: {}, q: "", city: "", month: "", limit: 250, open: null, more: {} };
+var st = { ovreg: {}, venue: "", cc: "", asort: load("ca-asort", "d"), from: "", to: "", tab: "agenda", sub: "t", f: {}, q: "", city: "", month: "", limit: 250, open: null, more: {} };
 var CHIPS = [["today", "Vandaag"], ["weekend", "Dit weekend"], ["date", "Datum"], ["mine", "Mijn zalen"], ["near", "Binnen 1,5 uur"], ["fest", "Festivals"]];
 function travel(city) {
   var c = COORD[city]; if (!c) return null;
@@ -332,18 +334,20 @@ function renderAgenda() {
   return html;
 }
 function renderMine() {
-  var list = st.sub === "c" ? [] : ALL.filter(function (c) { return c.d >= TODAY && has(c.id, st.sub) && pass(c); }), known = {};
+  var q = st.q.trim().toLowerCase(), qok = function (c) { return !q || (c.n + " " + venue(c).label + " " + venue(c).city).toLowerCase().indexOf(q) >= 0; };
+  /* Mijn concerten toont altijd alles wat je hebt gemarkeerd; de filters van de agenda gelden hier niet */
+  var list = st.sub === "c" ? [] : ALL.filter(function (c) { return c.d >= TODAY && has(c.id, st.sub) && qok(c); }), known = {};
   ALL.forEach(function (c) { known[c.id] = 1; });
   Object.keys(marks).forEach(function (id) {
     var m = marks[id]; if (st.sub === "c" || known[id] || !m[st.sub] || !m.s || m.s.d < TODAY) return;
     var c = ORPH[id] = { id: id, v: m.s.v, d: m.s.d, n: m.s.n, u: m.s.u || "", t: "", r: m.s.r || "", s: false, orphan: true };
-    if (pass(c)) list.push(c);
+    if (qok(c)) list.push(c);
   });
   list.sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; });
   var cntm = function (f) { return Object.keys(marks).filter(function (id) { var m = marks[id]; return m[f] && ((m.s && m.s.d >= TODAY) || ALL.some(function (c) { return c.id === id && c.d >= TODAY; })); }).length; };
   var html = '<div class="seg"><button data-sub="t" aria-pressed="' + (st.sub === "t") + '">Kaartjes · ' + cntm("t") + '</button><button data-sub="i" aria-pressed="' + (st.sub === "i") + '">Interesse · ' + cntm("i") + '</button><button data-sub="c" aria-pressed="' + (st.sub === "c") + '">Clubcard</button></div>';
   if (st.sub === "c") {   /* Rotown: concerten met clubcard-korting */
-    var cl = ALL.filter(function (c) { return c.d >= TODAY && c.c && c.v === "rotown" && pass(c); }), lc = "";
+    var cl = ALL.filter(function (c) { return c.d >= TODAY && c.c && c.v === "rotown" && qok(c); }), lc = "";
     if (!cl.length) return html + '<div class="empty">Geen clubcard-concerten gevonden.</div>';
     cl.forEach(function (c) { if (c.d !== lc) { html += dayHead(c.d, cl.filter(function (x) { return x.d === c.d; }).length); lc = c.d; } html += row(c); });
     return html;
@@ -380,6 +384,18 @@ function renderArchive() {
 var OV = { z: 1, cx: 160, cy: 220 };
 function ovX(l) { return 10 + (l - 2.45) / (7.3 - 2.45) * 300; }
 function ovY(b) { return 10 + (53.6 - b) / (53.6 - 49.45) * 420; }
+function regionOf(v) { return v.fest ? "Festivals" : (v.cc === "BE" ? "België" : REGION_OF[v.city] || "Overig"); }
+function ovVenues() {   /* overzicht per zaal: per regio, open te klappen */
+  var per = {}; ALL.forEach(function (c) { if (c.d >= TODAY && pass(c)) per[c.v] = (per[c.v] || 0) + 1; });
+  var groups = {}; Object.keys(per).forEach(function (k) { var r = regionOf(VENUES[k] || {}); (groups[r] = groups[r] || []).push(k); });
+  var order = REGION_ORDER.concat(["België", "Festivals", "Overig"]).filter(function (r, i, a) { return groups[r] && a.indexOf(r) === i; });
+  return '<div class="hl">Zalen · tik op een regio</div>' + order.map(function (r) {
+    var ks = groups[r].sort(function (a, b) { return per[b] - per[a]; }), tot = ks.reduce(function (t, k) { return t + per[k]; }, 0), open = !!st.ovreg[r];
+    return '<button class="mrow regrow" data-reg="' + esc(r) + '"><span style="width:auto;flex:1">' + (open ? "▾ " : "▸ ") + esc(r) + '</span><em style="width:auto">' + ks.length + " zalen · " + tot + "</em></button>" +
+      (open ? ks.map(function (k) { var v = VENUES[k], c = { v: k, n: v.label, th: "" };
+        return '<div class="ev" data-venue="' + esc(k) + '">' + lg(c) + '<div class="b"><div class="n">' + esc(v.label) + '</div><div class="s">' + esc(v.city) + '</div></div><div class="tm">' + per[k] + "<small>concerten</small></div></div>"; }).join("") : "");
+  }).join("");
+}
 function renderOv() {
   if (OV.cc !== st.cc) {   /* vlag gekozen: kaart op dat land; vlag uit: weer heel Nederland en België */
     OV.cc = st.cc;
@@ -423,12 +439,12 @@ function renderOv() {
     '<div class="hl">Per maand · tik om te kiezen (knijp op de kaart om te zoomen)</div>' +
     '<button class="mrow' + (!st.month ? " on" : "") + '" data-month=""><span>Alle</span><i><b style="width:100%"></b></i><em>' + Object.keys(mon).reduce(function (t, m) { return t + mon[m]; }, 0) + "</em></button>" +
     ms.map(function (m) { var y = +m.slice(0, 4);
-      return '<button class="mrow' + (st.month === m ? " on" : "") + '" data-month="' + m + '"><span>' + MON[+m.slice(5) - 1] + (y !== NOW.getFullYear() ? " " + String(y).slice(2) : "") + '</span><i><b style="width:' + Math.round(mon[m] / mm * 100) + '%"></b></i><em>' + mon[m] + "</em></button>"; }).join("");
+      return '<button class="mrow' + (st.month === m ? " on" : "") + '" data-month="' + m + '"><span>' + MON[+m.slice(5) - 1] + (y !== NOW.getFullYear() ? " " + String(y).slice(2) : "") + '</span><i><b style="width:' + Math.round(mon[m] / mm * 100) + '%"></b></i><em>' + mon[m] + "</em></button>"; }).join("") + ovVenues();
 }
 function render() {
   Array.prototype.forEach.call(document.querySelectorAll(".flagb"), function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-cc") === st.cc)); });
   document.querySelector(".brand").classList.toggle("cc", !!st.cc);
-  chips(); $("chips").style.display = st.tab === "a" ? "none" : "";
+  chips(); $("chips").style.display = st.tab === "a" || st.tab === "mine" ? "none" : "";
   $("main").innerHTML = st.tab === "mine" ? renderMine() : st.tab === "a" ? renderArchive() : st.tab === "ov" ? renderOv() : renderAgenda();
   document.documentElement.style.setProperty("--hh", $("hdr").offsetHeight + "px");
 }
@@ -504,6 +520,8 @@ $("main").addEventListener("click", function (e) {
   if (t.closest("[data-asort]")) { st.asort = t.closest("[data-asort]").getAttribute("data-asort"); save("ca-asort", st.asort); render(); return; }
   if (t.closest("[data-sub]")) { st.sub = t.closest("[data-sub]").getAttribute("data-sub"); render(); return; }
   if (t.closest("[data-zoom]")) { var zz = +t.closest("[data-zoom]").getAttribute("data-zoom"); if (!zz) { OV = { z: 1, cx: 160, cy: 220 }; } else OV.z = Math.min(8, Math.max(1, OV.z * zz)); render(); return; }
+  if (t.closest("[data-reg]")) { var rg = t.closest("[data-reg]").getAttribute("data-reg"); st.ovreg[rg] = !st.ovreg[rg]; var y = scrollY; render(); window.scrollTo(0, y); return; }
+  if (t.closest("[data-venue]")) { st.venue = t.closest("[data-venue]").getAttribute("data-venue"); st.city = ""; st.tab = "agenda"; setNav(); render(); window.scrollTo(0, 0); return; }
   if (t.closest("[data-city]") && OV.dragged) { OV.dragged = false; return; }
   if (t.closest("[data-city]")) { openCity(t.closest("[data-city]").getAttribute("data-city")); return; }
   if (t.closest("[data-month]")) { var m = t.closest("[data-month]").getAttribute("data-month"); st.month = !m || st.month === m ? "" : m; st.f.today = st.f.weekend = false; st.from = st.to = ""; render(); return; }
@@ -614,6 +632,8 @@ Promise.all([fetch("app.js", { cache: "no-cache" }).then(function (r) { return r
   var js = x[0], data = x[1]; LOGO = x[2]; (LOGO._light || []).forEach(function (k) { LIGHT[k] = 1; });
   js.replace(/^\s*([a-z0-9_]+):\{label:"([^"]*)",home:"([^"]*)",city:"([^"]*)"([^}]*)\}/gm, function (m, k, l, h, c, rest) {
     VENUES[k] = { label: l, home: h, city: c, fest: /fest:true/.test(rest), cc: /cc:"BE"/.test(rest) ? "BE" : "NL" }; return m; });
+  var rb = js.match(/var REGIONS = \[([\s\S]*?)\n\];/);
+  if (rb) rb[1].replace(/\["([^"]+)", \[([^\]]*)\]\]/g, function (m, r, list) { REGION_ORDER.push(r); list.replace(/"([^"]+)"/g, function (x, c) { REGION_OF[c] = r; return x; }); return m; });
   js.replace(/"([^"]+)": \[(-?\d+\.\d+), (-?\d+\.\d+)\]/g, function (m, c, a, b) { COORD[c] = [+a, +b]; return m; });
   try { NL = JSON.parse(js.match(/var NL = (\[\[[\s\S]*?\]\]);/)[1].replace(/\s+/g, "")); BE = JSON.parse(js.match(/var BE = (\[\[[\s\S]*?\]\]);/)[1].replace(/\s+/g, "")); } catch (e) {}
   var alias = { antwerp: "Antwerpen", "antwerpen 1": "Antwerpen", merksem: "Antwerpen", brussels: "Brussel", bruxelles: "Brussel", elsene: "Brussel", forest: "Brussel", "woluwe-saint-pierre": "Brussel", "liège": "Luik", ghent: "Gent" };

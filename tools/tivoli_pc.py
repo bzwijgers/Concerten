@@ -139,6 +139,8 @@ def main():
                 page = get(url)
             except urllib.error.HTTPError as ex:
                 if ex.code == 404 and pages: break      # voorbij de laatste pagina
+                if ex.code >= 500 and pages >= 2:       # tijdelijke storing halverwege: verder met wat er al is
+                    print(f"pagina {pages + 1}: HTTP {ex.code}, gestopt met bladeren"); break
                 raise
             evs, nxt = parse_list(page)
             new = [e for e in evs if e["id"] not in listed]

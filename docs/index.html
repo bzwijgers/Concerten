@@ -643,6 +643,17 @@ function artView(list, srt) {
   var seg = '<div class="seg" style="margin-top:8px">' + [["d", "Datum"], ["n", "Artiest"], ["c", "Vaakst"]].map(function (o) { return '<button data-hsort="' + o[0] + '" aria-pressed="' + (srt === o[0]) + '">' + o[1] + (srt === o[0] ? (st.hrev ? " ↑" : " ↓") : "") + "</button>"; }).join("") + "</div>";
   var dl = function (x) { var d = parse(x.d); return d.getDate() + " " + MON[d.getMonth()] + " " + d.getFullYear(); };
   var where = function (x) { return (x.fn ? esc(x.fn) + " · " : "") + esc(x.loc) + " · " + esc(x.city) + flag(x.cc) + (x.r === "V" ? " · voorprogramma" : ""); };
+  if (srt === "d") {   /* op datum: elk optreden een eigen regel */
+    var flat = []; arr.forEach(function (o) { o.x.forEach(function (x) { flat.push({ n: o.n, x: x, k: o.x.length }); }); });
+    flat.sort(function (a, b) { return a.x.d < b.x.d ? 1 : a.x.d > b.x.d ? -1 : a.n.localeCompare(b.n, "nl"); });
+    if (st.hrev) flat.reverse();
+    var fs = flat.slice(0, st.hlimit || 300);
+    return seg + '<div class="hl">' + flat.length + " optredens van " + arr.length + " artiesten</div>" + fs.map(function (f) {
+      var d = parse(f.x.d);
+      return '<div class="ev"><span class="lt" style="font-size:13px;line-height:1.1;text-align:center">' + d.getDate() + "<br>" + MON[d.getMonth()] + '</span><div class="b"><div class="n">' + esc(f.n) + '</div><div class="s">' + d.getFullYear() + " · " + where(f.x) + "</div></div>" +
+        (f.k > 1 ? '<div class="tm" style="color:var(--muted)">' + f.k + "×</div>" : "") + "</div>"; }).join("") +
+      (flat.length > fs.length ? '<button class="others" data-hmore>nog ' + (flat.length - fs.length) + " tonen</button>" : "");
+  }
   var shown = arr.slice(0, st.hlimit || 300);
   return seg + '<div class="hl">' + arr.length + " artiesten</div>" + shown.map(function (o) {
     var many = o.x.length > 1, open = many && st.ax && st.ax[o.n];

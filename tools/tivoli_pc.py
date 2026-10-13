@@ -170,14 +170,15 @@ def main():
     bundle = {"format": 2, "fetched": time.strftime("%Y-%m-%dT%H:%M:%S"), "complete": complete, "events": out,
               "times": {i: t for i, t in times.items() if i in listed}}
     p = os.path.join(repo, "data", "inbox", "tivoli.json")
-    # reserves voor zalen die GitHub soms weigeren: 013 (eigen parser) en Het Bolwerk (de scraper uit de repo zelf)
+    # reserves voor zalen die GitHub soms weigeren: 013 (eigen parser); Het Bolwerk, Bibelot en Nieuwe Nor (scrapers uit de repo zelf)
     spare = {"o13": o13_events()}
-    try:
-        sys.path.insert(0, os.path.join(repo, "scraper"))
-        import venues5
-        spare["bolwerk"] = venues5.bolwerk()
-    except Exception as ex:
-        print("bolwerk niet gelukt:", ex)
+    sys.path.insert(0, os.path.join(repo, "scraper"))
+    for key, mod, fn in (("bolwerk", "venues5", "bolwerk"), ("bibelot", "venues4", "bibelot"), ("nor", "venues7", "nor")):
+        try:
+            spare[key] = getattr(__import__(mod), fn)()
+            print(f"{key}: {len(spare[key])} concerten (reserve)")
+        except Exception as ex:
+            print(key, "niet gelukt:", ex)
 
     def write():
         os.makedirs(os.path.dirname(p), exist_ok=True)
@@ -192,7 +193,8 @@ def main():
         return
     for attempt in range(4):
         sync(repo); write()          # telkens op de nieuwste stand van GitHub, dan pas ons bestand erbij
-        for f in ("data/inbox/tivoli.json", "data/inbox/o13.json", "data/inbox/bolwerk.json", "data/bolwerk_cache.json"):
+        for f in ("data/inbox/tivoli.json", "data/inbox/o13.json", "data/inbox/bolwerk.json", "data/bolwerk_cache.json",
+                  "data/inbox/bibelot.json", "data/inbox/nor.json"):
             if os.path.exists(os.path.join(repo, f)):
                 git(repo, "add", f)
         git(repo, "-c", "user.name=Barry (pc)", "-c", "user.email=bot@users.noreply.github.com",

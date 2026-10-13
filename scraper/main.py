@@ -2,7 +2,7 @@ import json, os, sys, time, traceback, importlib
 from datetime import date, datetime, timedelta, timezone
 sys.path.insert(0, os.path.dirname(__file__))
 from common import *
-import venues1, venues2, venues3, venues4, venues5, venues6, venues7, venues8, venues9, concertgebouw, festivals, feedimport, ticketmaster, tsmap, times, images
+import venues1, venues2, venues3, venues4, venues5, venues6, venues7, venues8, venues9, concertgebouw, festivals, feedimport, ticketmaster, tsmap, times, images, health
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 DATA = os.path.join(ROOT, "data")
@@ -136,7 +136,7 @@ def main():
                     print(f"{key}: {len(got)} (tweede poging)")
             except Exception as ex:
                 print(f"{key}: tweede poging mislukt", ex)
-    merge_pc_inbox("o13"); merge_pc_inbox("bolwerk")
+    for _k in ("o13", "bolwerk", "bibelot", "nor"): merge_pc_inbox(_k)
     merge_tivoli_inbox()
     # Tivoli komt van de eigen pc (data/manual/tivoli.json); is die lijst ouder dan 3 dagen, dan de oude feed
     tv = load(os.path.join(DATA, "manual", "tivoli.json"), {}) or {}
@@ -304,11 +304,15 @@ def main():
     cutoff = (date.today() - timedelta(days=45)).isoformat()
     for eid in [k for k, v in events.items() if v["d"] < cutoff]:
         del events[eid]
+    try:
+        alerts = health.check(status, DATA, ROOT, MIN_EVENTS)
+    except Exception as ex:
+        alerts = []; print("bewaking mislukt:", ex)
     store = {"events": events, "status": status, "updated": now, "venues": tm_venues, "migrations": store.get("migrations", [])}
     json.dump(store, open(os.path.join(DATA, "events.json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     json.dump(pcache, open(os.path.join(DATA, "paradiso_cache.json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     pub = sorted(events.values(), key=lambda e: (e["d"], e["v"], e["n"]))
-    json.dump({"updated": now, "status": status, "venues": tm_venues, "events": pub}, open(os.path.join(OUT, "events.json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+    json.dump({"updated": now, "status": status, "alerts": alerts, "venues": tm_venues, "events": pub}, open(os.path.join(OUT, "events.json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     print("total", len(pub))
 
 if __name__ == "__main__":

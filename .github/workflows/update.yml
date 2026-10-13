@@ -8,6 +8,7 @@ on:
     paths: ["data/inbox/**"]
 permissions:
   contents: write
+  issues: write
 concurrency:
   group: update
   cancel-in-progress: false
@@ -41,3 +42,22 @@ jobs:
           # botst dit met een andere update die net klaar was: de gegevens van deze (nieuwere) run winnen
           git pull --rebase -X theirs -q origin main || { git checkout --theirs . 2>/dev/null; git add -A; GIT_EDITOR=true git rebase --continue; }
           git push
+      - name: Melding bij problemen met zalen
+        continue-on-error: true
+        if: steps.gate.outputs.run == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          T="Zalen met problemen"
+          N=$(gh issue list --state open --search "\"$T\" in:title" --json number --jq '.[0].number' || true)
+          if [ -f data/alerts.md ]; then
+            if [ -z "$N" ]; then gh issue create --title "$T" --body-file data/alerts.md
+            else
+              OLD=$(gh issue view "$N" --json body --jq .body | grep -o '(`[a-z0-9_-]*`)' | sort)
+              NEW=$(grep -o '(`[a-z0-9_-]*`)' data/alerts.md | sort)
+              gh issue edit "$N" --body-file data/alerts.md
+              [ "$OLD" = "$NEW" ] || gh issue comment "$N" --body "Gewijzigd: $(grep -c '^- ' data/alerts.md) zaal/zalen met problemen. @bzwijgers"
+            fi
+          elif [ -n "$N" ]; then
+            gh issue close "$N" --comment "Alles werkt weer. @bzwijgers"
+          fi

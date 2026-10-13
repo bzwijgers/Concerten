@@ -132,7 +132,7 @@ def main():
         times = json.load(open(os.path.join(repo, "data", "manual", "tivoli.json"), encoding="utf-8")).get("times", {})
     except Exception:
         times = {}
-    listed, url, pages = {}, BASE + "/agenda/", 0
+    listed, url, pages, cut = {}, BASE + "/agenda/", 0, False
     try:
         while url and pages < MAX_PAGES:
             try:
@@ -140,7 +140,7 @@ def main():
             except urllib.error.HTTPError as ex:
                 if ex.code == 404 and pages: break      # voorbij de laatste pagina
                 if ex.code >= 500 and pages >= 2:       # tijdelijke storing halverwege: verder met wat er al is
-                    print(f"pagina {pages + 1}: HTTP {ex.code}, gestopt met bladeren"); break
+                    print(f"pagina {pages + 1}: HTTP {ex.code}, gestopt met bladeren"); cut = True; break
                 raise
             evs, nxt = parse_list(page)
             new = [e for e in evs if e["id"] not in listed]
@@ -163,7 +163,7 @@ def main():
             if n % 25 == 0: print(f"  tijden {n}/{len(todo)}")
     except Blocked as ex:
         sys.exit(f"Gestopt: {ex}. Tivoli laat deze verbinding nu niet door; er is niets veranderd.")
-    complete = pages >= 2 and len(listed) >= 100
+    complete = pages >= 2 and len(listed) >= 100 and not cut
     out = [{"v": "tivoli", "d": e["d"], "n": e["n"], "u": e["u"], "t": times.get(e["id"], ""), "r": e["r"],
             "s": e["s"], "c": False, "g": e["g"]} for e in sorted(events, key=lambda e: (e["d"], e["n"]))]
     print(f"{len(listed)} items op de site, {len(out)} concerten na filter, {len(todo)} tijden opgehaald, volledig={complete}")

@@ -362,6 +362,137 @@ function renderMine() {
   list.forEach(function (c) { if (c.d !== last) { html += dayHead(c.d, list.filter(function (x) { return x.d === c.d; }).length); last = c.d; } html += row(c); });
   return html;
 }
+
+/* ===== eigen archief (de eerste 40 jaar): ingelezen uit Barry's Excel-lijst, alleen op dit apparaat bewaard ===== */
+var HIST = load("ca-hist", null);
+if (HIST && HIST.v === 1) HIST.ev.forEach(function (e) { e.acts = e.acts.map(function (a) { return [artName(a[0]), a[1]]; }); });
+var histFixed = false;   /* plaatsnamen gelijktrekken zodra de kaartgegevens geladen zijn */
+var XCOORD = {   /* plaatsen uit het archief die niet in de agenda voorkomen (alleen kaartposities) */
+  "Hoogvliet": [51.86, 4.36], "Grolloo": [52.93, 6.68], "Zevenhuizen": [52.01, 4.58], "Pijnacker": [52.02, 4.43], "Baarn": [52.21, 5.29],
+  "Bloemendaal": [52.40, 4.63], "Zeebrugge": [51.33, 3.20], "Vosselaar": [51.31, 4.89], "Deurne": [51.46, 5.80], "Oberhausen": [51.47, 6.85],
+  "Gelsenkirchen": [51.51, 7.10], "Düsseldorf": [51.23, 6.78], "Mönchengladbach": [51.19, 6.44], "Keulen": [50.94, 6.96], "Essen": [51.46, 7.01], "Lille": [50.63, 3.06], "Turnhout": [51.32, 4.95] };
+function canonCity(c) {   /* zelfde schrijfwijze als op de kaart: 'Bergen Op Zoom' -> 'Bergen op Zoom' */
+  var l = c.toLowerCase(), k = Object.keys(COORD).concat(Object.keys(XCOORD)).filter(function (x) { return x.toLowerCase() === l; })[0];
+  return k || c.replace(/\b(Op|Aan|Den|De|Van|Het|En|Sur|Le|La)\b/g, function (w) { return w.toLowerCase(); }).replace(/\bIjssel\b/g, "IJssel").replace(/^./, function (x) { return x.toUpperCase(); });
+}
+var PLACEFIX = {   /* schrijfwijze in de lijst -> [plaats, land] */
+  "dessel (b)": ["Dessel", "BE"], "ostende": ["Oostende", "BE"], "antwerp": ["Antwerpen", "BE"], "masssluis": ["Maassluis", "NL"], "lichtenvoorden": ["Lichtenvoorde", "NL"],
+  "capelle a/d ijssel": ["Capelle aan den IJssel", "NL"], "vosselaar": ["Vosselaar", "BE"], "zeebrugge": ["Zeebrugge", "BE"], "turnhout": ["Turnhout", "BE"],
+  "montreal": ["Montreal", "CA"], "vancouver": ["Vancouver", "CA"], "dortmund": ["Dortmund", "DE"], "gelsenkirchen": ["Gelsenkirchen", "DE"], "oberhausen": ["Oberhausen", "DE"],
+  "dusseldorf": ["Düsseldorf", "DE"], "monchengladbach": ["Mönchengladbach", "DE"], "keulen": ["Keulen", "DE"], "essen": ["Essen", "DE"], "rome": ["Rome", "IT"], "verona": ["Verona", "IT"],
+  "las vegas": ["Las Vegas", "US"], "los angeles": ["Los Angeles", "US"], "new york": ["New York", "US"], "new york (brooklyn)": ["New York", "US"], "new orleans": ["New Orleans", "US"],
+  "the woodlands (houston)": ["Houston", "US"], "londen": ["Londen", "GB"], "donington": ["Donington", "GB"], "stockholm (solna)": ["Stockholm", "SE"], "stockholm": ["Stockholm", "SE"],
+  "barcelona": ["Barcelona", "ES"], "lille": ["Lille", "FR"] };
+var CCFIX = { "": "NL", B: "BE", D: "DE", UK: "GB", USA: "US", C: "CA", I: "IT", Z: "SE", S: "SE", SP: "ES", F: "FR" };
+var CCNAME = { NL: "Nederland", BE: "België", DE: "Duitsland", GB: "Verenigd Koninkrijk", US: "Verenigde Staten", CA: "Canada", IT: "Italië", SE: "Zweden", ES: "Spanje", FR: "Frankrijk" };
+function cap(s) { return String(s || "").trim().replace(/\s+/g, " ").replace(/(^|[\s\-\/(])([a-zà-ÿ])/g, function (m, a, b) { return a + b.toUpperCase(); }); }
+/* 'BURROW dallas' -> 'Dallas Burrow', 'STAAT de' -> 'De Staat', 'JON robert & WRECK the' -> 'Robert Jon & The Wreck' */
+function artName(a) {
+  return String(a).split(/\s+&\s+/).map(function (part) {
+    var m = part.trim().match(/^([A-Z0-9À-Þ'’.\-\/]+(?:\s+[A-Z0-9À-Þ'’.\-\/]+)*)\s+([a-zß-ÿ][a-zß-ÿ'’.\-]*(?:\s+[a-zß-ÿ][a-zß-ÿ'’.\-]*)*)$/);
+    var t = m ? m[2] + " " + m[1] : part.trim();
+    return t === t.toUpperCase() || m ? t.toLowerCase().replace(/(^|[\s\-\/(.])([a-zà-ÿ])/g, function (x, p1, c) { return p1 + c.toUpperCase(); }) : t;
+  }).join(" & ");
+}
+function histFromRows(rows) {   /* rijen [artiest, H/V/F, locatie, plaats, datum, land] -> avonden */
+  var ev = {}, n = 0;
+  rows.forEach(function (r) {
+    var art = String(r[0] || "").trim(); if (!art || /^artiest$/i.test(art)) return;
+    var t = (String(r[1] || "").toUpperCase().match(/[HVF]/) || ["H"])[0];
+    var loc = cap(r[2]), pl0 = String(r[3] || "").trim().toLowerCase(), raw = r[4], d = "";
+    if (typeof raw === "number" || /^\d{4,6}(\.\d+)?$/.test(String(raw))) { var dt = new Date(Math.round((+raw - 25569) * 864e5)); d = dt.toISOString().slice(0, 10); }
+    else if (raw instanceof Date) d = iso(raw);
+    else { var m = String(raw).match(/(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{2,4})/); if (m) d = (m[3].length === 2 ? "19" + m[3] : m[3]) + "-" + pad(+m[2]) + "-" + pad(+m[1]); }
+    if (!d) return;
+    var fx = PLACEFIX[pl0], city = fx ? fx[0] : cap(pl0), cc = CCFIX[String(r[5] || "").trim().toUpperCase()] || "NL";
+    if (fx) cc = fx[1]; else if (pl0 === "deurne" && cc === "BE") city = "Antwerpen";
+    city = canonCity(city);
+    var key = d + "|" + loc.toLowerCase() + "|" + city.toLowerCase();
+    var e = ev[key] = ev[key] || { d: d, loc: loc, city: city, cc: cc, acts: [] };
+    e.acts.push([artName(art), t]); n++;
+  });
+  var list = Object.keys(ev).map(function (k) { var e = ev[k]; e.acts.sort(function (a, b) { return (a[1] === "V") - (b[1] === "V"); }); return e; })
+    .sort(function (a, b) { return a.d < b.d ? 1 : -1; });   /* hoofdact(s) eerst, voorprogramma daarna */
+  return { v: 2, at: new Date().toISOString(), rows: n, ev: list };
+}
+function importHist(file) {   /* Excel of CSV inlezen op dit apparaat; er gaat niets naar internet */
+  var done = function (rows) {
+    var h = histFromRows(rows);
+    if (!h.ev.length) { alert("In dit bestand vond ik geen concerten. Verwacht: artiest, H/V/F, locatie, plaats, datum, land."); return; }
+    HIST = h; try { localStorage.setItem("ca-hist", JSON.stringify(h)); } catch (e) { alert("Bewaren lukte niet (te weinig opslagruimte)."); return; }
+    st.ayear = "arch"; render();
+  };
+  var rd = new FileReader();
+  if (/\.csv$|\.txt$/i.test(file.name)) {
+    rd.onload = function () { var txt = String(rd.result), sep = (txt.split("\n")[0].match(/;/g) || []).length > (txt.split("\n")[0].match(/,/g) || []).length ? ";" : ",";
+      done(txt.split(/\r?\n/).map(function (l) { return l.split(sep).map(function (x) { return x.replace(/^"|"$/g, ""); }); })); };
+    rd.readAsText(file); return;
+  }
+  var go = function () { rd.onload = function () { var wb = XLSX.read(new Uint8Array(rd.result), { type: "array" }), sh = wb.Sheets[wb.SheetNames[0]];
+    done(XLSX.utils.sheet_to_json(sh, { header: 1, raw: true })); }; rd.readAsArrayBuffer(file); };
+  if (window.XLSX) go(); else { var sc = document.createElement("script"); sc.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"; sc.onload = go; sc.onerror = function () { alert("Kon de Excel-lezer niet laden; sla de lijst op als CSV en probeer het opnieuw."); }; document.head.appendChild(sc); }
+}
+function venueKeyFor(loc, city) {   /* logo als de zaal ook in de agenda staat */
+  var l = loc.toLowerCase().replace(/^(de|het|the)\s+/, "");
+  return Object.keys(VENUES).filter(function (k) { var v = VENUES[k]; return v.label && v.label.toLowerCase().replace(/^(de|het|the)\s+/, "").indexOf(l) === 0 && (!city || !v.city || v.city.toLowerCase() === city.toLowerCase()); })[0];
+}
+function histEvenings() {
+  if (HIST && !histFixed && Object.keys(COORD).length) { histFixed = true; HIST.ev.forEach(function (e) { e.city = canonCity(e.city); }); }   /* archief + (bij 'Alles') de concerten uit de app, in één vorm */
+  var out = (HIST && HIST.ev || []).map(function (e) { return { d: e.d, loc: e.loc, city: e.city, cc: e.cc, acts: e.acts, src: "x" }; });
+  var seen = {}; out.forEach(function (e) { seen[e.d + "|" + e.city.toLowerCase()] = 1; });
+  if (st.ayear === "all") Object.keys(marks).forEach(function (id) { var m = marks[id]; if (!(m.t && m.s && m.s.d < TODAY)) return; var v = VENUES[m.s.v] || { label: m.s.v, city: "" };
+    if (seen[m.s.d + "|" + (v.city || "").toLowerCase()]) return;
+    out.push({ d: m.s.d, loc: v.label, city: v.city, cc: v.cc || "NL", acts: [[m.s.n, v.fest ? "F" : "H"]], r: (m.rv || {}).r, src: "a" }); });
+  var q = st.q.trim().toLowerCase();
+  if (q) out = out.filter(function (e) { return (e.acts.map(function (a) { return a[0]; }).join(" ") + " " + e.loc + " " + e.city).toLowerCase().indexOf(q) >= 0; });
+  return out.sort(function (a, b) { return a.d < b.d ? 1 : -1; });
+}
+function histRow(e) {
+  var hs = e.acts.filter(function (a) { return a[1] !== "V"; }), vs = e.acts.filter(function (a) { return a[1] === "V"; }), fest = e.acts.some(function (a) { return a[1] === "F"; });
+  var d = parse(e.d), vk = venueKeyFor(e.loc, e.city), names = function (l) { return l.map(function (a) { return a[0]; }).join(", "); };
+  var title = fest && hs.length > 2 ? names(hs.slice(0, 3)) + " e.a." : names(hs.length ? hs : vs);
+  var pic = vk && LOGO[vk] ? lg({ v: vk, n: e.loc, th: "" }) : '<span class="lt">' + esc((e.loc.charAt(0) || "?").toUpperCase()) + "</span>";
+  return '<div class="ev">' + pic + '<div class="b"><div class="n">' + esc(title) + '</div><div class="s">' + (fest ? '<span class="bd fe">festival</span>' : "") + d.getDate() + " " + MONL[d.getMonth()] + " " + d.getFullYear() + " · " + esc(e.loc) + " · " + esc(e.city) + "</div>" +
+    (vs.length && hs.length ? '<div class="s">met: ' + esc(names(vs)) + "</div>" : "") + (fest && hs.length > 3 ? '<div class="s" style="white-space:normal">' + esc(names(hs)) + "</div>" : "") + "</div>" +
+    (typeof e.r === "number" ? '<div class="tm" style="color:var(--gold)">★ ' + String(e.r).replace(".", ",") + "</div>" : "") + "</div>";
+}
+function histStats(list) {
+  var zalen = {}, steden = {}, landen = {}, art = {}, av = 0, fd = 0;
+  list.forEach(function (e) { var fest = e.acts.some(function (a) { return a[1] === "F"; }); if (fest) fd++; else av++;
+    zalen[e.loc + " · " + e.city] = (zalen[e.loc + " · " + e.city] || 0) + 1; steden[e.city] = (steden[e.city] || 0) + 1; landen[e.cc] = 1;
+    e.acts.forEach(function (a) { var k = nice(a[0]); art[k] = (art[k] || 0) + 1; }); });
+  var top = function (o) { return Object.keys(o).sort(function (a, b) { return o[b] - o[a] || a.localeCompare(b); }).slice(0, 10).map(function (k) { return '<div class="trow"><span>' + esc(k) + "</span><b>" + o[k] + "×</b></div>"; }).join(""); };
+  var tile = function (n, t) { return '<div class="stat"><b>' + n + "</b><span>" + t + "</span></div>"; };
+  return '<div class="stats" style="grid-template-columns:repeat(3,1fr)">' + tile(av, "concerten") + tile(fd, "festivaldagen") + tile(Object.keys(art).length, "artiesten") +
+    tile(Object.keys(zalen).length, "zalen") + tile(Object.keys(steden).length, "steden") + tile(Object.keys(landen).length, Object.keys(landen).length === 1 ? "land" : "landen") + "</div>" +
+    '<div class="hl">Meest gezien</div>' + top(art) + '<div class="hl">Meest bezochte zalen</div>' + top(zalen) + '<div class="hl">Meest bezochte steden</div>' + top(steden);
+}
+function renderHist(yseg) {
+  if (st.ayear === "arch" && !(HIST && HIST.ev && HIST.ev.length))
+    return yseg + '<div class="empty" style="padding:26px 6px">Lees hier je eigen lijst in: Excel of CSV met de kolommen <b>artiest, H/V/F, locatie, plaats, datum, land</b>.<br><br>' +
+      'Het bestand blijft op dit apparaat; er gaat niets naar internet. Doe dit op elk apparaat waar je het wilt zien.<br><br><label class="btn pri" style="display:inline-flex;cursor:pointer">Archief inlezen<input type="file" accept=".xlsx,.xls,.csv,.txt" data-himport hidden></label></div>';
+  var list = histEvenings();
+  var view = yseg + '<div class="seg" style="margin-top:8px">' + [["lijst", "Lijst"], ["kaart", "Kaart"]].map(function (o) { return '<button data-aview="' + o[0] + '" aria-pressed="' + (st.aview === o[0]) + '">' + o[1] + "</button>"; }).join("") + "</div>";
+  var foot = st.ayear === "arch" ? '<div class="note">Ingelezen: ' + HIST.rows + " regels, " + HIST.ev.length + " avonden en festivaldagen (" + HIST.at.slice(0, 10) + '). <label class="lnk" style="display:inline">Opnieuw inlezen<input type="file" accept=".xlsx,.xls,.csv,.txt" data-himport hidden></label> · <button class="lnk" data-hclear style="display:inline">Wissen</button></div>' : "";
+  if (st.aview === "kaart") {
+    var per = {}, abroad = {};
+    list.forEach(function (e) { var c = COORD[e.city] || XCOORD[e.city]; if (c) { COORD[e.city] = c; per[e.city] = (per[e.city] || 0) + 1; } else abroad[e.city + " (" + (CCNAME[e.cc] || e.cc) + ")"] = (abroad[e.city + " (" + (CCNAME[e.cc] || e.cc) + ")"] || 0) + 1; });
+    var ab = Object.keys(abroad).sort(function (a, b) { return abroad[b] - abroad[a]; });
+    return view + '<div class="hl">' + list.length + " avonden · tik op een stad</div>" + '<div class="mapbox">' + mapSvg(per, { attr: "data-hcity", sel: "", ring: false }) +
+      '<div class="zoom"><button data-zoom="1.6">+</button><button data-zoom="0.625">−</button><button data-zoom="0">⟲</button></div></div>' +
+      (ab.length ? '<div class="hl">Buitenland</div>' + ab.map(function (k) { return '<div class="trow"><span>' + esc(k) + "</span><b>" + abroad[k] + "×</b></div>"; }).join("") : "") + histStats(list) + foot;
+  }
+  var srt = st.hsort || "d";
+  if (srt === "n") list.sort(function (a, b) { return nice(a.acts[0][0]).localeCompare(nice(b.acts[0][0]), "nl"); });
+  var seg = '<div class="seg" style="margin-top:8px">' + [["d", "Datum"], ["n", "Artiest"]].map(function (o) { return '<button data-hsort="' + o[0] + '" aria-pressed="' + (srt === o[0]) + '">' + o[1] + "</button>"; }).join("") + "</div>";
+  var shown = list.slice(0, st.hlimit || 300);
+  return view + seg + '<div class="hl">' + list.length + " avonden</div>" + shown.map(histRow).join("") + (list.length > shown.length ? '<button class="others" data-hmore>nog ' + (list.length - shown.length) + " tonen</button>" : "") + foot;
+}
+function openHistCity(ct) {
+  var list = histEvenings().filter(function (e) { return e.city === ct; });
+  $("panel").innerHTML = '<div class="pb" style="margin-top:0;padding-top:22px"><h2>' + esc(ct) + '</h2><p style="color:var(--muted);margin:2px 0 10px">' + list.length + " keer geweest</p>" + list.map(histRow).join("") + "</div>";
+  showSheet();
+}
 function renderArchive() {
   var out = Object.keys(marks).filter(function (id) { var m = marks[id]; return m.t && m.s && m.s.d < TODAY; }).map(function (id) { return { id: id, s: marks[id].s, rv: marks[id].rv || {} }; })
     .sort(function (a, b) { return a.s.d < b.s.d ? 1 : -1; });
@@ -370,7 +501,7 @@ function renderArchive() {
   if (st.ayear !== "arch" && st.ayear !== "all" && ys.indexOf(st.ayear) < 0) st.ayear = ys[ys.length - 1];
   var yseg = '<div class="seg">' + ys.map(function (y) { return [y, y]; }).concat([["arch", "Archief"], ["all", "Alles"]]).map(function (o) {
     return '<button data-ayear="' + o[0] + '" aria-pressed="' + (st.ayear === o[0]) + '">' + o[1] + "</button>"; }).join("") + "</div>";
-  if (st.ayear === "arch") return yseg + '<div class="empty" style="padding:30px 10px">Hier komt je eigen archief van de eerste 40 jaar.<br><br>Lever je lijst aan (Excel of CSV), dan zet ik hem erin, met dezelfde lijst, kaart en tellingen.</div>';
+  if (st.ayear === "arch" || st.ayear === "all") return renderHist(yseg);
   if (st.ayear !== "all") out = out.filter(function (a) { return a.s.d.slice(0, 4) === st.ayear; });
   var q = st.q.trim().toLowerCase();
   if (q) out = out.filter(function (a) { var v = VENUES[a.s.v] || { label: "", city: "" }; return (a.s.n + " " + v.label + " " + v.city).toLowerCase().indexOf(q) >= 0; });
@@ -550,6 +681,10 @@ $("main").addEventListener("click", function (e) {
   var t = e.target;
   if (t.closest("[data-more]")) { st.more[t.closest("[data-more]").getAttribute("data-more")] = true; render(); return; }
   if (t.closest("[data-clear]")) { st.venue = ""; st.cc = ""; st.f = {}; st.q = ""; $("q").value = ""; st.city = ""; st.month = ""; st.from = st.to = ""; render(); return; }
+  if (t.closest("[data-hsort]")) { st.hsort = t.closest("[data-hsort]").getAttribute("data-hsort"); render(); return; }
+  if (t.closest("[data-hmore]")) { st.hlimit = (st.hlimit || 300) + 500; var yy = scrollY; render(); window.scrollTo(0, yy); return; }
+  if (t.closest("[data-hclear]")) { if (confirm("Je ingelezen archief van dit apparaat wissen? Je Excel-bestand zelf blijft gewoon bestaan.")) { HIST = null; try { localStorage.removeItem("ca-hist"); } catch (x) {} render(); } return; }
+  if (t.closest("[data-hcity]") && !OV.dragged) { openHistCity(t.closest("[data-hcity]").getAttribute("data-hcity")); return; }
   if (t.closest("[data-ayear]")) { st.ayear = t.closest("[data-ayear]").getAttribute("data-ayear"); st.aopen = null; render(); return; }
   if (t.closest("[data-aview]")) { st.aview = t.closest("[data-aview]").getAttribute("data-aview"); OV = { z: 1, cx: 160, cy: 220, cc: st.cc }; render(); return; }
   if (t.closest("[data-acity]") && !OV.dragged) { openArchCity(t.closest("[data-acity]").getAttribute("data-acity")); return; }
@@ -607,6 +742,7 @@ $("main").addEventListener("click", function (e) {
     OV.cx = p[0] + (OV.cx - p[0]) * r; OV.cy = p[1] + (OV.cy - p[1]) * r; OV.z = z; redraw();
   }, { passive: false });
 })();
+$("main").addEventListener("change", function (e) { var f = e.target.closest("[data-himport]"); if (f && f.files && f.files[0]) importHist(f.files[0]); });
 $("main").addEventListener("input", function (e) {   /* review bewaren tijdens het typen */
   var ta = e.target.closest("[data-rv]"); if (!ta) return;
   var aid = ta.closest("[data-aid]").getAttribute("data-aid"); marks[aid].rv = marks[aid].rv || {};

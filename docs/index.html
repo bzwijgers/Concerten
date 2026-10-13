@@ -436,7 +436,13 @@ var WCOORD = {   /* buitenland: posities voor de wereldkaart */
   "Los Angeles": [34.05, -118.24], "Irvine": [33.68, -117.83], "Concord": [37.98, -122.03], "San Francisco": [37.77, -122.42], "Lake Tahoe": [39.10, -120.03], "Seattle": [47.61, -122.33],
   "Montreal": [45.50, -73.57], "Toronto": [43.65, -79.38], "Vancouver": [49.28, -123.12] };
 var ISO_NUM = { NL: "528", BE: "056", DE: "276", GB: "826", US: "840", CA: "124", IT: "380", SE: "752", ES: "724", FR: "250", IE: "372", AT: "040", CH: "756", DK: "208", NO: "578", PT: "620", CZ: "203" };
-var WORLD = null, WPER = null, WCC = {};
+var WORLD = null, WPER = null, WCC = {}, WV = { z: 1, cx: 0, cy: 0, W: 320, H: 200 };
+function wvApply() {
+  var m = document.querySelector("#wmap svg"); if (!m) return;
+  var w = WV.W / WV.z, h = WV.H / WV.z; WV.cx = Math.min(Math.max(WV.cx, w / 2), WV.W - w / 2); WV.cy = Math.min(Math.max(WV.cy, h / 2), WV.H - h / 2);
+  m.setAttribute("viewBox", [WV.cx - w / 2, WV.cy - h / 2, w, h].map(function (n) { return n.toFixed(2); }).join(" "));
+  Array.prototype.forEach.call(m.querySelectorAll("circle"), function (c) { c.setAttribute("r", (+c.getAttribute("data-r") / Math.pow(WV.z, 0.7)).toFixed(2)); c.setAttribute("stroke-width", (1 / WV.z).toFixed(2)); });
+}
 function drawWorld() {   /* wereldkaart (Natural Earth via world-atlas), alleen geladen als je hem bekijkt */
   var box = $("wmap"); if (!box || !WPER) return;
   var go = function () {
@@ -456,8 +462,11 @@ function drawWorld() {   /* wereldkaart (Natural Earth via world-atlas), alleen 
     });
     var max = Math.max.apply(null, cities.map(function (c) { return WPER[c]; }).concat([1])), svg = '<svg class="map" viewBox="0 0 ' + W + " " + H + '"><g class="land">' + land + '</g><g class="land" style="fill:#2c2840">' + seen + "</g>";
     cities.sort(function (a, b) { return WPER[b] - WPER[a]; }).slice().reverse().forEach(function (c) {
-      svg += '<circle data-hcity="' + esc(c) + '" cx="' + X(WCOORD[c][1]) + '" cy="' + Y(WCOORD[c][0]) + '" r="' + Math.max(3, Math.sqrt(WPER[c] / max) * 11).toFixed(1) + '" fill="#8e9bc4" fill-opacity=".55" stroke="#8e9bc4" style="cursor:pointer"/>'; });
-    box.innerHTML = svg + "</svg>";
+      svg += '<circle data-hcity="' + esc(c) + '" cx="' + X(WCOORD[c][1]) + '" cy="' + Y(WCOORD[c][0]) + '" r="' + Math.max(3, Math.sqrt(WPER[c] / max) * 11).toFixed(1) + '" data-r="' + Math.max(3, Math.sqrt(WPER[c] / max) * 11).toFixed(1) + '" fill="#8e9bc4" fill-opacity=".55" stroke="#8e9bc4" style="cursor:pointer"/>'; });
+    var keep = WV.W === W && WV.H === H && WV.z > 1;
+    if (!keep) WV = { z: 1, cx: W / 2, cy: H / 2, W: W, H: H };
+    box.innerHTML = svg + '</svg><div class="zoom"><button data-wzoom="1.6">+</button><button data-wzoom="0.625">−</button><button data-wzoom="0">⟲</button></div>';
+    wvApply();
   };
   if (WORLD && window.topojson) return go();
   var sc = document.createElement("script"); sc.src = "https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js";
@@ -862,6 +871,7 @@ $("main").addEventListener("click", function (e) {
   }
   if (t.closest("[data-asort]")) { var as = t.closest("[data-asort]").getAttribute("data-asort"); st.arev = st.asort === as ? !st.arev : false; st.asort = as; save("ca-asort", st.asort); render(); return; }
   if (t.closest("[data-sub]")) { st.sub = t.closest("[data-sub]").getAttribute("data-sub"); render(); return; }
+  if (t.closest("[data-wzoom]")) { var wz = +t.closest("[data-wzoom]").getAttribute("data-wzoom"); if (!wz) { WV.z = 1; WV.cx = WV.W / 2; WV.cy = WV.H / 2; } else WV.z = Math.min(12, Math.max(1, WV.z * wz)); wvApply(); return; }
   if (t.closest("[data-zoom]")) { var zz = +t.closest("[data-zoom]").getAttribute("data-zoom"); if (!zz) { OV = { z: 1, cx: 160, cy: 220 }; } else OV.z = Math.min(8, Math.max(1, OV.z * zz)); render(); return; }
   if (t.closest("[data-ovv]")) { st.ovv = t.closest("[data-ovv]").getAttribute("data-ovv"); render(); window.scrollTo(0, 0); return; }
   if (t.closest("[data-reg]")) { var rg = t.closest("[data-reg]").getAttribute("data-reg"); st.ovreg[rg] = !st.ovreg[rg]; var y = scrollY; render(); window.scrollTo(0, y); return; }
@@ -873,13 +883,16 @@ $("main").addEventListener("click", function (e) {
 });
 (function () {   /* overzicht: met twee vingers knijpen om te zoomen, met één vinger slepen */
   var pts = {}, start = null, raf = 0;
-  function svgPt(x, y) { var m = document.querySelector(".map"); if (!m) return null; var r = m.getBoundingClientRect(), w = 320 / OV.z, h = 440 / OV.z;
-    return [OV.cx - w / 2 + (x - r.left) / r.width * w, OV.cy - h / 2 + (y - r.top) / r.height * h, w / r.width]; }
-  function redraw() { if (!raf) raf = setTimeout(function () { raf = 0; if (st.tab === "ov" || st.tab === "a") render(); }, 16); }
+  var S = OV, world = false, MAXZ = 8;
+  function pick(t) { world = !!t.closest("#wmap"); S = world ? WV : OV; MAXZ = world ? 12 : 8; }
+  function svgPt(x, y) { var m = document.querySelector(world ? "#wmap svg" : ".map"); if (!m) return null; var r = m.getBoundingClientRect(), w = (world ? WV.W : 320) / S.z, h = (world ? WV.H : 440) / S.z;
+    return [S.cx - w / 2 + (x - r.left) / r.width * w, S.cy - h / 2 + (y - r.top) / r.height * h, w / r.width]; }
+  function redraw() { if (world) { wvApply(); return; } if (!raf) raf = setTimeout(function () { raf = 0; if (st.tab === "ov" || st.tab === "a") render(); }, 16); }
   document.addEventListener("pointerdown", function (e) {
     if (!e.target.closest || !e.target.closest(".map")) return;
+    pick(e.target);
     pts[e.pointerId] = [e.clientX, e.clientY]; var ids = Object.keys(pts), p0 = svgPt(e.clientX, e.clientY);
-    start = { cx: OV.cx, cy: OV.cy, z: OV.z, x: e.clientX, y: e.clientY, s: p0 ? p0[2] : 1 };
+    start = { cx: S.cx, cy: S.cy, z: S.z, x: e.clientX, y: e.clientY, s: p0 ? p0[2] : 1 };
     if (ids.length === 2) { var a = pts[ids[0]], b = pts[ids[1]]; start.d = Math.hypot(a[0] - b[0], a[1] - b[1]); start.mid = svgPt((a[0] + b[0]) / 2, (a[1] + b[1]) / 2); }
     OV.dragged = false;
   });
@@ -887,19 +900,19 @@ $("main").addEventListener("click", function (e) {
     if (!pts[e.pointerId] || !start) return;
     pts[e.pointerId] = [e.clientX, e.clientY]; var ids = Object.keys(pts);
     if (ids.length >= 2 && start.d && start.mid) {
-      var a = pts[ids[0]], b = pts[ids[1]], z = Math.min(8, Math.max(1, start.z * Math.hypot(a[0] - b[0], a[1] - b[1]) / start.d)), r = start.z / z;
-      OV.z = z; OV.cx = start.mid[0] + (start.cx - start.mid[0]) * r; OV.cy = start.mid[1] + (start.cy - start.mid[1]) * r; OV.dragged = true; redraw();
-    } else if (ids.length === 1 && OV.z > 1) {
+      var a = pts[ids[0]], b = pts[ids[1]], z = Math.min(MAXZ, Math.max(1, start.z * Math.hypot(a[0] - b[0], a[1] - b[1]) / start.d)), r = start.z / z;
+      S.z = z; S.cx = start.mid[0] + (start.cx - start.mid[0]) * r; S.cy = start.mid[1] + (start.cy - start.mid[1]) * r; OV.dragged = true; redraw();
+    } else if (ids.length === 1 && S.z > 1) {
       var dx = e.clientX - start.x, dy = e.clientY - start.y;
-      if (Math.abs(dx) + Math.abs(dy) > 6) { OV.cx = start.cx - dx * start.s; OV.cy = start.cy - dy * start.s; OV.dragged = true; redraw(); }
+      if (Math.abs(dx) + Math.abs(dy) > 6) { S.cx = start.cx - dx * start.s; S.cy = start.cy - dy * start.s; OV.dragged = true; redraw(); }
     }
   });
   function up(e) { delete pts[e.pointerId]; if (!Object.keys(pts).length) start = null; }
   document.addEventListener("pointerup", up); document.addEventListener("pointercancel", up);
   document.addEventListener("wheel", function (e) {
-    if (!e.target.closest || !e.target.closest(".map")) return; e.preventDefault();
-    var p = svgPt(e.clientX, e.clientY), z = Math.min(8, Math.max(1, OV.z * (e.deltaY < 0 ? 1.25 : 0.8))), r = OV.z / z;
-    OV.cx = p[0] + (OV.cx - p[0]) * r; OV.cy = p[1] + (OV.cy - p[1]) * r; OV.z = z; redraw();
+    if (!e.target.closest || !e.target.closest(".map")) return; e.preventDefault(); pick(e.target);
+    var p = svgPt(e.clientX, e.clientY), z = Math.min(MAXZ, Math.max(1, S.z * (e.deltaY < 0 ? 1.25 : 0.8))), r = S.z / z;
+    S.cx = p[0] + (S.cx - p[0]) * r; S.cy = p[1] + (S.cy - p[1]) * r; S.z = z; redraw();
   }, { passive: false });
 })();
 $("main").addEventListener("change", function (e) { var f = e.target.closest("[data-himport]"); if (f && f.files && f.files[0]) importHist(f.files[0]); });

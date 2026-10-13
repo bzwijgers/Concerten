@@ -416,8 +416,9 @@ function histFromRows(rows) {   /* rijen [artiest, H/V/F, locatie, plaats, datum
   return { v: 2, at: new Date().toISOString(), rows: n, ev: list };
 }
 function importHist(file) {   /* Excel of CSV inlezen op dit apparaat; er gaat niets naar internet */
+  var fail = function (e) { alert("Inlezen lukte niet (" + (file && file.name) + "): " + (e && e.message || e) + ". Probeer het opnieuw, of sla de lijst op als CSV."); };
   var done = function (rows) {
-    var h = histFromRows(rows);
+    try { var h = histFromRows(rows); } catch (e) { fail(e); return; }
     if (!h.ev.length) { alert("In dit bestand vond ik geen concerten. Verwacht: artiest, H/V/F, locatie, plaats, datum, land."); return; }
     HIST = h; try { localStorage.setItem("ca-hist", JSON.stringify(h)); } catch (e) { alert("Bewaren lukte niet (te weinig opslagruimte)."); return; }
     st.ayear = "arch"; render();
@@ -428,8 +429,9 @@ function importHist(file) {   /* Excel of CSV inlezen op dit apparaat; er gaat n
       done(txt.split(/\r?\n/).map(function (l) { return l.split(sep).map(function (x) { return x.replace(/^"|"$/g, ""); }); })); };
     rd.readAsText(file); return;
   }
-  var go = function () { rd.onload = function () { var wb = XLSX.read(new Uint8Array(rd.result), { type: "array" }), sh = wb.Sheets[wb.SheetNames[0]];
-    done(XLSX.utils.sheet_to_json(sh, { header: 1, raw: true })); }; rd.readAsArrayBuffer(file); };
+  rd.onerror = function () { fail(rd.error || "bestand niet leesbaar"); };
+  var go = function () { rd.onload = function () { try { var wb = XLSX.read(new Uint8Array(rd.result), { type: "array" }), sh = wb.Sheets[wb.SheetNames[0]]; var rows = XLSX.utils.sheet_to_json(sh, { header: 1, raw: true }); } catch (e) { fail(e); return; }
+    done(rows); }; rd.readAsArrayBuffer(file); };
   if (window.XLSX) go(); else { var sc = document.createElement("script"); sc.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"; sc.onload = go; sc.onerror = function () { alert("Kon de Excel-lezer niet laden; sla de lijst op als CSV en probeer het opnieuw."); }; document.head.appendChild(sc); }
 }
 function venueKeyFor(loc, city) {   /* logo als de zaal ook in de agenda staat */
@@ -470,10 +472,10 @@ function histStats(list) {
 function renderHist(yseg) {
   if (st.ayear === "arch" && !(HIST && HIST.ev && HIST.ev.length))
     return yseg + '<div class="empty" style="padding:26px 6px">Lees hier je eigen lijst in: Excel of CSV met de kolommen <b>artiest, H/V/F, locatie, plaats, datum, land</b>.<br><br>' +
-      'Het bestand blijft op dit apparaat; er gaat niets naar internet. Doe dit op elk apparaat waar je het wilt zien.<br><br><label class="btn pri" style="display:inline-flex;cursor:pointer">Archief inlezen<input type="file" accept=".xlsx,.xls,.csv,.txt" data-himport hidden></label></div>';
+      'Het bestand blijft op dit apparaat; er gaat niets naar internet. Doe dit op elk apparaat waar je het wilt zien.<br><br><label class="btn pri" style="display:inline-flex;cursor:pointer">Archief inlezen<input type="file" accept=".xlsx,.xls,.csv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain,application/octet-stream" data-himport hidden></label></div>';
   var list = histEvenings();
   var view = yseg + '<div class="seg" style="margin-top:8px">' + [["lijst", "Lijst"], ["kaart", "Kaart"]].map(function (o) { return '<button data-aview="' + o[0] + '" aria-pressed="' + (st.aview === o[0]) + '">' + o[1] + "</button>"; }).join("") + "</div>";
-  var foot = st.ayear === "arch" ? '<div class="note">Ingelezen: ' + HIST.rows + " regels, " + HIST.ev.length + " avonden en festivaldagen (" + HIST.at.slice(0, 10) + '). <label class="lnk" style="display:inline">Opnieuw inlezen<input type="file" accept=".xlsx,.xls,.csv,.txt" data-himport hidden></label> · <button class="lnk" data-hclear style="display:inline">Wissen</button></div>' : "";
+  var foot = st.ayear === "arch" ? '<div class="note">Ingelezen: ' + HIST.rows + " regels, " + HIST.ev.length + " avonden en festivaldagen (" + HIST.at.slice(0, 10) + '). <label class="lnk" style="display:inline">Opnieuw inlezen<input type="file" accept=".xlsx,.xls,.csv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain,application/octet-stream" data-himport hidden></label> · <button class="lnk" data-hclear style="display:inline">Wissen</button></div>' : "";
   if (st.aview === "kaart") {
     var per = {}, abroad = {};
     list.forEach(function (e) { var c = COORD[e.city] || XCOORD[e.city]; if (c) { COORD[e.city] = c; per[e.city] = (per[e.city] || 0) + 1; } else abroad[e.city + " (" + (CCNAME[e.cc] || e.cc) + ")"] = (abroad[e.city + " (" + (CCNAME[e.cc] || e.cc) + ")"] || 0) + 1; });

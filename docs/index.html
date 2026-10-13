@@ -571,6 +571,10 @@ function festName(e) {
   if (/lichtenvoorden/.test(c)) return "Zwarte Cross";
   if (/grolloo/.test(c)) return "Blues Festival Grolloo";
   if (/donington/.test(c)) return y >= 2003 ? "Download" : "Monsters of Rock";
+  var mo = +e.d.slice(5, 7);   /* Rotterdamse festivals in meerdere zalen tegelijk */
+  if (c === "rotterdam" && mo === 12 && y >= 2014) return "Stille Nacht Festival";
+  if (c === "rotterdam" && (mo === 10 || (y === 2021 && mo === 9)) && y >= 2016) return "Left of the Dial";
+  if (c === "rotterdam" && mo === 4 && y >= 2005) return "Motel Mozaïque";
   return "";
 }
 /* festivalnaam altijd met het volledige jaar van de datum: 'Pinkpop 2007' (niet '07 of zonder jaar) */
@@ -670,7 +674,7 @@ function artView(list, srt) {
 function festView(list, srt) {
   var F = {}, days = list.filter(function (e) { return e.fn || e.acts.some(function (a) { return a[1] === "F"; }); });
   days.forEach(function (e) { var b = festBase(e) || e.loc + " (" + e.city + ")", o = F[b.toLowerCase()] = F[b.toLowerCase()] || { n: b, x: [], y: {} }; o.x.push(e); o.y[e.d.slice(0, 4)] = 1; });
-  var arr = Object.keys(F).map(function (k) { var o = F[k]; o.x.sort(function (a, b) { return a.d < b.d ? 1 : -1; }); o.ny = Object.keys(o.y).length; return o; });
+  var arr = Object.keys(F).map(function (k) { var o = F[k]; o.x.sort(function (a, b) { return a.d < b.d ? 1 : -1; }); o.ny = Object.keys(o.y).length; var dd = {}; o.x.forEach(function (e) { dd[e.d] = 1; }); o.nd = Object.keys(dd).length; return o; });
   var seg = '<div class="seg" style="margin-top:8px">' + [["d", "Datum"], ["n", "Festival"], ["c", "Vaakst"]].map(function (o) { return '<button data-hsort="' + o[0] + '" aria-pressed="' + (srt === o[0]) + '">' + o[1] + (srt === o[0] ? (st.hrev ? " ↑" : " ↓") : "") + "</button>"; }).join("") + "</div>";
   var dl = function (e) { var d = parse(e.d); return d.getDate() + " " + MON[d.getMonth()] + " " + d.getFullYear(); };
   var acts = function (e) { return e.acts.map(function (a) { return esc(a[0]); }).join(", "); };
@@ -685,7 +689,7 @@ function festView(list, srt) {
   return seg + '<div class="hl">' + arr.length + " festivals</div>" + arr.map(function (o) {
     var many = o.x.length > 1, open = many && st.fx && st.fx[o.n], e0 = o.x[0], yrs = Object.keys(o.y).sort();
     return '<div class="ev"' + (many ? ' data-fx="' + esc(o.n) + '" style="cursor:pointer"' : "") + '><span class="lt" style="font-size:' + (many ? 16 : 13) + 'px">' + o.ny + '×</span><div class="b"><div class="n">' + esc(o.ny > 1 ? o.n : o.n + " " + yrs[0]) + "</div>" +
-      '<div class="s">' + (many ? (o.ny > 1 ? yrs[0] + "–" + yrs[yrs.length - 1] + " · " : "") + o.x.length + " dagen · " + esc(e0.city) + flag(e0.cc) + (open ? " ▴" : " ▾") : dl(e0) + " · " + esc(e0.loc) + " · " + esc(e0.city) + flag(e0.cc)) + "</div>" +
+      '<div class="s">' + (many ? (o.ny > 1 ? yrs[0] + "–" + yrs[yrs.length - 1] + " · " : "") + o.nd + (o.nd === 1 ? " dag · " : " dagen · ") + esc(e0.city) + flag(e0.cc) + (open ? " ▴" : " ▾") : dl(e0) + " · " + esc(e0.loc) + " · " + esc(e0.city) + flag(e0.cc)) + "</div>" +
       (!many && e0.acts.length ? '<div class="s" style="white-space:normal">' + acts(e0) + "</div>" : "") +
       (open ? '<div class="s" style="white-space:normal;color:var(--fg);margin-top:6px;line-height:1.5">' + o.x.map(function (e) { return "<b>" + dl(e) + "</b>" + (e.acts.length ? " · " + acts(e) : ""); }).join("<br>") + "</div>" : "") + "</div></div>";
   }).join("");

@@ -401,6 +401,45 @@ var XCOORD = {   /* plaatsen uit het archief die niet in de agenda voorkomen (al
   "Hoogvliet": [51.86, 4.36], "Grolloo": [52.93, 6.68], "Zevenhuizen": [52.01, 4.58], "Pijnacker": [52.02, 4.43], "Baarn": [52.21, 5.29],
   "Bloemendaal": [52.40, 4.63], "Zeebrugge": [51.33, 3.20], "Vosselaar": [51.31, 4.89], "Deurne": [51.46, 5.80], "Oberhausen": [51.47, 6.85],
   "Gelsenkirchen": [51.51, 7.10], "Düsseldorf": [51.23, 6.78], "Mönchengladbach": [51.19, 6.44], "Keulen": [50.94, 6.96], "Essen": [51.46, 7.01], "Lille": [50.63, 3.06], "Turnhout": [51.32, 4.95] };
+var WCOORD = {   /* buitenland: posities voor de wereldkaart */
+  "Londen": [51.51, -0.13], "Donington": [52.83, -1.38], "Manchester": [53.48, -2.24], "Glasgow": [55.86, -4.25], "Dublin": [53.35, -6.26], "Parijs": [48.86, 2.35],
+  "Barcelona": [41.39, 2.17], "Madrid": [40.42, -3.70], "Lissabon": [38.72, -9.14], "Rome": [41.90, 12.50], "Verona": [45.44, 10.99], "Milaan": [45.46, 9.19],
+  "Stockholm": [59.33, 18.07], "Kopenhagen": [55.68, 12.57], "Oslo": [59.91, 10.75], "Berlijn": [52.52, 13.40], "Hamburg": [53.55, 9.99], "München": [48.14, 11.58],
+  "Wenen": [48.21, 16.37], "Praag": [50.08, 14.44], "Zürich": [47.38, 8.54],
+  "New York": [40.71, -74.01], "Wantagh": [40.68, -73.51], "Baltimore": [39.29, -76.61], "Boston": [42.36, -71.06], "Chicago": [41.88, -87.63], "Nashville": [36.16, -86.78],
+  "New Orleans": [29.95, -90.07], "Austin": [30.27, -97.74], "Dallas": [32.78, -96.80], "Houston": [29.76, -95.37], "Denver": [39.74, -104.99], "Las Vegas": [36.17, -115.14],
+  "Los Angeles": [34.05, -118.24], "Irvine": [33.68, -117.83], "Concord": [37.98, -122.03], "San Francisco": [37.77, -122.42], "Lake Tahoe": [39.10, -120.03], "Seattle": [47.61, -122.33],
+  "Montreal": [45.50, -73.57], "Toronto": [43.65, -79.38], "Vancouver": [49.28, -123.12] };
+var ISO_NUM = { NL: "528", BE: "056", DE: "276", GB: "826", US: "840", CA: "124", IT: "380", SE: "752", ES: "724", FR: "250", IE: "372", AT: "040", CH: "756", DK: "208", NO: "578", PT: "620", CZ: "203" };
+var WORLD = null, WPER = null, WCC = {};
+function drawWorld() {   /* wereldkaart (Natural Earth via world-atlas), alleen geladen als je hem bekijkt */
+  var box = $("wmap"); if (!box || !WPER) return;
+  var go = function () {
+    var box = $("wmap"); if (!box) return;
+    var cities = Object.keys(WPER), la = cities.map(function (c) { return WCOORD[c][0]; }), lo = cities.map(function (c) { return WCOORD[c][1]; });
+    var lo0 = Math.min.apply(null, lo.concat([3])) - 14, lo1 = Math.max.apply(null, lo.concat([7])) + 14, la0 = Math.min.apply(null, la.concat([50])) - 9, la1 = Math.max.apply(null, la.concat([53])) + 9;
+    var cosm = Math.cos((la0 + la1) / 2 * Math.PI / 180), W = 320, sx = W / ((lo1 - lo0) * cosm), H = Math.round(Math.min(340, Math.max(170, (la1 - la0) * sx)));
+    var sy = sx, cy0 = (la0 + la1) / 2;
+    var X = function (l) { return ((l - lo0) * cosm * sx).toFixed(1); }, Y = function (b) { return (H / 2 - (b - cy0) * sy).toFixed(1); };
+    var ring = function (r) { return "M" + r.map(function (p) { return X(p[0]) + " " + Y(p[1]); }).join("L") + "Z"; };
+    var visited = {}; Object.keys(WCC).forEach(function (cc) { if (ISO_NUM[cc]) visited[ISO_NUM[cc]] = 1; });
+    var land = "", seen = "";
+    topojson.feature(WORLD, WORLD.objects.countries).features.forEach(function (f) {
+      var g = f.geometry; if (!g) return; var polys = g.type === "Polygon" ? [g.coordinates] : g.coordinates, d = "";
+      polys.forEach(function (P) { P.forEach(function (r) { d += ring(r); }); });
+      if (visited[f.id]) seen += '<path d="' + d + '"/>'; else land += '<path d="' + d + '"/>';
+    });
+    var max = Math.max.apply(null, cities.map(function (c) { return WPER[c]; }).concat([1])), svg = '<svg class="map" viewBox="0 0 ' + W + " " + H + '"><g class="land">' + land + '</g><g class="land" style="fill:#2c2840">' + seen + "</g>";
+    cities.sort(function (a, b) { return WPER[b] - WPER[a]; }).slice().reverse().forEach(function (c) {
+      svg += '<circle data-hcity="' + esc(c) + '" cx="' + X(WCOORD[c][1]) + '" cy="' + Y(WCOORD[c][0]) + '" r="' + Math.max(3, Math.sqrt(WPER[c] / max) * 11).toFixed(1) + '" fill="#8e9bc4" fill-opacity=".55" stroke="#8e9bc4" style="cursor:pointer"/>'; });
+    box.innerHTML = svg + "</svg>";
+  };
+  if (WORLD && window.topojson) return go();
+  var sc = document.createElement("script"); sc.src = "https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js";
+  sc.onload = function () { fetch("https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json").then(function (r) { return r.json(); }).then(function (j) { WORLD = j; go(); })
+    .catch(function () { var b = $("wmap"); if (b) b.innerHTML = '<div class="empty">Wereldkaart kon niet laden.</div>'; }); };
+  document.head.appendChild(sc);
+}
 function canonCity(c) {   /* zelfde schrijfwijze als op de kaart: 'Bergen Op Zoom' -> 'Bergen op Zoom' */
   var l = c.toLowerCase(), k = Object.keys(COORD).concat(Object.keys(XCOORD)).filter(function (x) { return x.toLowerCase() === l; })[0];
   return k || c.replace(/\b(Op|Aan|Den|De|Van|Het|En|Sur|Le|La)\b/g, function (w) { return w.toLowerCase(); }).replace(/\bIjssel\b/g, "IJssel").replace(/^./, function (x) { return x.toUpperCase(); });
@@ -532,11 +571,13 @@ function renderHist(yseg) {
   var foot = st.ayear === "arch" ? '<div class="note">Ingelezen: ' + HIST.rows + " regels, " + HIST.ev.length + " avonden en festivaldagen (" + HIST.at.slice(0, 10) + '). <label class="lnk" style="display:inline">Opnieuw inlezen<input type="file" accept=".xlsx,.xls,.csv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain,application/octet-stream" data-himport hidden></label> · <button class="lnk" data-hclear style="display:inline">Wissen</button></div>' : "";
   if (st.aview === "kaart") {
     var per = {}, abroad = {};
-    list.forEach(function (e) { var c = COORD[e.city] || XCOORD[e.city]; if (c) { COORD[e.city] = c; per[e.city] = (per[e.city] || 0) + 1; } else var ak = e.city + flag(e.cc); abroad[ak] = (abroad[ak] || 0) + 1; });
+    list.forEach(function (e) { var c = COORD[e.city] || XCOORD[e.city]; if (c) { COORD[e.city] = c; per[e.city] = (per[e.city] || 0) + 1; } else { var ak = e.city + flag(e.cc); abroad[ak] = (abroad[ak] || 0) + 1; } });
     var ab = Object.keys(abroad).sort(function (a, b) { return abroad[b] - abroad[a]; });
+    WPER = {}; WCC = {}; list.forEach(function (e) { if (!(COORD[e.city] || XCOORD[e.city]) && WCOORD[e.city]) { WPER[e.city] = (WPER[e.city] || 0) + 1; WCC[e.cc] = 1; } });
+    var wn = Object.keys(WPER).length; if (wn) setTimeout(drawWorld, 0);
     return view + '<div class="hl">' + list.length + " avonden · tik op een stad</div>" + '<div class="mapbox">' + mapSvg(per, { attr: "data-hcity", sel: "", ring: false }) +
       '<div class="zoom"><button data-zoom="1.6">+</button><button data-zoom="0.625">−</button><button data-zoom="0">⟲</button></div></div>' +
-      (ab.length ? '<div class="hl">Buitenland</div>' + ab.map(function (k) { return '<div class="trow"><span>' + esc(k) + "</span><b>" + abroad[k] + "×</b></div>"; }).join("") : "") + histStats(list) + foot;
+      (ab.length ? '<div class="hl">Buitenland</div>' + (wn ? '<div class="mapbox" id="wmap"><div class="empty">Wereldkaart laden…</div></div>' : "") + ab.map(function (k) { return '<div class="trow"><span>' + esc(k) + "</span><b>" + abroad[k] + "×</b></div>"; }).join("") : "") + histStats(list) + foot;
   }
   var srt = st.hsort || "d";
   if (srt === "n") list.sort(function (a, b) { return nice(a.acts[0][0]).localeCompare(nice(b.acts[0][0]), "nl"); });

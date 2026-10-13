@@ -396,6 +396,31 @@ function renderMine() {
 /* ===== eigen archief (de eerste 40 jaar): ingelezen uit Barry's Excel-lijst, alleen op dit apparaat bewaard ===== */
 var HIST = load("ca-hist", null);
 if (HIST && HIST.v === 1) HIST.ev.forEach(function (e) { e.acts = e.acts.map(function (a) { return [artName(a[0]), a[1]]; }); });
+/* festivalnaam staat in de lijst als 'artiest' (bv. "MONSTERS OF ROCK '89", "PINKPOP 1991", "STILLE NACHT FESTIVAL"): eruit halen en als naam gebruiken */
+var FEST_NAMES = /^(sonisphere|rockin'? park|rock im revier|roots in the park|westerpop|motel moza[iï]que|light of day)$/i;
+function isFestAct(n) { return /\s'{1,2}\d{2}$|\s(19|20)\d{2}$/.test(n) || /festival|\bfest\b/i.test(n) || FEST_NAMES.test(n); }
+function festTitle(n) {
+  var y0 = (n.match(/\s('{1,2}\d{2}|(19|20)\d{2})$/) || ["", ""])[1], y = y0.replace(/^''/, "'"), b = y0 ? n.slice(0, n.length - y0.length).trim() : n;
+  var m = b.match(/^(.*)\s(the|de)$/i); if (m) b = m[2] + " " + m[1];
+  b = b.toLowerCase().replace(/(^|\s)(\S)/g, function (x, s1, c) { return s1 + c.toUpperCase(); }).replace(/\s(Of|The|In|Im|De|A|And)(?=\s)/g, function (x) { return x.toLowerCase(); });
+  return b + (y ? " " + y : "");
+}
+function festPrep(ev) {   /* eenmalig per ingelezen lijst */
+  ev.forEach(function (e) {
+    if (e.fx) return; e.fx = 1;
+    if (!e.acts.some(function (a) { return a[1] === "F"; })) return;
+    var f = e.acts.filter(function (a) { return isFestAct(a[0]); })[0];
+    if (f) { e.fn = festTitle(f[0]); e.acts = e.acts.filter(function (a) { return a !== f; }); }
+  });
+  /* volgende dagen of andere zalen van hetzelfde festival (bv. Lowlands dag 2, Left of the Dial in andere zalen) */
+  var named = ev.filter(function (e) { return e.fn; });
+  ev.forEach(function (e) {
+    if (e.fn || !e.acts.some(function (a) { return a[1] === "F"; })) return;
+    var t = parse(e.d).getTime(), best = null;
+    named.forEach(function (n) { var dt = (t - parse(n.d).getTime()) / 864e5; if (n.city === e.city && dt >= 0 && dt <= 3 && (!best || dt < best[0])) best = [dt, n]; });
+    if (best) e.fn = best[1].fn.replace(/\s('\d{2}|(19|20)\d{2})$/, "") + (best[1].fn.match(/\s('\d{2}|(19|20)\d{2})$/) || [""])[0];
+  });
+}
 var histFixed = false;   /* plaatsnamen gelijktrekken zodra de kaartgegevens geladen zijn */
 var XCOORD = {   /* plaatsen uit het archief die niet in de agenda voorkomen (alleen kaartposities) */
   "Hoogvliet": [51.86, 4.36], "Grolloo": [52.93, 6.68], "Zevenhuizen": [52.01, 4.58], "Pijnacker": [52.02, 4.43], "Baarn": [52.21, 5.29],
@@ -489,7 +514,7 @@ function importHist(file) {   /* Excel of CSV inlezen op dit apparaat; er gaat n
   var done = function (rows) {
     try { var h = histFromRows(rows); } catch (e) { fail(e); return; }
     if (!h.ev.length) { alert("In dit bestand vond ik geen concerten. Verwacht: artiest, H/V/F, locatie, plaats, datum, land."); return; }
-    HIST = h; try { localStorage.setItem("ca-hist", JSON.stringify(h)); } catch (e) { alert("Bewaren lukte niet (te weinig opslagruimte)."); return; }
+    HIST = h; festPrep(h.ev); try { localStorage.setItem("ca-hist", JSON.stringify(h)); } catch (e) { alert("Bewaren lukte niet (te weinig opslagruimte)."); return; }
     st.ayear = "arch"; render();
   };
   var rd = new FileReader();
@@ -508,15 +533,15 @@ function venueKeyFor(loc, city) {   /* logo als de zaal ook in de agenda staat *
   return Object.keys(VENUES).filter(function (k) { var v = VENUES[k]; return v.label && v.label.toLowerCase().replace(/^(de|het|the)\s+/, "").indexOf(l) === 0 && (!city || !v.city || v.city.toLowerCase() === city.toLowerCase()); })[0];
 }
 function histEvenings() {
-  if (HIST && !histFixed && Object.keys(COORD).length) { histFixed = true; HIST.ev.forEach(function (e) { e.city = canonCity(e.city); }); }   /* archief + (bij 'Alles') de concerten uit de app, in één vorm */
-  var out = (HIST && HIST.ev || []).map(function (e) { return { d: e.d, loc: e.loc, city: e.city, cc: e.cc, acts: e.acts, src: "x" }; });
+  if (HIST && !histFixed && Object.keys(COORD).length) { histFixed = true; HIST.ev.forEach(function (e) { e.city = canonCity(e.city); }); festPrep(HIST.ev); }   /* archief + (bij 'Alles') de concerten uit de app, in één vorm */
+  var out = (HIST && HIST.ev || []).map(function (e) { return { d: e.d, loc: e.loc, city: e.city, cc: e.cc, acts: e.acts, fn: e.fn, src: "x" }; });
   var seen = {}; out.forEach(function (e) { seen[e.d + "|" + e.city.toLowerCase()] = 1; });
   if (st.ayear === "all") Object.keys(marks).forEach(function (id) { var m = marks[id]; if (!(m.t && m.s && m.s.d < TODAY)) return; var v = VENUES[m.s.v] || { label: m.s.v, city: "" };
     if (seen[m.s.d + "|" + (v.city || "").toLowerCase()]) return;
     out.push({ d: m.s.d, loc: v.label, city: v.city, cc: v.cc || "NL", acts: [[m.s.n, v.fest ? "F" : "H"]], r: (m.rv || {}).r, src: "a" }); });
   if (st.cc) out = out.filter(function (e) { return (e.cc || "NL") === st.cc; });
   var q = st.q.trim().toLowerCase();
-  if (q) out = out.filter(function (e) { return (e.acts.map(function (a) { return a[0]; }).join(" ") + " " + e.loc + " " + e.city).toLowerCase().indexOf(q) >= 0; });
+  if (q) out = out.filter(function (e) { return (e.acts.map(function (a) { return a[0]; }).join(" ") + " " + (e.fn || "") + " " + e.loc + " " + e.city).toLowerCase().indexOf(q) >= 0; });
   return out.sort(function (a, b) { return a.d < b.d ? 1 : -1; });
 }
 function flag(cc) { return !cc || cc === "NL" || cc.length !== 2 ? "" : " " + String.fromCodePoint(0x1F1E6 + cc.charCodeAt(0) - 65, 0x1F1E6 + cc.charCodeAt(1) - 65); }
@@ -536,12 +561,12 @@ function festName(e) {
   return "";
 }
 function histRow(e) {
-  var hs = e.acts.filter(function (a) { return a[1] !== "V"; }), vs = e.acts.filter(function (a) { return a[1] === "V"; }), fest = e.acts.some(function (a) { return a[1] === "F"; });
+  var hs = e.acts.filter(function (a) { return a[1] !== "V"; }), vs = e.acts.filter(function (a) { return a[1] === "V"; }), fest = !!e.fn || e.acts.some(function (a) { return a[1] === "F"; });
   var d = parse(e.d), vk = venueKeyFor(e.loc, e.city), names = function (l) { return l.map(function (a) { return a[0]; }).join(", "); };
   /* festival: eerst de naam van het festival, de artiesten na openklappen; concert: hoofdact, voorprogramma (bij meer dan één na openklappen) */
-  var hk = e.d + "|" + e.loc + "|" + e.city, open = !!(st.hx && st.hx[hk]), fn = fest ? festName(e) : "";
+  var hk = e.d + "|" + e.loc + "|" + e.city, open = !!(st.hx && st.hx[hk]), fn = fest ? (e.fn || festName(e)) : "";
   var title = fest ? (fn || e.loc) : names(hs.length ? hs : vs), more = "", all = fest ? e.acts : vs;
-  if (fest) more = all.length === 1 ? esc(all[0][0]) : all.length + " artiesten";
+  if (fest) more = !all.length ? "" : all.length === 1 ? esc(all[0][0]) : all.length + " artiesten";
   else if (vs.length === 1 && hs.length) more = "met: " + esc(vs[0][0]);
   else if (vs.length > 1 && hs.length) more = "met: " + esc(vs[0][0]) + " + " + (vs.length - 1) + " meer";
   var fold = (fest ? all.length > 1 : vs.length > 1 && hs.length);
@@ -553,7 +578,7 @@ function histRow(e) {
 }
 function histStats(list) {
   var zalen = {}, steden = {}, landen = {}, art = {}, av = 0, fd = 0;
-  list.forEach(function (e) { var fest = e.acts.some(function (a) { return a[1] === "F"; }); if (fest) fd++; else av++;
+  list.forEach(function (e) { var fest = !!e.fn || e.acts.some(function (a) { return a[1] === "F"; }); if (fest) fd++; else av++;
     zalen[e.loc + " · " + e.city] = (zalen[e.loc + " · " + e.city] || 0) + 1; steden[e.city] = (steden[e.city] || 0) + 1; landen[e.cc] = 1;
     e.acts.forEach(function (a) { var k = nice(a[0]); art[k] = (art[k] || 0) + 1; }); });
   var top = function (o) { return Object.keys(o).sort(function (a, b) { return o[b] - o[a] || a.localeCompare(b); }).slice(0, 10).map(function (k) { return '<div class="trow"><span>' + esc(k) + "</span><b>" + o[k] + "×</b></div>"; }).join(""); };
@@ -580,7 +605,7 @@ function renderHist(yseg) {
       (ab.length ? '<div class="hl">Buitenland</div>' + (wn ? '<div class="mapbox" id="wmap"><div class="empty">Wereldkaart laden…</div></div>' : "") + ab.map(function (k) { return '<div class="trow"><span>' + esc(k) + "</span><b>" + abroad[k] + "×</b></div>"; }).join("") : "") + histStats(list) + foot;
   }
   var srt = st.hsort || "d";
-  if (srt === "n") list.sort(function (a, b) { return nice(a.acts[0][0]).localeCompare(nice(b.acts[0][0]), "nl"); });
+  if (srt === "n") list.sort(function (a, b) { return nice(a.fn || a.acts[0][0]).localeCompare(nice(b.fn || b.acts[0][0]), "nl"); });
   if (st.hrev) list.reverse();   /* nogmaals tikken = omgekeerde volgorde */
   var seg = '<div class="seg" style="margin-top:8px">' + [["d", "Datum"], ["n", "Artiest"]].map(function (o) { return '<button data-hsort="' + o[0] + '" aria-pressed="' + (srt === o[0]) + '">' + o[1] + (srt === o[0] ? (st.hrev ? " ↑" : " ↓") : "") + "</button>"; }).join("") + "</div>";
   var shown = list.slice(0, st.hlimit || 300);

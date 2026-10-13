@@ -175,6 +175,11 @@ html.inapp #splash{background:transparent}
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute"><defs><linearGradient id="halfgold"><stop offset="50%" stop-color="#f2b84b"/><stop offset="50%" stop-color="transparent"/></linearGradient></defs></svg>
+<script>/* gaat er iets mis, laat dan de fout zien (om te kunnen helpen) */
+window.onerror = function (msg, src, line) { try { var m = localStorage.getItem("ca-marks") || "", d = document.createElement("div");
+  d.style.cssText = "position:fixed;left:8px;right:8px;top:8px;z-index:99999;background:#b00020;color:#fff;font:13px/1.35 sans-serif;padding:10px 12px;border-radius:10px";
+  d.textContent = "Fout: " + msg + " (regel " + line + ") · opgeslagen: " + m.length + " tekens · " + (navigator.userAgent.match(/Chrome\/[\d.]+|ConcertAgendaApp\/[\d.]+/g) || []).join(" ");
+  d.onclick = function () { d.remove(); }; (document.body || document.documentElement).appendChild(d); } catch (e) {} };</script>
 <script>if(/ConcertAgendaApp/.test(navigator.userAgent))document.documentElement.classList.add("inapp","splashing");</script>
 <div id="splash" role="button" aria-label="Barry's concerten, tik om verder te gaan"><div class="sb"><div class="st" id="spst">Programma laden…</div><div class="go">Tik om verder te gaan</div></div></div>
 <header id="hdr"><div class="wrap" style="position:relative">
@@ -227,7 +232,14 @@ var TODAY = iso(NOW), WEEK_AGO = iso(new Date(NOW.getTime() - 7 * 864e5)), IN7 =
 var REGION_OF = {}, REGION_ORDER = [];
 var VENUES = {}, COORD = {}, LOGO = {}, ALL = [], NL = [], BE = [], marks = load("ca-marks", {}), mine = load("ca-mine", []);
 var HOME = [51.958, 4.476];
-Object.keys(marks).forEach(function (id) { var m = marks[id]; if (m && m.k) { m[m.k] = true; delete m.k; } });   /* oud formaat, zoals in de app */
+if (!marks || typeof marks !== "object" || Array.isArray(marks)) marks = {};
+Object.keys(marks).forEach(function (id) { var m = marks[id];   /* beschadigde of lege markeringen overslaan, zodat de rest gewoon werkt */
+  if (!m || typeof m !== "object") { delete marks[id]; return; }
+  if (m.k) { m[m.k] = true; delete m.k; }
+  if (m.s && typeof m.s !== "object") delete m.s;
+  if (m.s && typeof m.s.n !== "string") m.s.n = String(m.s.n || "");
+  if (m.rv && typeof m.rv !== "object") delete m.rv;
+});   /* oud formaat, zoals in de app */
 var ORPH = {};   /* gemarkeerde concerten die (nog) niet in de huidige agenda staan, bv. omdat de zaal de link wijzigde */
 function findC(id) { return ALL.filter(function (x) { return x.id === id; })[0] || ORPH[id]; }
 var st = { ayear: String(NOW.getFullYear()), aview: "lijst", ovv: "kaart", ovreg: {}, venue: "", cc: "", asort: load("ca-asort", "d"), from: "", to: "", tab: "agenda", sub: "t", f: {}, q: "", city: "", month: "", limit: 250, open: null, more: {} };
@@ -607,7 +619,8 @@ function render() {
   Array.prototype.forEach.call(document.querySelectorAll(".flagb"), function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-cc") === st.cc)); });
   document.querySelector(".brand").classList.toggle("cc", !!st.cc);
   chips(); $("chips").style.display = st.tab === "a" || st.tab === "mine" ? "none" : "";
-  $("main").innerHTML = st.tab === "mine" ? renderMine() : st.tab === "a" ? renderArchive() : st.tab === "ov" ? renderOv() : renderAgenda();
+  try { $("main").innerHTML = st.tab === "mine" ? renderMine() : st.tab === "a" ? renderArchive() : st.tab === "ov" ? renderOv() : renderAgenda(); }
+  catch (e) { $("main").innerHTML = '<div class="empty">Er ging iets mis bij dit scherm: ' + esc(String(e && e.message || e)) + "</div>"; setTimeout(function () { throw e; }); }
   document.documentElement.style.setProperty("--hh", $("hdr").offsetHeight + "px");
 }
 function ics(c) {

@@ -397,7 +397,7 @@ function renderMine() {
 var HIST = load("ca-hist", null);
 if (HIST && HIST.v === 1) HIST.ev.forEach(function (e) { e.acts = e.acts.map(function (a) { return [artName(a[0]), a[1]]; }); });
 /* festivalnaam staat in de lijst als 'artiest' (bv. "MONSTERS OF ROCK '89", "PINKPOP 1991", "STILLE NACHT FESTIVAL"): eruit halen en als naam gebruiken */
-var FEST_NAMES = /^(sonisphere|rockin'? park|rock im revier|roots in the park|westerpop|motel moza[iï]que|light of day)$/i;
+var FEST_NAMES = /^(sonisphere|rockin'? park|rock im revier|roots in the park|westerpop|motel moza[iï]que|light of day|the music in my head|'?nuff said|seat beach rock|indiestad nieuwjaarsborrel|red ?bull soundclash|2 meter nighttown in|ultimate jam night.*)$/i;
 function isFestAct(n) { return /\s'{1,2}\d{2}$|\s(19|20)\d{2}$/.test(n) || /festival|\bfest\b/i.test(n) || FEST_NAMES.test(n); }
 function festTitle(n) {
   var y0 = (n.match(/\s('{1,2}\d{2}|(19|20)\d{2})$/) || ["", ""])[1], y = y0.replace(/^''/, "'"), b = y0 ? n.slice(0, n.length - y0.length).trim() : n;

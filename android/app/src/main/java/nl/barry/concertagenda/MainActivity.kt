@@ -23,6 +23,19 @@ import androidx.core.view.WindowInsetsControllerCompat
 class MainActivity : AppCompatActivity() {
     private lateinit var web: WebView
     private var fileCb: ValueCallback<Array<Uri>>? = null
+    private var pendingSave: String? = null
+    // back-up opslaan: de gebruiker kiest zelf waar (Downloads, Drive, ...)
+    private val saveDoc = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
+        val uri = r.data?.data; val txt = pendingSave; pendingSave = null
+        if (r.resultCode == RESULT_OK && uri != null && txt != null) {
+            try {
+                contentResolver.openOutputStream(uri)?.use { it.write(txt.toByteArray(Charsets.UTF_8)) }
+                android.widget.Toast.makeText(this, "Back-up opgeslagen", android.widget.Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                android.widget.Toast.makeText(this, "Opslaan mislukt: " + e.message, android.widget.Toast.LENGTH_LONG).show()
+            }
+        }
+    }
     // bestand kiezen voor "Archief inlezen" (Excel of CSV van de telefoon)
     private val pick = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
         fileCb?.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(r.resultCode, r.data))
@@ -41,6 +54,12 @@ class MainActivity : AppCompatActivity() {
         if (savedInstanceState == null) bars(false)
         web.addJavascriptInterface(object {
             @JavascriptInterface fun splashDone() { runOnUiThread { bars(true) } }
+            @JavascriptInterface fun saveFile(name: String, content: String) {
+                runOnUiThread {
+                    pendingSave = content
+                    saveDoc.launch(Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("application/json").putExtra(Intent.EXTRA_TITLE, name))
+                }
+            }
         }, "AndroidApp")
 
         web.settings.apply {

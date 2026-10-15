@@ -225,7 +225,7 @@ function venue(c) { return VENUES[c.v] || { label: c.v, city: "" }; }
 function eid(c) { return c.v + "|" + c.d + "|" + c.u; }
 function isNew(c) { return c.first && c.first !== "base" && c.first >= WEEK_AGO; }
 function club(c) { return c.c && c.v === "rotown"; }
-function tsLink(c) { return c.k || c.ka || ("https://www.ticketswap.nl/search?q=" + encodeURIComponent(c.n.split(" + ")[0].replace(/\s*\(.*?\)\s*/g, " ").trim())); }
+function tsLink(c) { var l = c.k || c.ka; if (l && l.charAt(0) === "~") l = "https://www.ticketswap.nl/" + l.slice(1); return l || ("https://www.ticketswap.nl/search?q=" + encodeURIComponent(c.n.split(" + ")[0].replace(/\s*\(.*?\)\s*/g, " ").trim())); }
 
 function weekendRange() {
   var d = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate()), wd = d.getDay();

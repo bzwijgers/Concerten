@@ -34,7 +34,7 @@ header.sc{border-bottom-color:var(--line)}
 .brand svg{width:20px;height:13px;border-radius:2px;box-shadow:0 0 0 .5px rgba(255,255,255,.25)}
 .top{position:relative}
 .menu{position:absolute;right:16px;top:58px;z-index:40;min-width:220px;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:6px;box-shadow:0 12px 30px rgba(0,0,0,.5)}
-.menu a,.menu button{display:flex;align-items:center;gap:12px;width:100%;padding:12px;border:0;background:none;border-radius:10px;color:var(--fg);text-decoration:none;font:600 14px var(--f-b);cursor:pointer;text-align:left}
+.menu a,.menu button,.menu .mi{display:flex;align-items:center;gap:12px;width:100%;padding:12px;border:0;background:none;border-radius:10px;color:var(--fg);text-decoration:none;font:600 14px var(--f-b);cursor:pointer;text-align:left}
 .menu a:active,.menu button:active{background:var(--card)}
 .menu svg{width:18px;height:18px;color:var(--muted)}
 .vrow{display:flex;align-items:center;gap:12px;padding:10px 4px;border-bottom:1px solid var(--line);cursor:pointer}
@@ -91,6 +91,13 @@ header.sc{border-bottom-color:var(--line)}
 .bd{display:inline-block;font:700 10px var(--f-b);text-transform:uppercase;letter-spacing:.06em;padding:2px 6px;border-radius:6px;margin-right:5px;vertical-align:1px}
 .bd.tk{background:var(--green);color:#06210f}.bd.so{background:rgba(255,107,107,.18);color:var(--red)}
 .seenbox{margin:10px 0 0;padding:10px 12px;border-radius:12px;background:rgba(142,155,196,.12);color:#c9d1ee;font-size:13px;line-height:1.5}.seenbox b{display:block;color:#dfe5fb;margin-bottom:2px}
+.since{display:flex;align-items:stretch;gap:6px;margin:12px 0 2px}.since [data-since]{flex:1;text-align:left;border:1px solid rgba(142,155,196,.35);background:rgba(142,155,196,.12);color:var(--fg);border-radius:14px;padding:10px 12px;cursor:pointer;font:500 13px var(--f-b)}
+.since [data-since] b{display:block;font:700 14.5px var(--f-d)}.since [data-since] span{color:var(--muted)}.since .x{border:0;background:none;color:var(--faint);font-size:16px;cursor:pointer;padding:0 6px}
+.warn{margin:12px 0 4px;border:1px solid rgba(255,107,107,.35);background:rgba(255,107,107,.07);border-radius:14px;padding:6px 10px}.warn .hl{margin:6px 0 2px;color:var(--red)}
+.warn .wr{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line);cursor:pointer}.warn .wr:first-of-type{border-top:0}.warn .wr div{flex:1;font-size:13.5px}.warn .wr small{display:block;color:var(--muted)}.warn .wr button{border:0;background:none;color:var(--faint);cursor:pointer;font-size:15px}
+nav [data-tab].dot{position:relative}nav [data-tab].dot::after{content:"";position:absolute;top:8px;left:calc(50% + 8px);width:8px;height:8px;border-radius:50%;background:var(--red)}
+.ys{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 6px}.ys div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px}.ys b{display:block;font:800 20px var(--f-d)}.ys span{font-size:12px;color:var(--muted)}
+.yl{font-size:13.5px;color:var(--muted);margin:2px 0 10px;line-height:1.55}.yl b{color:var(--fg)}
 .sub{font:700 11px var(--f-b);text-transform:uppercase;letter-spacing:.08em;color:var(--faint);margin:14px 0 4px;padding-top:10px;border-top:1px solid var(--line)}
 .bd.sn{background:rgba(142,155,196,.2);color:#b9c3e6}.bd.ot{background:rgba(255,255,255,.06);color:var(--faint)}
 .bd.nw{background:rgba(242,184,75,.18);color:var(--gold)}.bd.fe{background:rgba(143,178,255,.18);color:var(--blue)}.bd.cl{background:rgba(79,209,139,.15);color:var(--green)}
@@ -197,6 +204,8 @@ window.onerror = function (msg, src, line) { try { var m = localStorage.getItem(
     <button class="ib" id="mb" aria-label="Menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button></div>
   <div class="menu" id="menu" hidden>
     <button data-m="zalen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V10l7-5 7 5v11M9 21v-6h6v6"/></svg>Mijn zalen kiezen</button>
+    <button data-m="backup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Back-up maken</button>
+    <label class="mi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21V9M7 14l5-5 5 5M5 3h14"/></svg>Back-up terugzetten<input type="file" accept=".json,application/json,text/plain,application/octet-stream" id="restore" hidden></label>
     <button data-m="other"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M7 12h10M10 17h4"/></svg><span id="otherlbl">Ook overige activiteiten tonen</span></button>
     <a href="klassiek.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Klassieke weergave</a>
     <a href="https://github.com/bzwijgers/Concerten/actions/workflows/update.yml" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5"/></svg>Nu bijwerken</a>
@@ -299,6 +308,33 @@ function seenOf(c) {
   parts.forEach(function (p) { var k = normA(p); if (!k || (k !== whole && (SEEN_STOP.test(k) || k.length < 3))) return; var o = SEEN[k]; if (o && (!best || o.n > best.n)) best = { n: o.n, last: o.last, x: o.x, a: p.trim() }; });
   return best;
 }
+/* back-up: kaartjes, interesses, notities, sterren, je zalen en (als je dat hebt) je archief, in één bestand */
+function makeBackup() {
+  var data = { app: "barrys-concerten", v: 1, at: new Date().toISOString(), marks: marks, mine: mine, other: st.other, hist: HIST || null };
+  var name = "concerten-backup-" + TODAY + ".json", txt = JSON.stringify(data);
+  try { if (window.AndroidApp && AndroidApp.saveFile) { AndroidApp.saveFile(name, txt); return; } } catch (e) {}
+  var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([txt], { type: "application/json" })); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+}
+function restoreBackup(file) {
+  var rd = new FileReader();
+  rd.onload = function () {
+    try { var b = JSON.parse(String(rd.result)); } catch (e) { alert("Dit is geen back-up van de concertagenda."); return; }
+    if (!b || b.app !== "barrys-concerten" || !b.marks) { alert("Dit is geen back-up van de concertagenda."); return; }
+    var added = 0;
+    Object.keys(b.marks).forEach(function (id) {   /* samenvoegen: niets wat hier al staat gaat verloren */
+      var x = b.marks[id], m = marks[id]; if (!x || typeof x !== "object") return;
+      if (!m) { marks[id] = x; added++; return; }
+      m.t = m.t || x.t; m.i = m.i || x.i; if (!m.s && x.s) m.s = x.s; if (!m.note && x.note) m.note = x.note; if (!m.rv && x.rv) m.rv = x.rv;
+    });
+    (b.mine || []).forEach(function (k) { if (mine.indexOf(k) < 0) mine.push(k); });
+    save("ca-marks", marks); save("ca-mine", mine);
+    var h = "";
+    if (b.hist && b.hist.ev && !(HIST && HIST.ev && HIST.ev.length)) { HIST = b.hist; histFixed = false; try { localStorage.setItem("ca-hist", JSON.stringify(HIST)); h = " Ook je archief (" + HIST.ev.length + " avonden) is teruggezet."; } catch (e) {} }
+    try { rescueMarks(); buildSeen(); } catch (e) {}
+    render(); alert("Back-up teruggezet: " + added + " concerten toegevoegd, de rest samengevoegd." + h);
+  };
+  rd.readAsText(file);
+}
 function rescueMarks() {   /* markering waarvan het concert niet meer onder hetzelfde adres in de agenda staat: zelfde dag + zelfde naam zoeken */
   var byId = {}, moved = 0; ALL.forEach(function (c) { byId[c.id] = c; });
   var safeDec = function (x) { try { return decodeURIComponent(x); } catch (e) { return x; } };
@@ -343,6 +379,7 @@ function pass(c, noDate) {
   if (st.f.mine && mine.length && mine.indexOf(c.v) < 0) return false;
   if (st.f.fest && !v.fest) return false;
   if (st.f["new"] && !(c.first && c.first !== "base" && c.first >= WEEK_AGO)) return false;
+  if (st.f.since && !(c.first && c.first !== "base" && c.first > st.since)) return false;
   return true;
 }
 function anyFilter() { return !!(st.q.trim() || st.venue || st.cc || st.city || st.month || st.from || Object.keys(st.f).some(function (k) { return st.f[k]; })); }
@@ -362,7 +399,7 @@ function row(c) {
     (t ? '<div class="tm">' + esc(t) + (/deuren/.test(c.t || "") ? "<small>deur</small>" : "") + "</div>" : '<div class="tm none">–</div>') + "</div>";
 }
 function chips() {
-  $("chips").innerHTML = (st.venue ? '<button class="chip city" data-venue-x>' + esc((VENUES[st.venue] || {}).label || st.venue) + " ✕</button>" : "") +
+  $("chips").innerHTML = (st.f.since ? '<button class="chip city" data-since-x>Nieuw sinds vorig bezoek ✕</button>' : "") + (st.venue ? '<button class="chip city" data-venue-x>' + esc((VENUES[st.venue] || {}).label || st.venue) + " ✕</button>" : "") +
     (st.city ? '<button class="chip city" data-city-x>' + esc(st.city) + " ✕</button>" : "") +
     (st.month ? '<button class="chip city" data-month-x>' + MONL[+st.month.slice(5) - 1] + " ✕</button>" : "") +
     '<button class="chip" data-clear aria-pressed="' + !anyFilter() + '">Agenda</button>' +
@@ -411,6 +448,11 @@ function renderAgenda() {
   var html = "", days = {}, order = [];
   list.forEach(function (c) { if (!days[c.d]) { days[c.d] = []; order.push(c.d); } days[c.d].push(c); });
   var shown = 0;
+  var sl = st.sinceList || [];
+  if (sl.length && !st.sinceOff && !anyFilter()) {
+    var ns = sl.filter(function (c) { return c.seen; }).length;
+    html += '<div class="since"><button data-since><b>✦ ' + sl.length + " nieuw sinds je vorige bezoek</b>" + (ns ? "<span>" + ns + (ns === 1 ? " van een artiest" : " van artiesten") + " die je eerder zag</span>" : "<span>tik om ze te zien</span>") + '</button><button class="x" data-since-off aria-label="Verbergen">✕</button></div>';
+  }
   if (!list.length) html += '<div class="empty">Niets gevonden. ' + (anyFilter() ? '<button class="others" data-clear style="margin-top:12px">Alle filters uit</button>' : "") + "</div>";
   order.forEach(function (d) {
     if (!anyFilter() && shown > st.limit) return;   /* met een filter: alles in die periode tonen */
@@ -425,6 +467,19 @@ function renderAgenda() {
   });
   return html;
 }
+/* let op: een concert met interesse is uitverkocht, of een gemarkeerd concert staat niet meer in de agenda van de zaal */
+function warnings() {
+  var byId = {}, out = []; ALL.forEach(function (c) { byId[c.id] = c; });
+  Object.keys(marks).forEach(function (id) {
+    var m = marks[id]; if (!(m.t || m.i)) return;
+    var c = byId[id], d = c ? c.d : m.s && m.s.d; if (!d || d < TODAY) return;
+    var why = "", key = "";
+    if (!c && ALL.length) { why = "staat niet meer in de agenda van de zaal: verplaatst of afgelast?"; key = "gone"; }
+    else if (c && c.s && m.i && !m.t) { why = "is uitverkocht"; key = "so"; }
+    if (why && m.wk !== key) out.push({ id: id, c: c || { id: id, v: m.s.v, d: m.s.d, n: m.s.n, u: m.s.u || "" }, why: why, key: key });
+  });
+  return out.sort(function (a, b) { return a.c.d < b.c.d ? -1 : 1; });
+}
 function renderMine() {
   var q = st.q.trim().toLowerCase(), qok = function (c) { return !q || (c.n + " " + venue(c).label + " " + venue(c).city).toLowerCase().indexOf(q) >= 0; };
   /* Mijn concerten toont altijd alles wat je hebt gemarkeerd; de filters van de agenda gelden hier niet */
@@ -437,7 +492,9 @@ function renderMine() {
   });
   list.sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; });
   var cntm = function (f) { return Object.keys(marks).filter(function (id) { var m = marks[id]; return m[f] && ((m.s && m.s.d >= TODAY) || ALL.some(function (c) { return c.id === id && c.d >= TODAY; })); }).length; };
-  var html = '<div class="seg"><button data-sub="t" aria-pressed="' + (st.sub === "t") + '">Kaartje · ' + cntm("t") + '</button><button data-sub="i" aria-pressed="' + (st.sub === "i") + '">Interesse · ' + cntm("i") + '</button><button data-sub="c" aria-pressed="' + (st.sub === "c") + '">Clubcard</button></div>';
+  var wl = warnings(), wbox = wl.length ? '<div class="warn"><div class="hl">Let op</div>' + wl.map(function (w) { var d = parse(w.c.d);
+      return '<div class="wr" data-id="' + esc(w.id) + '"><div><b>' + esc(nice(w.c.n)) + "</b> " + esc(w.why) + "<small>" + DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()] + " · " + esc(venue(w.c).label) + '</small></div><button data-wx="' + esc(w.id) + '" data-wk="' + w.key + '" aria-label="Gezien">✕</button></div>'; }).join("") + "</div>" : "";
+  var html = wbox + '<div class="seg"><button data-sub="t" aria-pressed="' + (st.sub === "t") + '">Kaartje · ' + cntm("t") + '</button><button data-sub="i" aria-pressed="' + (st.sub === "i") + '">Interesse · ' + cntm("i") + '</button><button data-sub="c" aria-pressed="' + (st.sub === "c") + '">Clubcard</button></div>';
   if (st.sub === "c") {   /* Rotown: concerten met clubcard-korting */
     var cl = ALL.filter(function (c) { return c.d >= TODAY && c.c && c.v === "rotown" && qok(c); }), lc = "";
     if (!cl.length) return html + '<div class="empty">Geen clubcard-concerten gevonden.</div>';
@@ -774,6 +831,18 @@ function renderArchive() {
   if (st.asort === "r") out.sort(function (a, b) { var x = typeof a.rv.r === "number" ? a.rv.r : -1, y = typeof b.rv.r === "number" ? b.rv.r : -1; return y - x || (a.s.d < b.s.d ? 1 : -1); });
   if (st.arev) out.reverse();
   var rated = out.filter(function (a) { return typeof a.rv.r === "number"; });
+  var yearBox = "";
+  if (st.ayear !== "all" && !q && out.length && st.aview !== "kaart") {   /* jaaroverzicht */
+    var zv = {}, zc = {}, ar = {}, newv = [], hv = {};
+    ((HIST && HIST.ev) || []).forEach(function (e) { if (e.d.slice(0, 4) < st.ayear) hv[e.loc.toLowerCase().replace(/^(de|het|the)\s+/, "")] = 1; });
+    out.forEach(function (a) { var v = VENUES[a.s.v] || { label: a.s.v, city: "" }; zv[v.label] = (zv[v.label] || 0) + 1; if (v.city) zc[v.city] = 1; var k = nice(a.s.n).split(/\s+[+&]\s+| - /)[0]; ar[k] = (ar[k] || 0) + 1;
+      var lk = v.label.toLowerCase().replace(/^(de|het|the)\s+/, ""); if (HIST && !hv[lk] && newv.indexOf(v.label) < 0) newv.push(v.label); });
+    var topk = function (o) { var k = Object.keys(o).sort(function (a, b) { return o[b] - o[a]; })[0]; return k ? [k, o[k]] : null; };
+    var tz = topk(zv), ta = topk(ar), best = rated.slice().sort(function (a, b) { return b.rv.r - a.rv.r; })[0];
+    yearBox = '<div class="hl">Jouw ' + st.ayear + "</div>" + '<div class="ys"><div><b>' + out.length + "</b><span>concerten</span></div><div><b>" + Object.keys(zv).length + "</b><span>zalen</span></div><div><b>" + Object.keys(zc).length + "</b><span>steden</span></div></div>" +
+      '<div class="yl">' + (tz ? "Meest bezocht: <b>" + esc(tz[0]) + "</b> (" + tz[1] + "×)<br>" : "") + (ta && ta[1] > 1 ? "Vaakst gezien: <b>" + esc(ta[0]) + "</b> (" + ta[1] + "×)<br>" : "") +
+      (best ? "Hoogste cijfer: <b>" + esc(nice(best.s.n)) + "</b> (★ " + String(best.rv.r).replace(".", ",") + ")<br>" : "") + (newv.length ? "Voor het eerst: <b>" + newv.slice(0, 6).map(esc).join(", ") + "</b>" + (newv.length > 6 ? " en nog " + (newv.length - 6) : "") : "") + "</div>";
+  }
   var view = yseg + '<div class="seg" style="margin-top:8px">' + [["lijst", "Lijst"], ["kaart", "Kaart"]].map(function (o) { return '<button data-aview="' + o[0] + '" aria-pressed="' + (st.aview === o[0]) + '">' + o[1] + "</button>"; }).join("") + "</div>";
   if (st.aview === "wereld" || st.aview === "art" || st.aview === "fest") st.aview = "lijst";
   if (st.aview === "kaart") {   /* waar ben ik geweest: per stad het aantal concerten */
@@ -783,7 +852,7 @@ function renderArchive() {
       '<div class="zoom"><button data-zoom="1.6">+</button><button data-zoom="0.625">−</button><button data-zoom="0">⟲</button></div></div>' + archStats(out);
   }
   var seg = '<div class="seg" style="margin-top:8px">' + [["d", "Datum"], ["n", "Artiest"], ["r", "Beoordeling"]].map(function (o) { return '<button data-asort="' + o[0] + '" aria-pressed="' + (st.asort === o[0]) + '">' + o[1] + (st.asort === o[0] ? (st.arev ? " ↑" : " ↓") : "") + "</button>"; }).join("") + "</div>";
-  return view + seg + '<div class="hl">Gezien · ' + out.length + (rated.length ? " · gemiddeld " + (rated.reduce(function (t, a) { return t + a.rv.r; }, 0) / rated.length).toFixed(1).replace(".", ",") : "") + "</div>" +
+  return view + yearBox + seg + '<div class="hl">Gezien · ' + out.length + (rated.length ? " · gemiddeld " + (rated.reduce(function (t, a) { return t + a.rv.r; }, 0) / rated.length).toFixed(1).replace(".", ",") : "") + "</div>" +
     (out.length ? out.map(function (a) { var d = parse(a.s.d), v = VENUES[a.s.v] || { label: a.s.v, city: "" }, r = a.rv.r;
       var open = st.aopen === a.id, stars = "";
       for (var i = 1; i <= 10; i++) { var f = typeof r === "number" ? (r >= i ? "full" : r >= i - 0.5 ? "half" : "") : "";
@@ -867,6 +936,7 @@ function renderOv() {
       return '<button class="mrow' + (st.month === m ? " on" : "") + '" data-month="' + m + '"><span>' + MON[+m.slice(5) - 1] + (y !== NOW.getFullYear() ? " " + String(y).slice(2) : "") + '</span><i><b style="width:' + Math.round(mon[m] / mm * 100) + '%"></b></i><em>' + mon[m] + "</em></button>"; }).join("");
 }
 function render() {
+  try { var wn = ALL.length ? warnings().length : 0; document.querySelector('nav [data-tab="mine"]').classList.toggle("dot", wn > 0); } catch (e) {}
   var inA = st.tab === "a" && (st.ayear === "arch" || st.ayear === "all");
   $("sbar").classList.toggle("on", inA || !!st.q || $("sb").getAttribute("aria-pressed") === "true");   /* een actieve zoekterm is altijd te zien */
   $("q").placeholder = inA ? "Zoek artiest, festival, zaal, plaats of datum (bv. 1985)" : "Zoek artiest, zaal of stad";
@@ -959,6 +1029,9 @@ function toggle(id, k) {
 }
 $("main").addEventListener("click", function (e) {
   var t = e.target;
+  if (t.closest("[data-since-off]")) { st.sinceOff = true; render(); return; }
+  if (t.closest("[data-since]")) { st.f.since = true; render(); window.scrollTo(0, 0); return; }
+  if (t.closest("[data-wx]")) { var wm = marks[t.closest("[data-wx]").getAttribute("data-wx")]; if (wm) { wm.wk = t.closest("[data-wx]").getAttribute("data-wk"); save("ca-marks", marks); } render(); return; }
   if (t.closest("[data-more]")) { st.more[t.closest("[data-more]").getAttribute("data-more")] = true; render(); return; }
   if (t.closest("[data-clear]")) { st.venue = ""; st.cc = ""; st.f = {}; st.q = ""; $("q").value = ""; st.city = ""; st.month = ""; st.from = st.to = ""; render(); return; }
   if (t.closest("[data-hsort]")) { var hs = t.closest("[data-hsort]").getAttribute("data-hsort"); st.hrev = (st.hsort || "d") === hs ? !st.hrev : false; st.hsort = hs; render(); return; }
@@ -1029,6 +1102,7 @@ $("main").addEventListener("click", function (e) {
     S.cx = p[0] + (S.cx - p[0]) * r; S.cy = p[1] + (S.cy - p[1]) * r; S.z = z; redraw();
   }, { passive: false });
 })();
+$("restore").addEventListener("change", function () { $("menu").hidden = true; if (this.files && this.files[0]) restoreBackup(this.files[0]); this.value = ""; });
 $("main").addEventListener("change", function (e) { var f = e.target.closest("[data-himport]"); if (f && f.files && f.files[0]) importHist(f.files[0]); });
 $("panel").addEventListener("input", function (e) {   /* notitie bij een kaartje bewaren tijdens het typen */
   var ta = e.target.closest("[data-note]"); if (!ta || !st.open) return;
@@ -1058,6 +1132,7 @@ $("sheet").addEventListener("click", function (e) {
 });
 $("chips").addEventListener("click", function (e) {
   if (e.target.closest("[data-clear]")) { st.venue = ""; st.cc = ""; st.f = {}; st.q = ""; $("q").value = ""; $("qx").style.display = "none"; st.city = ""; st.month = ""; st.from = st.to = ""; render(); window.scrollTo(0, 0); return; }   /* Agenda: alle concerten, alle filters uit */
+  if (e.target.closest("[data-since-x]")) { st.f.since = false; render(); return; }
   if (e.target.closest("[data-city-x]")) { st.city = ""; render(); return; }
   if (e.target.closest("[data-venue-x]")) { st.venue = ""; render(); return; }
   if (e.target.closest("[data-month-x]")) { st.month = ""; render(); return; }
@@ -1079,6 +1154,7 @@ Array.prototype.forEach.call(document.querySelectorAll(".flagb"), function (b) {
 $("mb").addEventListener("click", function (e) { e.stopPropagation(); var open = $("menu").hidden; $("menu").hidden = !open; $("mb").setAttribute("aria-expanded", String(open)); });
 document.addEventListener("click", function (e) { if (!$("menu").hidden && !e.target.closest("#menu")) { $("menu").hidden = true; $("mb").setAttribute("aria-expanded", "false"); } });
 $("menu").addEventListener("click", function (e) { var b = e.target.closest("[data-m]"); if (!b) return; $("menu").hidden = true; if (b.getAttribute("data-m") === "zalen") openVenues();
+  if (b.getAttribute("data-m") === "backup") makeBackup();
   if (b.getAttribute("data-m") === "other") { st.other = !st.other; save("ca-other", st.other); render(); } });
 function openVenues() {   /* mijn zalen kiezen: per plaats, aangevinkt = in 'Mijn zalen' */
   var cnt = {}; ALL.forEach(function (c) { if (c.d >= TODAY) cnt[c.v] = (cnt[c.v] || 0) + 1; });
@@ -1123,10 +1199,18 @@ Promise.all([fetch("app.js", { cache: "no-cache" }).then(function (r) { return r
   var alias = { antwerp: "Antwerpen", "antwerpen 1": "Antwerpen", merksem: "Antwerpen", brussels: "Brussel", bruxelles: "Brussel", elsene: "Brussel", forest: "Brussel", "woluwe-saint-pierre": "Brussel", "liège": "Luik", ghent: "Gent" };
   Object.keys(data.venues || {}).forEach(function (k) { var v = data.venues[k], c = (v.city || "").replace(/ OV$/, ""), m = /^(.*?)\s*\((.*)\)$/.exec(c);
     if (m) c = alias[m[2].toLowerCase()] || m[2]; if (!VENUES[k]) VENUES[k] = { label: v.label, city: alias[c.toLowerCase()] || c, cc: v.cc || "NL" }; });
-  ALL = data.events.filter(function (e) { return VENUES[e.v]; }).map(function (e) { e.id = e.v + "|" + e.d + "|" + e.u; e.ts = (e.t || "").replace("deuren ", "") || "99"; e.n = cleanTitle(e.n, e.v); e.o = isOther(e); return e; })
+  ALL = data.events.filter(function (e) { return VENUES[e.v]; }).map(function (e) { e.id = e.v + "|" + e.d + "|" + e.u; e.ts = (e.t || "").replace("deuren ", "") || "99"; e.n = cleanTitle(e.n, e.v); e.o = isOther(e);
+    if (e.k && e.k.charAt(0) === "~") e.k = "https://www.ticketswap.nl/" + e.k.slice(1); if (e.ka && e.ka.charAt(0) === "~") e.ka = "https://www.ticketswap.nl/" + e.ka.slice(1); return e; })
     .sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : a.ts < b.ts ? -1 : 1; });
   rescueMarks();
   try { buildSeen(); } catch (e) {}
+  (function () {   /* wat er bij is gekomen sinds je de app de vorige keer opende */
+    var prev = load("ca-lastnew", ""), cur = "";
+    ALL.forEach(function (c) { if (c.first && c.first !== "base" && c.first > cur) cur = c.first; });
+    st.since = prev;
+    st.sinceList = prev ? ALL.filter(function (c) { return c.d >= TODAY && !c.o && c.first && c.first !== "base" && c.first > prev; }) : [];
+    if (cur) save("ca-lastnew", cur);
+  })();
   render();
   var u = new Date(data.updated);
   try { localStorage.setItem("ca-updated", data.updated); } catch (e) {}

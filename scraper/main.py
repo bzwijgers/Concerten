@@ -323,7 +323,14 @@ def main():
     store = {"events": events, "status": status, "updated": now, "venues": tm_venues, "migrations": store.get("migrations", [])}
     json.dump(store, open(os.path.join(DATA, "events.json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     json.dump(pcache, open(os.path.join(DATA, "paradiso_cache.json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
-    pub = sorted(events.values(), key=lambda e: (e["d"], e["v"], e["n"]))
+    # gepubliceerde agenda zo klein mogelijk: velden die de app niet gebruikt en lege waarden eruit, TicketSwap-links kort
+    TS = "https://www.ticketswap.nl/"
+    def slim(e):
+        o = {k: v for k, v in e.items() if k not in ("img", "last", "g") and v not in (False, "", None)}
+        for k in ("k", "ka"):
+            if isinstance(o.get(k), str) and o[k].startswith(TS): o[k] = "~" + o[k][len(TS):]
+        return o
+    pub = [slim(e) for e in sorted(events.values(), key=lambda e: (e["d"], e["v"], e["n"]))]
     json.dump({"updated": now, "status": status, "alerts": alerts, "venues": tm_venues, "events": pub}, open(os.path.join(OUT, "events.json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     print("total", len(pub))
 

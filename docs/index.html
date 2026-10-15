@@ -358,6 +358,7 @@ function chips() {
   $("chips").innerHTML = (st.venue ? '<button class="chip city" data-venue-x>' + esc((VENUES[st.venue] || {}).label || st.venue) + " ✕</button>" : "") +
     (st.city ? '<button class="chip city" data-city-x>' + esc(st.city) + " ✕</button>" : "") +
     (st.month ? '<button class="chip city" data-month-x>' + MONL[+st.month.slice(5) - 1] + " ✕</button>" : "") +
+    '<button class="chip" data-clear aria-pressed="' + !anyFilter() + '">Alle</button>' +
     CHIPS.map(function (c) {
       if (c[0] === "date") return '<button class="chip" data-date aria-pressed="' + !!st.from + '">' + (st.from ? fmtD(st.from) + (st.to && st.to !== st.from ? " – " + fmtD(st.to) : st.to ? "" : " →") + " ✕" : "Datum ▾") + "</button>";
       return '<button class="chip" data-f="' + c[0] + '" aria-pressed="' + !!st.f[c[0]] + '">' + c[1] + "</button>"; }).join("");
@@ -1049,6 +1050,7 @@ $("sheet").addEventListener("click", function (e) {
   toggle(st.open, a.getAttribute("data-a"));
 });
 $("chips").addEventListener("click", function (e) {
+  if (e.target.closest("[data-clear]")) { st.venue = ""; st.cc = ""; st.f = {}; st.q = ""; $("q").value = ""; $("qx").style.display = "none"; st.city = ""; st.month = ""; st.from = st.to = ""; render(); window.scrollTo(0, 0); return; }   /* Alle: alle filters uit */
   if (e.target.closest("[data-city-x]")) { st.city = ""; render(); return; }
   if (e.target.closest("[data-venue-x]")) { st.venue = ""; render(); return; }
   if (e.target.closest("[data-month-x]")) { st.month = ""; render(); return; }

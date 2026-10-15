@@ -261,6 +261,9 @@ Object.keys(marks).forEach(function (id) { var m = marks[id];   /* beschadigde o
 var ORPH = {};   /* gemarkeerde concerten die (nog) niet in de huidige agenda staan, bv. omdat de zaal de link wijzigde */
 function findC(id) { return ALL.filter(function (x) { return x.id === id; })[0] || ORPH[id]; }
 var st = { other: load("ca-other", false), ayear: String(NOW.getFullYear()), aview: "lijst", ovv: "kaart", ovreg: {}, venue: "", cc: "", asort: load("ca-asort", "d"), from: "", to: "", tab: "agenda", sub: "t", f: {}, q: "", city: "", month: "", limit: 250, open: null, more: {} };
+/* vernieuwen (naar beneden vegen) brengt je terug waar je was: scherm, filters, keuze in Historie, zoekterm */
+var KEEP_KEYS = ["tab", "sub", "ayear", "aview", "ovv", "hsort", "hrev", "arev", "f", "from", "to", "month", "city", "venue", "cc", "q"];
+try { var _v = JSON.parse(sessionStorage.getItem("ca-view") || "null"); if (_v) KEEP_KEYS.forEach(function (k) { if (k in _v) st[k] = _v[k]; }); } catch (e) {}
 var CHIPS = [["new", "Nieuw"], ["today", "Vandaag"], ["weekend", "Dit weekend"], ["date", "Datum"], ["near", "Binnen 1½ uur"], ["mine", "Mijn zalen"], ["fest", "Festivals"]];
 function travel(city) {
   var c = COORD[city]; if (!c) return null;
@@ -936,6 +939,7 @@ function renderOv() {
       return '<button class="mrow' + (st.month === m ? " on" : "") + '" data-month="' + m + '"><span>' + MON[+m.slice(5) - 1] + (y !== NOW.getFullYear() ? " " + String(y).slice(2) : "") + '</span><i><b style="width:' + Math.round(mon[m] / mm * 100) + '%"></b></i><em>' + mon[m] + "</em></button>"; }).join("");
 }
 function render() {
+  try { var _k = {}; KEEP_KEYS.forEach(function (k) { _k[k] = st[k]; }); sessionStorage.setItem("ca-view", JSON.stringify(_k)); } catch (e) {}
   try { var wn = ALL.length ? warnings().length : 0; document.querySelector('nav [data-tab="mine"]').classList.toggle("dot", wn > 0); } catch (e) {}
   var inA = st.tab === "a" && (st.ayear === "arch" || st.ayear === "all");
   $("sbar").classList.toggle("on", inA || !!st.q || $("sb").getAttribute("aria-pressed") === "true");   /* een actieve zoekterm is altijd te zien */
@@ -1102,6 +1106,7 @@ $("main").addEventListener("click", function (e) {
     S.cx = p[0] + (S.cx - p[0]) * r; S.cy = p[1] + (S.cy - p[1]) * r; S.z = z; redraw();
   }, { passive: false });
 })();
+window.addEventListener("pagehide", function () { try { sessionStorage.setItem("ca-scroll", String(window.scrollY)); } catch (e) {} });
 $("restore").addEventListener("change", function () { $("menu").hidden = true; if (this.files && this.files[0]) restoreBackup(this.files[0]); this.value = ""; });
 $("main").addEventListener("change", function (e) { var f = e.target.closest("[data-himport]"); if (f && f.files && f.files[0]) importHist(f.files[0]); });
 $("panel").addEventListener("input", function (e) {   /* notitie bij een kaartje bewaren tijdens het typen */
@@ -1177,6 +1182,7 @@ $("qx").addEventListener("click", function (e) { e.preventDefault(); $("q").valu
 /* terug van Info (ook met de terugknop van de telefoon): altijd naar de Agenda */
 window.addEventListener("pageshow", function () {
   var fromInfo = false; try { fromInfo = sessionStorage.getItem("ca-info") === "1"; sessionStorage.removeItem("ca-info"); } catch (x) {}
+  if (fromInfo) try { sessionStorage.removeItem("ca-scroll"); } catch (x) {}
   if (!fromInfo || st.tab === "agenda") return;
   st.tab = "agenda"; setNav(); closeSheet(); if (ALL.length) render(); window.scrollTo(0, 0);
 });
@@ -1204,6 +1210,7 @@ Promise.all([fetch("app.js", { cache: "no-cache" }).then(function (r) { return r
     .sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : a.ts < b.ts ? -1 : 1; });
   rescueMarks();
   try { buildSeen(); } catch (e) {}
+  setNav(); if (st.q) { $("q").value = st.q; $("qx").style.display = "block"; }
   (function () {   /* wat er bij is gekomen sinds je de app de vorige keer opende */
     var prev = load("ca-lastnew", ""), cur = "";
     ALL.forEach(function (c) { if (c.first && c.first !== "base" && c.first > cur) cur = c.first; });
@@ -1212,6 +1219,7 @@ Promise.all([fetch("app.js", { cache: "no-cache" }).then(function (r) { return r
     if (cur) save("ca-lastnew", cur);
   })();
   render();
+  try { var _sy = +sessionStorage.getItem("ca-scroll"); sessionStorage.removeItem("ca-scroll"); if (_sy) setTimeout(function () { window.scrollTo(0, _sy); }, 60); } catch (e) {}
   var u = new Date(data.updated);
   try { localStorage.setItem("ca-updated", data.updated); } catch (e) {}
   if (window.__splashReady) window.__splashReady("");   /* alleen 'Tik om verder te gaan'; wanneer bijgewerkt staat op de infopagina */

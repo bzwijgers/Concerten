@@ -196,8 +196,7 @@
 "good": 45
 },
 "kade": {
-"good": 13,
-"since": "2026-10-15"
+"good": 13
 },
 "klokgebouw": {
 "good": 8
@@ -233,7 +232,7 @@
 "good": 290
 },
 "metropool": {
-"good": 151
+"good": 150
 },
 "mezz": {
 "good": 146

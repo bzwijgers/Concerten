@@ -860,7 +860,7 @@ function renderOv() {
 }
 function render() {
   var inA = st.tab === "a" && (st.ayear === "arch" || st.ayear === "all");
-  $("sbar").classList.toggle("on", inA || $("sb").getAttribute("aria-pressed") === "true");
+  $("sbar").classList.toggle("on", inA || !!st.q || $("sb").getAttribute("aria-pressed") === "true");   /* een actieve zoekterm is altijd te zien */
   $("q").placeholder = inA ? "Zoek artiest, festival, zaal, plaats of datum (bv. 1985)" : "Zoek artiest, zaal of stad";
   if ($("otherlbl")) $("otherlbl").textContent = st.other ? "Alleen concerten tonen" : "Ook overige activiteiten tonen";
   Array.prototype.forEach.call(document.querySelectorAll(".flagb"), function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-cc") === st.cc)); });
@@ -1061,7 +1061,9 @@ $("chips").addEventListener("click", function (e) {
   st.limit = 250; render(); window.scrollTo(0, 0);
 });
 function setNav() { Array.prototype.forEach.call(document.querySelectorAll("nav [data-tab]"), function (x) { x.setAttribute("aria-selected", String(x.getAttribute("data-tab") === st.tab)); }); }
-$("nav").addEventListener("click", function (e) { var b = e.target.closest("[data-tab]"); if (!b) return; st.tab = b.getAttribute("data-tab"); setNav(); render(); window.scrollTo(0, 0); });
+$("nav").addEventListener("click", function (e) { var b = e.target.closest("[data-tab]"); if (!b) return; var nt = b.getAttribute("data-tab");
+  if (nt !== st.tab && st.q) { st.q = ""; $("q").value = ""; $("qx").style.display = "none"; }   /* zoekterm hoort bij het scherm waar je zocht */
+  st.tab = nt; setNav(); render(); window.scrollTo(0, 0); });
 Array.prototype.forEach.call(document.querySelectorAll(".flagb"), function (b) {
   b.addEventListener("click", function () { var cc = b.getAttribute("data-cc"); st.cc = st.cc === cc ? "" : cc; st.limit = 250; render(); window.scrollTo(0, 0); });
 });

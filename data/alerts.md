@@ -1,0 +1,5 @@
+@bzwijgers, de dagelijkse update vond problemen bij deze zalen:
+
+- **Neushoorn** (`neushoorn`): werkt niet: Neushoorn lists 100 events but its pagination key was not found — sinds 2026-10-15
+
+De laatst bekende concerten van deze zalen blijven in de agenda staan. Deze melding wordt automatisch bijgewerkt en gesloten zodra alles weer werkt.

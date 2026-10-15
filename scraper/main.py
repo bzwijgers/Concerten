@@ -273,6 +273,12 @@ def main():
         store.setdefault("migrations", []).append("baseline-2026-10-10")
         print("eenmalige basislijn:", n0, "concerten niet meer als nieuw")
     # merge: id = venue + date + url (stable); first_seen kept
+    # ook als de link verandert of een concert even uit de lijst van de zaal was: zelfde zaal + datum + naam = niet nieuw
+    import re as _re2
+    skey = lambda e: e["v"] + "|" + e["d"] + "|" + _re2.sub(r"[^a-z0-9]", "", e["n"].lower())[:24]
+    known = load(os.path.join(DATA, "seenkeys.json"), {})
+    for e in events.values():
+        if e.get("first"): known.setdefault(skey(e), e["first"])
     for key, got in fresh.items():
         ids = set()
         had = sum(1 for v in events.values() if v["v"] == key) >= 3
@@ -281,7 +287,8 @@ def main():
             ids.add(eid)
             old = events.get(eid)
             # eerste keer dat een zaal binnenkomt: geen 'nieuw' (baseline)
-            e["first"] = old["first"] if old else ("base" if e.pop("_base", False) or not had else today)
+            e["first"] = old["first"] if old else known.get(skey(e)) or ("base" if e.pop("_base", False) or not had else today)
+            known.setdefault(skey(e), e["first"])
             e.pop("_base", None)
             e["last"] = today
             events[eid] = e
@@ -310,6 +317,9 @@ def main():
         alerts = health.check(status, DATA, ROOT, MIN_EVENTS)
     except Exception as ex:
         alerts = []; print("bewaking mislukt:", ex)
+    cut_k = (date.today() - timedelta(days=1)).isoformat()
+    known = {k: v for k, v in known.items() if k.split("|")[1] >= cut_k}   # alleen toekomstige concerten onthouden
+    json.dump(known, open(os.path.join(DATA, "seenkeys.json"), "w", encoding="utf-8"), separators=(",", ":"))
     store = {"events": events, "status": status, "updated": now, "venues": tm_venues, "migrations": store.get("migrations", [])}
     json.dump(store, open(os.path.join(DATA, "events.json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     json.dump(pcache, open(os.path.join(DATA, "paradiso_cache.json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))

@@ -1,15 +1,15 @@
 {
 "ab": {
-"good": 250
+"good": 252
 },
 "afasdome": {
 "good": 34
 },
 "amare": {
-"good": 34
+"good": 35
 },
 "annabel": {
-"good": 11
+"good": 12
 },
 "baroeg": {
 "good": 31
@@ -25,13 +25,13 @@
 "good": 75
 },
 "bolwerk": {
-"good": 57
+"good": 59
 },
 "bos": {
-"good": 47
+"good": 48
 },
 "bosuil": {
-"good": 61
+"good": 62
 },
 "botanique": {
 "good": 3
@@ -46,10 +46,10 @@
 "good": 35
 },
 "capsloc": {
-"good": 16
+"good": 17
 },
 "casino": {
-"good": 10
+"good": 11
 },
 "cinetol": {
 "good": 62
@@ -58,7 +58,7 @@
 "good": 31
 },
 "corneel": {
-"good": 29
+"good": 30
 },
 "dbs": {
 "good": 61
@@ -67,16 +67,16 @@
 "good": 109
 },
 "doornroosje": {
-"good": 214
+"good": 215
 },
 "dynamo": {
-"good": 59
+"good": 61
 },
 "effenaar": {
-"good": 118
+"good": 119
 },
 "ekko": {
-"good": 72
+"good": 73
 },
 "engel": {
 "good": 103
@@ -172,7 +172,7 @@
 "good": 60
 },
 "gebouwt": {
-"good": 68
+"good": 70
 },
 "gigant": {
 "good": 38
@@ -181,13 +181,13 @@
 "good": 49
 },
 "ha": {
-"good": 85
+"good": 87
 },
 "hedon": {
-"good": 132
+"good": 133
 },
 "helling": {
-"good": 65
+"good": 66
 },
 "hof": {
 "good": 34
@@ -196,7 +196,7 @@
 "good": 45
 },
 "kade": {
-"good": 12
+"good": 13
 },
 "klokgebouw": {
 "good": 8
@@ -205,7 +205,7 @@
 "good": 16
 },
 "kroepoek": {
-"good": 31
+"good": 32
 },
 "lockkeepers": {
 "good": 9
@@ -214,7 +214,7 @@
 "good": 18
 },
 "luxor": {
-"good": 124
+"good": 126
 },
 "maassilo": {
 "good": 3
@@ -223,16 +223,16 @@
 "good": 15
 },
 "meester": {
-"good": 23
+"good": 24
 },
 "melkweg": {
-"good": 287
+"good": 290
 },
 "metropool": {
-"good": 151
+"good": 152
 },
 "mezz": {
-"good": 147
+"good": 146
 },
 "musicon": {
 "good": 62
@@ -244,15 +244,14 @@
 "good": 19
 },
 "neushoorn": {
-"good": 90,
-"since": "2026-10-15"
+"good": 92
 },
 "nobel": {
-"good": 109
+"good": 110
 },
 "nor": {},
 "o13": {
-"good": 160
+"good": 161
 },
 "occii": {
 "good": 25
@@ -267,16 +266,16 @@
 "good": 176
 },
 "paradiso": {
-"good": 440
+"good": 443
 },
 "patronaat": {
-"good": 160
+"good": 162
 },
 "pul": {
 "good": 62
 },
 "qfactory": {
-"good": 37
+"good": 39
 },
 "reflektor": {
 "good": 78
@@ -300,14 +299,14 @@
 "good": 212
 },
 "ticketmaster": {
-"good": 698
+"good": 718
 },
 "tivoli": {},
 "tolhuistuin": {
 "good": 15
 },
 "trix": {
-"good": 132
+"good": 133
 },
 "v11": {
 "good": 19
@@ -319,7 +318,7 @@
 "good": 50
 },
 "victorie": {
-"good": 100
+"good": 101
 },
 "vierad": {
 "good": 15
@@ -331,7 +330,7 @@
 "good": 72
 },
 "vorstin": {
-"good": 57
+"good": 56
 },
 "w2": {
 "good": 16

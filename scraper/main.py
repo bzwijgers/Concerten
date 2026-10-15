@@ -223,16 +223,31 @@ def main():
             if e.get("t") == "00:00" or (e.get("t") or "").endswith(":59"): e["t"] = ""
     # zelfde concert bij twee zalen: de leidende zaal houdt het (BIRD/Rotown -> Rotown, De Helling/Tivoli -> Tivoli;
     # Rotown en BIRD organiseren ook in LantarenVenster en Maassilo: dan blijft hun versie, de app toont de echte zaal)
-    tnorm = lambda t: _re.sub(r"[^a-z0-9]+", "", t.lower().split(" + ")[0].split(":")[0].split(" (")[0])
+    import unicodedata as _ud, difflib as _dl
+    ascii_ = lambda t: _ud.normalize("NFKD", t).encode("ascii", "ignore").decode()
+    tnorm = lambda t: _re.sub(r"[^a-z0-9]+", "", ascii_(t).lower().split(" + ")[0].split(":")[0].split(" (")[0])
+    fnorm = lambda t: _re.sub(r"[^a-z0-9]+", "", ascii_(t).lower())
     for loser, leader in (("bird", "rotown"), ("annabel", "rotown"), ("helling", "tivoli"), ("v11", "rotown"), ("v11", "bird"),
                           ("lantaren", "rotown"), ("lantaren", "bird"), ("maassilo", "rotown"), ("maassilo", "bird")):
         if loser not in fresh: continue
         lead = fresh.get(leader) or [e for e in events.values() if e["v"] == leader]
-        have = {}
-        for e in lead: have.setdefault(e["d"], []).append(tnorm(e["n"]))
+        have, room, fulls = {}, {}, {}
+        for e in lead:
+            have.setdefault(e["d"], []).append(tnorm(e["n"])); fulls.setdefault(e["d"], []).append(fnorm(e["n"]))
+            if e.get("r"): room.setdefault(e["d"], []).append((fnorm(e["r"]), fnorm(e["n"])))
+        lab = fnorm(loser)
         def same(e):
             n = tnorm(e["n"])
-            return any(n and o and (n in o or o in n) and min(len(n), len(o)) >= 4 for o in have.get(e["d"], []))
+            if any(n and o and (n == o or ((n in o or o in n) and min(len(n), len(o)) >= 4)) for o in have.get(e["d"], [])): return True
+            # de leidende zaal noemt deze zaal als plek: dan volstaat een flink stuk gelijke titel (andere schrijfwijze)
+            f = fnorm(e["n"])
+            for r, o in room.get(e["d"], []):
+                if lab[:6] in r and _dl.SequenceMatcher(None, f, o).find_longest_match(0, len(f), 0, len(o)).size >= 10:
+                    return True
+            for o in fulls.get(e["d"], []):   # zonder zaalnaam: een lang gelijk stuk titel op dezelfde dag
+                if _dl.SequenceMatcher(None, f, o).find_longest_match(0, len(f), 0, len(o)).size >= 14:
+                    return True
+            return False
         before = len(fresh[loser])
         fresh[loser] = [e for e in fresh[loser] if not same(e)]
         if len(fresh[loser]) < before: print(f"{loser}: {before - len(fresh[loser])} dubbel met {leader} weggelaten")

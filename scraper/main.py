@@ -136,7 +136,7 @@ def main():
                     print(f"{key}: {len(got)} (tweede poging)")
             except Exception as ex:
                 print(f"{key}: tweede poging mislukt", ex)
-    for _k in ("o13", "bolwerk", "bibelot", "nor"): merge_pc_inbox(_k)
+    for _k in ("o13", "bolwerk", "bibelot", "nor", "kade"): merge_pc_inbox(_k)
     merge_tivoli_inbox()
     # Tivoli komt van de eigen pc (data/manual/tivoli.json); is die lijst ouder dan 3 dagen, dan de oude feed
     tv = load(os.path.join(DATA, "manual", "tivoli.json"), {}) or {}

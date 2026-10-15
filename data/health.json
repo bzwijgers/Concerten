@@ -1,6 +1,6 @@
 {
 "ab": {
-"good": 252
+"good": 250
 },
 "afasdome": {
 "good": 34
@@ -55,7 +55,7 @@
 "good": 62
 },
 "concertgebouw": {
-"good": 31
+"good": 33
 },
 "corneel": {
 "good": 30
@@ -67,7 +67,7 @@
 "good": 109
 },
 "doornroosje": {
-"good": 215
+"good": 213
 },
 "dynamo": {
 "good": 61
@@ -187,7 +187,7 @@
 "good": 133
 },
 "helling": {
-"good": 66
+"good": 65
 },
 "hof": {
 "good": 34
@@ -196,7 +196,8 @@
 "good": 45
 },
 "kade": {
-"good": 13
+"good": 13,
+"since": "2026-10-15"
 },
 "klokgebouw": {
 "good": 8
@@ -207,6 +208,9 @@
 "kroepoek": {
 "good": 32
 },
+"lantaren": {
+"good": 72
+},
 "lockkeepers": {
 "good": 9
 },
@@ -214,7 +218,7 @@
 "good": 18
 },
 "luxor": {
-"good": 126
+"good": 124
 },
 "maassilo": {
 "good": 3
@@ -223,7 +227,7 @@
 "good": 15
 },
 "meester": {
-"good": 24
+"good": 23
 },
 "melkweg": {
 "good": 290
@@ -251,7 +255,7 @@
 },
 "nor": {},
 "o13": {
-"good": 161
+"good": 160
 },
 "occii": {
 "good": 25
@@ -299,14 +303,14 @@
 "good": 212
 },
 "ticketmaster": {
-"good": 718
+"good": 717
 },
 "tivoli": {},
 "tolhuistuin": {
 "good": 15
 },
 "trix": {
-"good": 133
+"good": 131
 },
 "v11": {
 "good": 19

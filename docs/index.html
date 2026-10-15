@@ -289,9 +289,14 @@ function buildSeen() {
   Object.keys(marks).forEach(function (id) { var m = marks[id]; if (m.t && m.s && m.s.d < TODAY) { var v = VENUES[m.s.v] || { label: m.s.v, city: "" }; add(m.s.n, m.s.d, v.label + (v.city ? " · " + v.city : "")); } });
   ALL.forEach(function (c) { c.seen = seenOf(c); });
 }
+/* artiesten in een titel: alleen het deel vóór ' - ' of ':' (daarna staat meestal de tour of 'live with band'),
+   gesplitst op +, &, ',', w/, with, met; losse woorden als 'live' of 'band' tellen niet */
+var SEEN_STOP = /^(live|band|live band|full band|with band|met band|friends|special guests?|guests?|support|tour|solo|acoustic|unplugged|trio|quartet|kwartet|quintet|orchestra|orkest|dj|dj set|x|en|and|more|e a|ea|try out|tryout|premiere|release|album release|europe|europe tour|world tour)$/;
 function seenOf(c) {
-  var parts = String(c.n).split(/\s+(?:\+|w\/|with|met|x|support:?|en)\s+|\s*[,/|:]\s+|\s+[-–]\s+/i), best = null, whole = normA(c.n);
-  [c.n].concat(parts).forEach(function (p) { var k = normA(p); if (k.length < 3 && k !== whole) return; var o = SEEN[k]; if (o && (!best || o.n > best.n)) best = { n: o.n, last: o.last, x: o.x, a: p.trim() }; });
+  var t = String(c.n), whole = normA(t), best = null;
+  var head = t.split(/\s+[-–—]\s+/)[0];
+  var parts = [t, head].concat(head.split(/\s+(?:\+|&|w\/|with|met|x|support:?|feat\.?|ft\.?)\s+|\s*[,/|:]\s+/i));
+  parts.forEach(function (p) { var k = normA(p); if (!k || (k !== whole && (SEEN_STOP.test(k) || k.length < 3))) return; var o = SEEN[k]; if (o && (!best || o.n > best.n)) best = { n: o.n, last: o.last, x: o.x, a: p.trim() }; });
   return best;
 }
 function rescueMarks() {   /* markering waarvan het concert niet meer onder hetzelfde adres in de agenda staat: zelfde dag + zelfde naam zoeken */

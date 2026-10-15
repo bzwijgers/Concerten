@@ -352,10 +352,12 @@ function badges(c) {
     (c.first && c.first !== "base" && c.first >= WEEK_AGO ? '<span class="bd nw">nieuw</span>' : "") +
     (c.seen ? '<span class="bd sn">' + c.seen.n + "× gezien</span>" : "") + (c.o ? '<span class="bd ot">geen concert</span>' : "");
 }
+/* Rotown en BIRD organiseren ook elders (LantarenVenster, Maassilo, V11, Annabel...): toon de echte zaal */
+function where(c) { var v = venue(c); return (c.v === "rotown" || c.v === "bird") && c.r && c.r.toLowerCase() !== v.label.toLowerCase() ? esc(c.r) + " · via " + esc(v.label) : esc(v.label); }
 function row(c) {
   var v = venue(c), t = (c.t || "").replace("deuren ", "");
   return '<div class="ev' + (has(c.id, "i") ? " star" : "") + '" data-id="' + esc(c.id) + '">' + lg(c) +
-    '<div class="b"><div class="n">' + esc(nice(c.n)) + '</div><div class="s">' + badges(c) + esc(v.label) + " · " + esc(v.city) + "</div>" +
+    '<div class="b"><div class="n">' + esc(nice(c.n)) + '</div><div class="s">' + badges(c) + where(c) + " · " + esc(v.city) + "</div>" +
     (st.tab === "mine" && (marks[c.id] || {}).note ? '<div class="s" style="font-style:italic">✎ ' + esc(marks[c.id].note) + "</div>" : "") + "</div>" +
     (t ? '<div class="tm">' + esc(t) + (/deuren/.test(c.t || "") ? "<small>deur</small>" : "") + "</div>" : '<div class="tm none">–</div>') + "</div>";
 }
@@ -896,7 +898,7 @@ function openSheet(id) {
   $("panel").innerHTML = '<div class="ph" style="' + (big ? "background-image:url(" + esc(big) + ")" : "") + '"><span class="grab"></span></div><div class="pb">' + lg(c) + "<h2>" + esc(nice(c.n)) + "</h2><div>" + badges(c) + "</div>" +
     (c.seen ? '<div class="seenbox"><b>Je zag ' + esc(nice(c.seen.a)) + " al " + c.seen.n + "×</b>" + c.seen.x.slice().sort(function (a, b) { return a[0] < b[0] ? 1 : -1; }).slice(0, 12).map(function (x) { var dd = parse(x[0]); return "<div>" + dd.getDate() + " " + MON[dd.getMonth()] + " " + dd.getFullYear() + " · " + esc(x[1]) + "</div>"; }).join("") + (c.seen.x.length > 12 ? "<div>… en nog " + (c.seen.x.length - 12) + " keer</div>" : "") + "</div>" : "") +
     '<div class="facts"><div class="fact"><span>Wanneer</span><b>' + DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()] + (c.t ? " · " + esc(c.t.replace("deuren ", "")) + (/deuren/.test(c.t) ? " deur" : "") : " · tijd volgt") + "</b></div>" +
-    '<div class="fact"><span>Waar</span><b>' + esc(v.label) + "</b><br><span>" + esc(v.city) + "</span></div>" +
+    '<div class="fact"><span>Waar</span><b>' + where(c) + "</b><br><span>" + esc(v.city) + "</span></div>" +
     '<div class="fact"><span>Reistijd</span><b>' + (tt !== null ? "± " + fmtT(tt) : "–") + "</b></div>" +
     (c.s ? '<div class="fact"><span>Status</span><b style="color:var(--red)">uitverkocht</b></div>' : "") + "</div>" +
     '<div class="acts"><button class="btn' + (tk ? " on" : " pri") + '" data-a="t">' + (tk ? "✓ Kaartje gekocht" : "Ik heb een kaartje") + "</button>" +

@@ -221,9 +221,11 @@ def main():
             print(f"{key}: geen concert weggelaten: {sorted(set(drop))[:8]}")
         for e in fresh[key]:   # 00:00 en xx:59 zijn bij de zalen 'tijd onbekend' of nachtprogramma, geen aanvangstijd
             if e.get("t") == "00:00" or (e.get("t") or "").endswith(":59"): e["t"] = ""
-    # zelfde concert bij twee zalen: de leidende zaal houdt het (BIRD/Rotown -> Rotown, De Helling/Tivoli -> Tivoli)
+    # zelfde concert bij twee zalen: de leidende zaal houdt het (BIRD/Rotown -> Rotown, De Helling/Tivoli -> Tivoli;
+    # Rotown en BIRD organiseren ook in LantarenVenster en Maassilo: dan blijft hun versie, de app toont de echte zaal)
     tnorm = lambda t: _re.sub(r"[^a-z0-9]+", "", t.lower().split(" + ")[0].split(":")[0].split(" (")[0])
-    for loser, leader in (("bird", "rotown"), ("annabel", "rotown"), ("helling", "tivoli"), ("v11", "rotown"), ("v11", "bird")):
+    for loser, leader in (("bird", "rotown"), ("annabel", "rotown"), ("helling", "tivoli"), ("v11", "rotown"), ("v11", "bird"),
+                          ("lantaren", "rotown"), ("lantaren", "bird"), ("maassilo", "rotown"), ("maassilo", "bird")):
         if loser not in fresh: continue
         lead = fresh.get(leader) or [e for e in events.values() if e["v"] == leader]
         have = {}

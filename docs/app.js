@@ -84,6 +84,7 @@ var VENUES = {
   lockkeepers:{label:"The Lock Keepers",home:"https://thelockkeepers.nl/Concert-agenda-The-Lock-Keepers/",city:"Maassluis"},
   concertgebouw:{label:"Het Concertgebouw",home:"https://www.concertgebouw.nl/concerten-en-tickets",city:"Amsterdam"},
   capsloc:{label:"CAPSLOC",home:"https://www.capsloc.nl/programma/",city:"Capelle aan den IJssel"},
+  lantaren:{label:"LantarenVenster",home:"https://www.lantarenvenster.nl/muziek/",city:"Rotterdam"},
   v11:{label:"V11",home:"https://www.vessel11.nl/nl/agenda/",city:"Rotterdam"},
   manifesto:{label:"Manifesto",home:"https://manifesto-hoorn.nl/",city:"Hoorn"},
   olt:{label:"OLT Rivierenhof",home:"https://www.oltrivierenhof.be/nl/programma",city:"Antwerpen",cc:"BE"},

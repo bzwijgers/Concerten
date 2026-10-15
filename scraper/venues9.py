@@ -154,3 +154,12 @@ BASES["capsloc"] = "https://www.capsloc.nl"
 
 def capsloc():
     return [e for e in _site("capsloc") if not re.search(r"/feed/?$", e["u"])]
+
+
+# LantarenVenster (Rotterdam): de muziekpagina met alle concerten; datum en tijd uit de detailpagina's (ld+json)
+SITES["lantaren"] = (["https://www.lantarenvenster.nl/muziek/"], r"lantarenvenster\.nl/programma/[a-z0-9-]+/?$", r"\s*-\s*LantarenVenster.*$|LantarenVenster Rotterdam")
+BASES["lantaren"] = "https://www.lantarenvenster.nl"
+
+
+def lantaren():
+    return [e for e in _site("lantaren", limit=200) if not re.search(r"/feed/?$|yoga|cinekid|boekpresentatie|filmprogramma|muziekfilms|salsa-aan-de-haven", e["u"])]

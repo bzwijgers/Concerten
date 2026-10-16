@@ -3,7 +3,7 @@
 "good": 250
 },
 "afasdome": {
-"good": 34
+"good": 33
 },
 "amare": {
 "good": 35
@@ -19,7 +19,7 @@
 "good": 36
 },
 "bitterzoet": {
-"good": 3
+"good": 4
 },
 "boerderij": {
 "good": 74
@@ -28,7 +28,7 @@
 "good": 59
 },
 "bos": {
-"good": 48
+"good": 45
 },
 "bosuil": {
 "good": 62
@@ -55,19 +55,19 @@
 "good": 61
 },
 "concertgebouw": {
-"good": 35
+"good": 32
 },
 "corneel": {
 "good": 29
 },
 "dbs": {
-"good": 61
+"good": 60
 },
 "depot": {
 "good": 108
 },
 "doornroosje": {
-"good": 214
+"good": 213
 },
 "dynamo": {
 "good": 61
@@ -76,7 +76,7 @@
 "good": 117
 },
 "ekko": {
-"good": 73
+"good": 71
 },
 "engel": {
 "good": 103
@@ -169,10 +169,10 @@
 "good": 0
 },
 "fluor": {
-"good": 60
+"good": 59
 },
 "gebouwt": {
-"good": 70
+"good": 68
 },
 "gigant": {
 "good": 38
@@ -184,7 +184,7 @@
 "good": 87
 },
 "hedon": {
-"good": 133
+"good": 132
 },
 "helling": {
 "good": 65
@@ -196,7 +196,8 @@
 "good": 45
 },
 "kade": {
-"good": 13
+"good": 13,
+"since": "2026-10-16"
 },
 "klokgebouw": {
 "good": 8
@@ -205,13 +206,13 @@
 "good": 16
 },
 "kroepoek": {
-"good": 32
+"good": 31
 },
 "lantaren": {
 "good": 72
 },
 "lockkeepers": {
-"good": 9
+"good": 8
 },
 "lottoarena": {
 "good": 18
@@ -229,16 +230,16 @@
 "good": 23
 },
 "melkweg": {
-"good": 290
+"good": 287
 },
 "metropool": {
-"good": 150
+"good": 149
 },
 "mezz": {
-"good": 146
+"good": 144
 },
 "musicon": {
-"good": 62
+"good": 61
 },
 "muziekgieterij": {
 "good": 107
@@ -247,10 +248,10 @@
 "good": 19
 },
 "neushoorn": {
-"good": 92
+"good": 91
 },
 "nobel": {
-"good": 110
+"good": 107
 },
 "nor": {},
 "o13": {
@@ -266,10 +267,10 @@
 "good": 61
 },
 "paard": {
-"good": 173
+"good": 172
 },
 "paradiso": {
-"good": 443
+"good": 438
 },
 "patronaat": {
 "good": 160
@@ -287,10 +288,10 @@
 "good": 21
 },
 "rotown": {
-"good": 143
+"good": 142
 },
 "simplon": {
-"good": 53
+"good": 52
 },
 "sounddog": {
 "good": 19
@@ -315,7 +316,7 @@
 "good": 19
 },
 "vanpolanen": {
-"good": 12
+"good": 11
 },
 "vera": {
 "good": 50

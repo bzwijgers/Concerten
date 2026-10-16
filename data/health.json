@@ -1,12 +1,12 @@
 {
 "ab": {
-"good": 250
+"good": 253
 },
 "afasdome": {
 "good": 33
 },
 "amare": {
-"good": 35
+"good": 34
 },
 "annabel": {
 "good": 12
@@ -16,7 +16,7 @@
 },
 "bibelot": {},
 "bird": {
-"good": 36
+"good": 38
 },
 "bitterzoet": {
 "good": 4
@@ -28,13 +28,13 @@
 "good": 59
 },
 "bos": {
-"good": 45
+"good": 47
 },
 "bosuil": {
 "good": 62
 },
 "botanique": {
-"good": 3
+"good": 0
 },
 "bridges": {
 "good": 29
@@ -55,7 +55,7 @@
 "good": 61
 },
 "concertgebouw": {
-"good": 32
+"good": 33
 },
 "corneel": {
 "good": 29
@@ -67,13 +67,13 @@
 "good": 108
 },
 "doornroosje": {
-"good": 213
+"good": 214
 },
 "dynamo": {
 "good": 61
 },
 "effenaar": {
-"good": 117
+"good": 118
 },
 "ekko": {
 "good": 71
@@ -169,10 +169,10 @@
 "good": 0
 },
 "fluor": {
-"good": 59
+"good": 60
 },
 "gebouwt": {
-"good": 68
+"good": 69
 },
 "gigant": {
 "good": 38
@@ -196,8 +196,7 @@
 "good": 45
 },
 "kade": {
-"good": 13,
-"since": "2026-10-16"
+"good": 12
 },
 "klokgebouw": {
 "good": 8
@@ -218,7 +217,7 @@
 "good": 18
 },
 "luxor": {
-"good": 124
+"good": 125
 },
 "maassilo": {
 "good": 3
@@ -230,7 +229,7 @@
 "good": 23
 },
 "melkweg": {
-"good": 287
+"good": 293
 },
 "metropool": {
 "good": 149
@@ -239,7 +238,7 @@
 "good": 144
 },
 "musicon": {
-"good": 61
+"good": 62
 },
 "muziekgieterij": {
 "good": 107
@@ -248,14 +247,14 @@
 "good": 19
 },
 "neushoorn": {
-"good": 91
+"good": 95
 },
 "nobel": {
-"good": 107
+"good": 111
 },
 "nor": {},
 "o13": {
-"good": 160
+"good": 161
 },
 "occii": {
 "good": 24
@@ -267,13 +266,13 @@
 "good": 61
 },
 "paard": {
-"good": 172
+"good": 173
 },
 "paradiso": {
-"good": 438
+"good": 441
 },
 "patronaat": {
-"good": 160
+"good": 161
 },
 "pul": {
 "good": 62
@@ -291,7 +290,7 @@
 "good": 142
 },
 "simplon": {
-"good": 52
+"good": 51
 },
 "sounddog": {
 "good": 19
@@ -300,17 +299,17 @@
 "good": 25
 },
 "spot": {
-"good": 211
+"good": 212
 },
 "ticketmaster": {
-"good": 716
+"good": 719
 },
 "tivoli": {},
 "tolhuistuin": {
 "good": 15
 },
 "trix": {
-"good": 131
+"good": 132
 },
 "v11": {
 "good": 19

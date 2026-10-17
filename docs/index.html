@@ -617,6 +617,7 @@ function renderAgenda() {
   var html = "", days = {}, order = [];
   list.forEach(function (c) { if (!days[c.d]) { days[c.d] = []; order.push(c.d); } days[c.d].push(c); });
   var shown = 0;
+  if (newVer) html += '<div class="since"><button data-newver><b>↻ Nieuwe versie van de agenda</b><span>Tik om te verversen; je blijft op dezelfde plek.</span></button></div>';
   if (SYNC && SYNC.token && SYNC.err) html += '<div class="since"><button data-syncfix style="border-color:rgba(255,107,107,.45);background:rgba(255,107,107,.08)"><b style="color:var(--red)">⚠ Synchroniseren werkt niet meer</b><span>' + esc(SYNC.err) + " Tik om het te herstellen.</span></button></div>";
   var sl = st.sinceList || [];
   if (sl.length && !st.sinceOff && !anyFilter()) {
@@ -1266,6 +1267,7 @@ function toggle(id, k) {
 }
 $("main").addEventListener("click", function (e) {
   var t = e.target;
+  if (t.closest("[data-newver]")) { try { sessionStorage.setItem("ca-scroll", "0"); } catch (x) {} location.reload(); return; }
   if (t.closest("[data-syncfix]")) { localStorage.removeItem("ca-sync"); var o_ = SYNC; SYNC = { owner: o_.owner, repo: o_.repo }; openSync(); return; }
   if (t.closest("[data-since-off]")) { st.sinceOff = true; render(); return; }
   if (t.closest("[data-since]")) { st.f.since = true; render(); window.scrollTo(0, 0); return; }
@@ -1350,6 +1352,17 @@ $("main").addEventListener("click", function (e) {
     S.cx = p[0] + (S.cx - p[0]) * r; S.cy = p[1] + (S.cy - p[1]) * r; S.z = z; redraw();
   }, { passive: false });
 })();
+/* nieuwe versie? (Safari op de iPad laat een pagina soms dagen openstaan zonder te verversen) */
+var APPV = null, newVer = false;
+function checkVersion() {
+  fetch("version.json?" + Date.now(), { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+    if (!j || !j.v) return;
+    if (!APPV) { APPV = j.v; return; }
+    if (j.v !== APPV && !newVer) { newVer = true; if (ALL.length) render(); }
+  }).catch(function () {});
+}
+checkVersion(); setInterval(function () { if (document.visibilityState === "visible") checkVersion(); }, 15 * 60000);
+document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") checkVersion(); });
 document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible" && SYNC && SYNC.token && (!SYNC.last || Date.now() - Date.parse(SYNC.last) > 60000)) syncNow(); });
 window.addEventListener("pagehide", function () { try { sessionStorage.setItem("ca-scroll", String(window.scrollY)); } catch (e) {} });
 try { var _rb = localStorage.getItem("ca-restore"); if (_rb) { localStorage.removeItem("ca-restore");   /* back-up gekozen op de infopagina */

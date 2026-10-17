@@ -23,6 +23,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: { ref: main }
+      - name: Versienummer (de app ziet zo dat er een nieuwe versie is)
+        run: echo "{\"v\":\"${GITHUB_SHA::7}\",\"at\":\"$(date -u +%FT%TZ)\"}" > docs/version.json
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with: { path: docs }

@@ -91,6 +91,7 @@ header.sc{border-bottom-color:var(--line)}
 .bd{display:inline-block;font:700 10px var(--f-b);text-transform:uppercase;letter-spacing:.06em;padding:2px 6px;border-radius:6px;margin-right:5px;vertical-align:1px}
 .bd.tk{background:var(--green);color:#06210f}.bd.so{background:rgba(255,107,107,.18);color:var(--red)}
 .seenbox{margin:10px 0 0;padding:10px 12px;border-radius:12px;background:rgba(142,155,196,.12);color:#c9d1ee;font-size:13px;line-height:1.5}.seenbox b{display:block;color:#dfe5fb;margin-bottom:2px}
+.sin{width:100%;background:none;border:0;color:var(--fg);font:600 14px var(--f-b);outline:none;padding:2px 0}.steps{padding-left:20px;color:var(--muted);font-size:13.5px;line-height:1.5}.steps li{margin:6px 0}.steps b{color:var(--fg)}
 .since{display:flex;align-items:stretch;gap:6px;margin:12px 0 2px}.since [data-since]{flex:1;text-align:left;border:1px solid rgba(142,155,196,.35);background:rgba(142,155,196,.12);color:var(--fg);border-radius:14px;padding:10px 12px;cursor:pointer;font:500 13px var(--f-b)}
 .since [data-since] b{display:block;font:700 14.5px var(--f-d)}.since [data-since] span{color:var(--muted)}.since .x{border:0;background:none;color:var(--faint);font-size:16px;cursor:pointer;padding:0 6px}
 .warn{margin:12px 0 4px;border:1px solid rgba(255,107,107,.35);background:rgba(255,107,107,.07);border-radius:14px;padding:6px 10px}.warn .hl{margin:6px 0 2px;color:var(--red)}
@@ -207,6 +208,7 @@ window.onerror = function (msg, src, line) { try { var m = localStorage.getItem(
     <button class="ib" id="mb" aria-label="Menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button></div>
   <div class="menu" id="menu" hidden>
     <button data-m="zalen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V10l7-5 7 5v11M9 21v-6h6v6"/></svg>Mijn zalen kiezen</button>
+    <button data-m="sync"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12a8 8 0 0 1-14 5.3M4 12A8 8 0 0 1 18 6.7M18 3v4h-4M6 21v-4h4"/></svg>Synchroniseren</button>
     <button data-m="backup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Back-up maken</button>
     <label class="mi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21V9M7 14l5-5 5 5M5 3h14"/></svg>Back-up terugzetten<input type="file" accept=".json,application/json,text/plain,application/octet-stream" id="restore" hidden></label>
     <button data-m="other"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M7 12h10M10 17h4"/></svg><span id="otherlbl">Ook overige activiteiten tonen</span></button>
@@ -242,7 +244,23 @@ setTimeout(function(){if(!ready)window.__splashReady("Laden duurt lang; tik om t
 var $ = function (id) { return document.getElementById(id); };
 function esc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
 function load(k, d) { try { var r = localStorage.getItem(k); return r ? JSON.parse(r) : d; } catch (e) { return d; } }
-function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+function save(k, v) {
+  try {
+    if (k === "ca-marks") stampMarks(v);
+    if (k === "ca-mine") localStorage.setItem("ca-minet", String(Date.now()));
+    localStorage.setItem(k, JSON.stringify(v));
+    if (k === "ca-marks" || k === "ca-mine") syncSoon();
+  } catch (e) {}
+}
+var MSNAP = null, DEL = null;
+function stampMarks(v) {   /* wat is er veranderd sinds de vorige keer bewaren: nieuw tijdstempel; weg = onthouden als verwijderd */
+  if (!MSNAP) return;
+  var now = Date.now(); DEL = DEL || load("ca-del", {});
+  Object.keys(v).forEach(function (id) { var m = v[id]; if (!m) return; var t = m._t; delete m._t; var j = JSON.stringify(m); if (MSNAP[id] !== j) { m._t = now; MSNAP[id] = j; } else m._t = t || now; });
+  Object.keys(MSNAP).forEach(function (id) { if (!v[id]) { DEL[id] = now; delete MSNAP[id]; } });
+  localStorage.setItem("ca-del", JSON.stringify(DEL));
+}
+function snapMarks() { MSNAP = {}; Object.keys(marks).forEach(function (id) { var m = marks[id], t = m._t; delete m._t; MSNAP[id] = JSON.stringify(m); if (t) m._t = t; }); DEL = load("ca-del", {}); }
 var DOW = ["zo", "ma", "di", "wo", "do", "vr", "za"], DOWL = ["zondag", "maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag"];
 var MON = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
 var MONL = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"];
@@ -351,6 +369,90 @@ function actsOf(m) {
   return parts.map(function (n, i) { return [nice(n), i ? "V" : "H", !i]; });
 }
 function seenActs(m) { return actsOf(m).filter(function (a) { return a[2] && a[0]; }); }
+/* synchroniseren via een privé-opslag op je eigen GitHub (alleen met jouw toegangscode; die blijft op dit apparaat) */
+var SYNC = load("ca-sync", null), syncBusy = false, syncTimer = 0;
+function syncSoon() { if (!SYNC || !SYNC.token) return; clearTimeout(syncTimer); syncTimer = setTimeout(function () { syncNow(); }, 4000); }
+function b64enc(str) { return btoa(unescape(encodeURIComponent(str))); }
+function b64dec(b) { return decodeURIComponent(escape(atob(String(b).replace(/\s/g, "")))); }
+function ghApi(path, opt) {
+  opt = opt || {}; opt.headers = { Authorization: "Bearer " + SYNC.token, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" };
+  opt.cache = "no-store";
+  return fetch("https://api.github.com/repos/" + encodeURIComponent(SYNC.owner) + "/" + encodeURIComponent(SYNC.repo) + path, opt);
+}
+function syncState() {
+  var h = HIST && HIST.ev ? HIST : null;
+  return { app: "barrys-concerten-sync", v: 1, marks: marks, del: DEL || load("ca-del", {}), mine: mine, minet: +(localStorage.getItem("ca-minet") || 0),
+    hist: h, histdel: +(localStorage.getItem("ca-histdel") || 0) };
+}
+function mergeRemote(r) {
+  if (!r || r.app !== "barrys-concerten-sync") return false;
+  var changed = false, rdel = r.del || {}; DEL = DEL || load("ca-del", {});
+  Object.keys(rdel).forEach(function (id) { if ((DEL[id] || 0) < rdel[id]) DEL[id] = rdel[id]; });
+  var ids = {}; Object.keys(marks).forEach(function (id) { ids[id] = 1; }); Object.keys(r.marks || {}).forEach(function (id) { ids[id] = 1; });
+  Object.keys(ids).forEach(function (id) {
+    var a = marks[id], b = (r.marks || {})[id], ta = a ? a._t || 0 : 0, tb = b ? b._t || 0 : 0, d = DEL[id] || 0;
+    if (d > Math.max(ta, tb)) { if (a) { delete marks[id]; changed = true; } return; }
+    if (b && (!a || tb > ta)) { marks[id] = b; changed = true; }
+  });
+  var cut = Date.now() - 180 * 864e5; Object.keys(DEL).forEach(function (id) { if (DEL[id] < cut) delete DEL[id]; });
+  if ((r.minet || 0) > +(localStorage.getItem("ca-minet") || 0)) { mine = r.mine || []; localStorage.setItem("ca-mine", JSON.stringify(mine)); localStorage.setItem("ca-minet", String(r.minet)); changed = true; }
+  var lat = HIST && HIST.at ? Date.parse(HIST.at) || 0 : 0, rat = r.hist && r.hist.at ? Date.parse(r.hist.at) || 0 : 0, hd = Math.max(+(localStorage.getItem("ca-histdel") || 0), r.histdel || 0);
+  localStorage.setItem("ca-histdel", String(hd));
+  if (hd > Math.max(lat, rat)) { if (HIST) { HIST = null; localStorage.removeItem("ca-hist"); changed = true; } }
+  else if (rat > lat && r.hist) { HIST = r.hist; histFixed = false; try { localStorage.setItem("ca-hist", JSON.stringify(HIST)); } catch (e) {} changed = true; }
+  localStorage.setItem("ca-marks", JSON.stringify(marks)); localStorage.setItem("ca-del", JSON.stringify(DEL)); snapMarks();
+  return changed;
+}
+function syncNow(manual) {
+  if (!SYNC || !SYNC.token || syncBusy) return Promise.resolve();
+  syncBusy = true; var sha = null, remoteTxt = "";
+  var fail = function (msg) { SYNC.err = msg; SYNC.errAt = new Date().toISOString(); save("ca-sync", SYNC); syncBusy = false; if (manual || $("syncst")) showSyncStatus(); };
+  return ghApi("/contents/sync.json").then(function (res) {
+    if (res.status === 404) return ghApi("").then(function (r2) { if (r2.status === 404) throw new Error("Opslag " + SYNC.owner + "/" + SYNC.repo + " niet gevonden, of de toegangscode heeft er geen toegang toe."); return null; });
+    if (res.status === 401) throw new Error("De toegangscode klopt niet of is verlopen. Maak een nieuwe aan.");
+    if (res.status === 403) throw new Error("Geen toestemming: geef de toegangscode bij 'Contents' de rechten Read and write.");
+    if (!res.ok) throw new Error("GitHub antwoordt met fout " + res.status + ".");
+    return res.json().then(function (j) { sha = j.sha;
+      if (j.content && j.encoding === "base64") return b64dec(j.content);
+      return ghApi("/git/blobs/" + j.sha).then(function (b) { return b.json(); }).then(function (b) { return b64dec(b.content); });   /* groter dan 1 MB */
+    });
+  }).then(function (txt) {
+    remoteTxt = txt || "";
+    var changed = false; if (txt) { try { changed = mergeRemote(JSON.parse(txt)); } catch (e) {} }
+    if (changed) { try { rescueMarks(); buildSeen(); } catch (e) {} if (ALL.length) { var y = scrollY; render(); window.scrollTo(0, y); } }
+    var out = JSON.stringify(syncState());
+    if (out === remoteTxt) return true;
+    return ghApi("/contents/sync.json", { method: "PUT", body: JSON.stringify({ message: "sync " + new Date().toISOString(), content: b64enc(out), sha: sha || undefined }) }).then(function (res) {
+      if (res.status === 409 || res.status === 422) { syncBusy = false; return syncNow(manual); }   /* tegelijk gewijzigd op een ander apparaat: opnieuw */
+      if (!res.ok) throw new Error(res.status === 403 || res.status === 404 ? "Schrijven mislukt: geef de toegangscode bij 'Contents' de rechten Read and write." : "Opslaan op GitHub mislukt (" + res.status + ").");
+      return true;
+    });
+  }).then(function (ok) {
+    if (ok === true) { SYNC.last = new Date().toISOString(); delete SYNC.err; save("ca-sync", SYNC); }
+    syncBusy = false; if (manual || $("syncst")) showSyncStatus();
+  }).catch(function (e) { fail(e && e.message || String(e)); });
+}
+function fmtWhen(iso) { if (!iso) return "nog nooit"; var d = new Date(iso); return d.getDate() + " " + MON[d.getMonth()] + ", " + pad(d.getHours()) + ":" + pad(d.getMinutes()); }
+function showSyncStatus() {
+  var el = $("syncst"); if (!el) return;
+  el.innerHTML = !SYNC || !SYNC.token ? "Nog niet gekoppeld." : SYNC.err ? '<span style="color:var(--red)">⚠ ' + esc(SYNC.err) + "</span>" : "✓ Gesynchroniseerd: " + fmtWhen(SYNC.last);
+}
+function openSync() {
+  var on = SYNC && SYNC.token;
+  $("panel").innerHTML = '<div class="pb" style="margin-top:0;padding-top:22px"><h2>Synchroniseren</h2>' +
+    '<p style="color:var(--muted)">Je kaartjes, interesses, notities, cijfers, \'Wie zag je?\', je zalen en je archief op al je apparaten gelijk, via een <b>privé-opslag op je eigen GitHub</b>. Alleen jij kunt die zien.</p>' +
+    '<p id="syncst" style="margin:10px 0"></p>' +
+    (on ? '<div class="acts"><button class="btn pri" data-sync-now>Nu synchroniseren</button><button class="btn" data-sync-off>Ontkoppelen</button></div>' :
+    '<div class="hl" style="margin-top:14px">Eenmalig instellen (per apparaat alleen stap 3)</div><ol class="steps">' +
+    '<li>Maak op GitHub een <b>privé-opslag</b>: <a href="https://github.com/new" target="_blank" rel="noopener">github.com/new ↗</a>. Naam <b>concerten-sync</b>, kies <b>Private</b> en vink <i>Add a README</i> aan.</li>' +
+    '<li>Maak een <b>toegangscode</b>: <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">nieuwe toegangscode ↗</a>. Naam bv. <i>Concertagenda</i>, vervaldatum 1 jaar; bij <i>Repository access</i>: <b>Only select repositories</b> → concerten-sync; bij <i>Permissions → Contents</i>: <b>Read and write</b>. Kopieer de code (begint met github_pat_).</li>' +
+    '<li>Vul hieronder in en tik op Koppelen. Doe dit op elk apparaat (telefoon, pc) met dezelfde code.</li></ol>' +
+    '<div class="facts" style="margin:12px 0"><label class="fact"><span>GitHub-naam</span><input id="sgo" value="' + esc((SYNC && SYNC.owner) || "bzwijgers") + '" class="sin"></label><label class="fact"><span>Opslag</span><input id="sgr" value="' + esc((SYNC && SYNC.repo) || "concerten-sync") + '" class="sin"></label></div>' +
+    '<label class="fact" style="display:block;margin-bottom:12px"><span>Toegangscode</span><input id="sgt" type="password" autocomplete="off" placeholder="github_pat_…" class="sin"></label>' +
+    '<div class="acts"><button class="btn pri wide" data-sync-on>Koppelen</button></div>') +
+    '<p class="rooms" style="margin-top:14px;font-size:12px;color:var(--faint)">De toegangscode blijft alleen op dit apparaat. Wat op twee apparaten verschilt, wordt samengevoegd; een concert dat je ergens verwijdert, verdwijnt overal.</p></div>';
+  showSheet(); showSyncStatus();
+}
 function rescueMarks() {   /* markering waarvan het concert niet meer onder hetzelfde adres in de agenda staat: zelfde dag + zelfde naam zoeken */
   var byId = {}, moved = 0; ALL.forEach(function (c) { byId[c.id] = c; });
   var safeDec = function (x) { try { return decodeURIComponent(x); } catch (e) { return x; } };
@@ -666,7 +768,7 @@ function importHist(file) {   /* Excel of CSV inlezen op dit apparaat; er gaat n
   var done = function (rows) {
     try { var h = histFromRows(rows); } catch (e) { fail(e); return; }
     if (!h.ev.length) { alert("In dit bestand vond ik geen concerten. Verwacht: artiest, H/V/F, locatie, plaats, datum, land."); return; }
-    HIST = h; festPrep(h.ev); try { buildSeen(); } catch (e) {} try { localStorage.setItem("ca-hist", JSON.stringify(h)); } catch (e) { alert("Bewaren lukte niet (te weinig opslagruimte)."); return; }
+    HIST = h; festPrep(h.ev); try { buildSeen(); } catch (e) {} try { localStorage.setItem("ca-hist", JSON.stringify(h)); syncSoon(); } catch (e) { alert("Bewaren lukte niet (te weinig opslagruimte)."); return; }
     st.ayear = "arch"; render();
   };
   var rd = new FileReader();
@@ -1080,7 +1182,7 @@ $("main").addEventListener("click", function (e) {
   if (t.closest("[data-ax]")) { var ax = t.closest("[data-ax]").getAttribute("data-ax"); st.ax = st.ax || {}; st.ax[ax] = !st.ax[ax]; var y1 = scrollY; render(); window.scrollTo(0, y1); return; }
   if (t.closest("[data-hx]")) { var hx = t.closest("[data-hx]").getAttribute("data-hx"); st.hx = st.hx || {}; st.hx[hx] = !st.hx[hx]; var y0 = scrollY; render(); window.scrollTo(0, y0); return; }
   if (t.closest("[data-hmore]")) { st.hlimit = (st.hlimit || 300) + 500; var yy = scrollY; render(); window.scrollTo(0, yy); return; }
-  if (t.closest("[data-hclear]")) { if (confirm("Je ingelezen archief van dit apparaat wissen? Je Excel-bestand zelf blijft gewoon bestaan.")) { HIST = null; try { localStorage.removeItem("ca-hist"); } catch (x) {} render(); } return; }
+  if (t.closest("[data-hclear]")) { if (confirm("Je ingelezen archief wissen" + (SYNC && SYNC.token ? " (op al je gekoppelde apparaten)" : " van dit apparaat") + "? Je Excel-bestand zelf blijft gewoon bestaan.")) { HIST = null; try { localStorage.removeItem("ca-hist"); localStorage.setItem("ca-histdel", String(Date.now())); } catch (x) {} syncSoon(); render(); } return; }
   if (t.closest("[data-hcity]") && !OV.dragged) { openHistCity(t.closest("[data-hcity]").getAttribute("data-hcity")); return; }
   if (t.closest("[data-ayear]")) { st.ayear = t.closest("[data-ayear]").getAttribute("data-ayear"); st.aopen = null; render(); return; }
   if (t.closest("[data-aview]")) { st.aview = t.closest("[data-aview]").getAttribute("data-aview"); OV = { z: 1, cx: 160, cy: 220, cc: st.cc }; render(); return; }
@@ -1143,6 +1245,7 @@ $("main").addEventListener("click", function (e) {
     S.cx = p[0] + (S.cx - p[0]) * r; S.cy = p[1] + (S.cy - p[1]) * r; S.z = z; redraw();
   }, { passive: false });
 })();
+document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible" && SYNC && SYNC.token && (!SYNC.last || Date.now() - Date.parse(SYNC.last) > 60000)) syncNow(); });
 window.addEventListener("pagehide", function () { try { sessionStorage.setItem("ca-scroll", String(window.scrollY)); } catch (e) {} });
 $("restore").addEventListener("change", function () { $("menu").hidden = true; if (this.files && this.files[0]) restoreBackup(this.files[0]); this.value = ""; });
 function actEdit(e, render_) {   /* wijziging in 'Wie zag je?' bewaren */
@@ -1178,6 +1281,13 @@ $("sheet").addEventListener("click", function (e) {
   var pr = e.target.closest("[data-pre]"); if (pr) { var ab = pr.getAttribute("data-pre").split("|"); setDate(ab[0], ab[1]); return; }
   if (e.target.closest("[data-dok]")) { var a = $("dfrom").value, b = $("dto").value; if (b && a && b < a) b = a; setDate(a || (b ? TODAY : ""), b); return; }
   if (e.target.closest("[data-dclear]")) { setDate("", ""); return; }
+  if (e.target.closest("[data-sync-on]")) {
+    var tok = $("sgt").value.trim(), ow = $("sgo").value.trim(), rp = $("sgr").value.trim();
+    if (!/^(github_pat_|ghp_)/.test(tok)) { alert("Plak de toegangscode van GitHub (begint met github_pat_)."); return; }
+    SYNC = { owner: ow, repo: rp, token: tok }; save("ca-sync", SYNC); openSync(); $("syncst").textContent = "Bezig…"; syncNow(true); return;
+  }
+  if (e.target.closest("[data-sync-now]")) { $("syncst").textContent = "Bezig…"; syncNow(true); return; }
+  if (e.target.closest("[data-sync-off]")) { if (confirm("Dit apparaat ontkoppelen? Je gegevens blijven hier en op GitHub staan.")) { localStorage.removeItem("ca-sync"); SYNC = null; openSync(); } return; }
   var a = e.target.closest("[data-a]"); if (!a) return;
   if (a.getAttribute("data-a") === "cal") { ics(findC(st.open)); return; }
   toggle(st.open, a.getAttribute("data-a"));
@@ -1207,6 +1317,7 @@ $("mb").addEventListener("click", function (e) { e.stopPropagation(); var open =
 document.addEventListener("click", function (e) { if (!$("menu").hidden && !e.target.closest("#menu")) { $("menu").hidden = true; $("mb").setAttribute("aria-expanded", "false"); } });
 $("menu").addEventListener("click", function (e) { var b = e.target.closest("[data-m]"); if (!b) return; $("menu").hidden = true; if (b.getAttribute("data-m") === "zalen") openVenues();
   if (b.getAttribute("data-m") === "backup") makeBackup();
+  if (b.getAttribute("data-m") === "sync") openSync();
   if (b.getAttribute("data-m") === "other") { st.other = !st.other; save("ca-other", st.other); render(); } });
 function openVenues() {   /* mijn zalen kiezen: per plaats, aangevinkt = in 'Mijn zalen' */
   var cnt = {}; ALL.forEach(function (c) { if (c.d >= TODAY) cnt[c.v] = (cnt[c.v] || 0) + 1; });
@@ -1255,8 +1366,10 @@ Promise.all([fetch("app.js", { cache: "no-cache" }).then(function (r) { return r
   ALL = data.events.filter(function (e) { return VENUES[e.v]; }).map(function (e) { e.id = e.v + "|" + e.d + "|" + e.u; e.ts = (e.t || "").replace("deuren ", "") || "99"; e.n = cleanTitle(e.n, e.v); e.o = isOther(e);
     if (e.k && e.k.charAt(0) === "~") e.k = "https://www.ticketswap.nl/" + e.k.slice(1); if (e.ka && e.ka.charAt(0) === "~") e.ka = "https://www.ticketswap.nl/" + e.ka.slice(1); return e; })
     .sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : a.ts < b.ts ? -1 : 1; });
+  snapMarks();
   rescueMarks();
   try { buildSeen(); } catch (e) {}
+  setTimeout(function () { syncNow(); }, 300);
   setNav(); if (st.q) { $("q").value = st.q; $("qx").style.display = "block"; }
   (function () {   /* wat er bij is gekomen sinds je de app de vorige keer opende */
     var prev = load("ca-lastnew", ""), cur = "";

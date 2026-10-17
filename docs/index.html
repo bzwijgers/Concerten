@@ -92,7 +92,7 @@ header.sc{border-bottom-color:var(--line)}
 .bd.tk{background:var(--green);color:#06210f}.bd.so{background:rgba(255,107,107,.18);color:var(--red)}
 .seenbox{margin:10px 0 0;padding:10px 12px;border-radius:12px;background:rgba(142,155,196,.12);color:#c9d1ee;font-size:13px;line-height:1.5}.seenbox b{display:block;color:#dfe5fb;margin-bottom:2px}
 .sin{width:100%;background:none;border:0;color:var(--fg);font:600 14px var(--f-b);outline:none;padding:2px 0}.steps{padding-left:20px;color:var(--muted);font-size:13.5px;line-height:1.5}.steps li{margin:6px 0}.steps b{color:var(--fg)}
-.ychips{margin-top:8px}.ychips .chip{padding:6px 12px;font-size:13px}
+.ychips{margin-top:8px}.ychips.sub{margin-top:6px}.ychips.sub .chip{padding:4px 10px;font-size:12.5px}.ychips .chip{padding:6px 12px;font-size:13px}
 .seg.small button{font-size:12.5px;padding:7px 4px}
 .sortbar{display:flex;align-items:center;justify-content:space-between;margin:12px 0 4px;color:var(--faint);font:700 11px var(--f-b);text-transform:uppercase;letter-spacing:.08em}
 .sortbar select{background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:6px 8px;font:600 13px var(--f-b);text-transform:none;letter-spacing:0}
@@ -1000,12 +1000,22 @@ function renderArchive() {
   if (["lijst", "art", "fest", "kaart", "wereld"].indexOf(st.aview) < 0) st.aview = "lijst";
   var years = {}; all.forEach(function (e) { years[e.d.slice(0, 4)] = (years[e.d.slice(0, 4)] || 0) + 1; });
   var ys = Object.keys(years).sort().reverse();
-  if (st.hyear && !years[st.hyear]) st.hyear = "";
-  var list = st.hyear ? all.filter(function (e) { return e.d.slice(0, 4) === st.hyear; }) : all;
+  /* jaren in blokken: dit jaar los, dan vorig jaar t/m 2010, dan 2009 en eerder; een blok opent de losse jaren */
+  var cy = String(NOW.getFullYear()), blocks = [];
+  var b1 = ys.filter(function (y) { return y < cy && y >= "2010"; }), b2 = ys.filter(function (y) { return y < "2010"; });
+  if (b1.length) blocks.push([b1[b1.length - 1], b1[0], b1]); if (b2.length) blocks.push([b2[b2.length - 1], b2[0], b2]);
+  var isRange = /^\d{4}-\d{4}$/.test(st.hyear || "");
+  if (st.hyear && !isRange && !years[st.hyear]) st.hyear = "";
+  var inRange = function (y, r) { var p = r.split("-"); return y >= p[0] && y <= p[1]; };
+  var list = !st.hyear ? all : isRange ? all.filter(function (e) { return inRange(e.d.slice(0, 4), st.hyear); }) : all.filter(function (e) { return e.d.slice(0, 4) === st.hyear; });
   var tabs = '<div class="seg">' + [["lijst", "Lijst"], ["art", "Artiesten"], ["fest", "Festivals"], ["kaart", "Kaart"]].map(function (o) {
     return '<button data-aview="' + o[0] + '" aria-pressed="' + (st.aview === o[0] || (o[0] === "kaart" && st.aview === "wereld")) + '">' + o[1] + "</button>"; }).join("") + "</div>";
-  var ychips = ys.length ? '<div class="chips ychips">' + [["", "Alle jaren"]].concat(ys.map(function (y) { return [y, y]; })).map(function (o) {
-    return '<button class="chip" data-hyear="' + o[0] + '" aria-pressed="' + (st.hyear === o[0]) + '">' + o[1] + "</button>"; }).join("") + "</div>" : "";
+  var openB = blocks.filter(function (b) { var r = b[0] + "-" + b[1]; return st.hyear === r || (st.hyear && !isRange && inRange(st.hyear, r)); })[0];
+  var top = [["", "Alle jaren"]].concat(years[cy] ? [[cy, cy]] : []).concat(blocks.map(function (b) { return [b[0] + "-" + b[1], b[1] + "–" + b[0] + (openB === b ? " ▴" : " ▾")]; }));
+  var ychips = ys.length ? '<div class="chips ychips">' + top.map(function (o) {
+    var on = st.hyear === o[0] || (openB && o[0] === openB[0] + "-" + openB[1]);
+    return '<button class="chip" data-hyear="' + o[0] + '" aria-pressed="' + !!on + '">' + o[1] + "</button>"; }).join("") + "</div>" +
+    (openB ? '<div class="chips ychips sub">' + openB[2].map(function (y) { return '<button class="chip" data-hyear="' + y + '" aria-pressed="' + (st.hyear === y) + '">' + y + "</button>"; }).join("") + "</div>" : "") : "";
   var head = tabs + ychips;
   var imp = '<input type="file" accept=".xlsx,.xls,.csv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain,application/octet-stream" data-himport hidden>';
   var foot = HIST && HIST.ev ? '<div class="note">Je eigen lijst: ' + HIST.rows + " regels, " + HIST.ev.length + " avonden en festivaldagen (ingelezen " + HIST.at.slice(0, 10) + '). <label class="lnk" style="display:inline">Opnieuw inlezen' + imp + '</label> · <button class="lnk" data-hclear style="display:inline">Wissen</button></div>'
@@ -1037,10 +1047,10 @@ function renderArchive() {
   if (srt === "n") L.sort(function (a, b) { return name0(a).localeCompare(name0(b), "nl"); });
   if (srt === "r") L = L.filter(function (e) { return typeof e.r === "number"; }).sort(function (a, b) { return b.r - a.r || (a.d < b.d ? 1 : -1); });
   var sortSel = '<div class="sortbar"><span>' + L.length + (L.length === 1 ? " avond" : " avonden") + (srt === "r" ? " met een cijfer" : "") + '</span><select data-hsortsel aria-label="Sorteren">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + (srt === o[0] ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") + "</select></div>";
-  var yb = st.hyear && !st.q.trim() ? '<div class="hl">Jouw ' + st.hyear + "</div>" + yearSummary(list, st.hyear, all) : "";
+  var yb = st.hyear && !isRange && !st.q.trim() ? '<div class="hl">Jouw ' + st.hyear + "</div>" + yearSummary(list, st.hyear, all) : "";
   var shown = L.slice(0, st.hlimit || 300), lastY = "", html = "";
   shown.forEach(function (e) {
-    if ((srt === "d" || srt === "o") && !st.hyear && e.d.slice(0, 4) !== lastY) { lastY = e.d.slice(0, 4); html += '<div class="yhead"><b>' + lastY + "</b><span>" + years[lastY] + "</span></div>"; }
+    if ((srt === "d" || srt === "o") && (!st.hyear || isRange) && e.d.slice(0, 4) !== lastY) { lastY = e.d.slice(0, 4); html += '<div class="yhead"><b>' + lastY + "</b><span>" + years[lastY] + "</span></div>"; }
     if (e.src === "a" && marks[e.id]) html += appRow({ id: e.id, s: marks[e.id].s, rv: marks[e.id].rv || {} }); else html += histRow(e);
   });
   if (!L.length) html = '<div class="empty">' + (srt === "r" ? "Nog geen concerten met een cijfer. Open een concert uit de app en geef het sterren." : "Niets gevonden.") + "</div>";

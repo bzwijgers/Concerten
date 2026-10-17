@@ -101,6 +101,7 @@ header.sc{border-bottom-color:var(--line)}
 .sortbar{display:flex;align-items:center;justify-content:space-between;margin:12px 0 4px;color:var(--faint);font:700 11px var(--f-b);text-transform:uppercase;letter-spacing:.08em}
 .sortbar select{background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:6px 8px;font:600 13px var(--f-b);text-transform:none;letter-spacing:0}
 .yhead{position:sticky;top:var(--hh,150px);z-index:4;background:var(--bg);display:flex;align-items:baseline;gap:8px;padding:14px 0 4px}.yhead b{font:800 18px var(--f-d)}.yhead span{color:var(--faint);font-size:12px}
+.posters{display:flex;gap:10px;overflow-x:auto;margin:6px 0 8px}.posters a{flex:none}.posters img{height:220px;max-width:85vw;border-radius:12px;object-fit:contain;background:var(--card2);display:block}
 .since{display:flex;align-items:stretch;gap:6px;margin:12px 0 2px}.since [data-since]{flex:1;text-align:left;border:1px solid rgba(142,155,196,.35);background:rgba(142,155,196,.12);color:var(--fg);border-radius:14px;padding:10px 12px;cursor:pointer;font:500 13px var(--f-b)}
 .since [data-since] b{display:block;font:700 14.5px var(--f-d)}.since [data-since] span{color:var(--muted)}.since .x{border:0;background:none;color:var(--faint);font-size:16px;cursor:pointer;padding:0 6px}
 .warn{margin:12px 0 4px;border:1px solid rgba(255,107,107,.35);background:rgba(255,107,107,.07);border-radius:14px;padding:6px 10px}.warn .hl{margin:6px 0 2px;color:var(--red)}
@@ -144,6 +145,7 @@ nav [data-tab].dot{position:relative}nav [data-tab].dot::after{content:"";positi
 @keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
 .ph{position:relative;height:190px;background:var(--card2) center/cover;border-radius:24px 24px 0 0}
 .ph::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(21,19,28,0) 40%,var(--bg2));border-radius:24px 24px 0 0}
+.xclose{position:sticky;top:10px;float:right;margin:10px 10px -46px 0;z-index:5;width:36px;height:36px;border-radius:50%;border:0;background:rgba(0,0,0,.55);color:#fff;font-size:18px;line-height:36px;padding:0;cursor:pointer;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 .grab{position:absolute;top:8px;left:50%;width:40px;height:5px;margin-left:-20px;border-radius:3px;background:rgba(255,255,255,.4);z-index:2}
 .pb{padding:0 18px;margin-top:-48px;position:relative}
 .pb .lg{width:64px;height:64px;border-radius:16px}
@@ -1309,6 +1311,20 @@ function ics(c) {
     "SUMMARY:" + nice(c.n), "LOCATION:" + v.label + ", " + v.city, "URL:" + c.u, "BEGIN:VALARM", "TRIGGER:-P1D", "ACTION:DISPLAY", "DESCRIPTION:Morgen: " + nice(c.n), "END:VALARM", "END:VEVENT", "END:VCALENDAR"].join("\r\n");
   var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([txt], { type: "text/calendar" })); a.download = "concert.ics"; a.click();
 }
+/* posters bij een concert met kaartje: afbeelding van de zaal (en van Ticketmaster als die hetzelfde concert heeft) */
+var IMGS = null;
+function loadPosters(c) {
+  var box = $("posters"); if (!box) return;
+  (IMGS ? Promise.resolve(IMGS) : fetch("data/img.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; })).then(function (m) {
+    IMGS = m; var box = $("posters"); if (!box || st.open !== c.id) return;
+    var key = nice(c.n).toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 10), list = [];
+    var add = function (u) { if (u && list.indexOf(u) < 0) list.push(u); };
+    add(m[c.u]); if (c.th) add(String(c.th).indexOf("thumbs/") === 0 ? "" : c.th);
+    ALL.forEach(function (x) { if (x !== c && x.d === c.d && nice(x.n).toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 10) === key) add(m[x.u]); });
+    box.innerHTML = list.length ? list.map(function (u) { return '<a href="' + esc(u) + '" target="_blank" rel="noopener"><img src="' + esc(u) + '" alt="poster" loading="lazy" onerror="this.parentNode.remove()"></a>'; }).join("")
+      : '<span style="color:var(--faint);font-size:13px">De zaal heeft geen afbeelding bij dit concert. Zoek hieronder verder.</span>';
+  });
+}
 function openSheet(id) {
   var c = findC(id); if (!c) return;
   st.open = id;
@@ -1324,12 +1340,15 @@ function openSheet(id) {
     '<a class="btn" href="' + esc(c.u) + '" target="_blank" rel="noopener">Zaal ↗</a>' +
     '<a class="btn" href="' + esc(c.k || c.ka || "https://www.ticketswap.nl/search?q=" + encodeURIComponent(c.n)) + '" target="_blank" rel="noopener">TicketSwap ↗</a>' +
     '<a class="btn wide" href="' + esc(gcal(c)) + '" target="_blank" rel="noopener">📅 Zet in Google Agenda</a></div>' +
+    (tk ? '<div class="hl" style="margin-top:16px">Posters</div><div id="posters" class="posters"><span style="color:var(--faint);font-size:13px">Laden…</span></div>' +
+      '<a class="lnk" href="https://www.google.com/search?tbm=isch&q=' + encodeURIComponent(nice(c.n).split(/\s+[-–:]\s+|\s+\+\s+/)[0] + " tour poster " + c.d.slice(0, 4)) + '" target="_blank" rel="noopener">Meer tourposters zoeken ↗</a>' : "") +
     (tk ? '<div class="hl" style="margin-top:16px">Notitie</div><textarea data-note placeholder="Bijv. met wie, stoel- of rijnummer, parkeren, treintijden">' + esc((marks[id] || {}).note || "") + "</textarea>" : "") + "</div>";
-  showSheet();
+  showSheet(); if (tk) loadPosters(c);
 }
 /* de terugknop van de telefoon sluit eerst een open scherm (concert, datum, zalen) in plaats van de pagina te verlaten */
 function showSheet() {
   if (!$("sheet").classList.contains("on")) { try { history.pushState({ sheet: 1 }, ""); } catch (e) {} }
+  var pn = $("panel"); if (!pn.querySelector(".xclose")) pn.insertAdjacentHTML("afterbegin", '<button class="xclose" data-close aria-label="Sluiten">✕</button>');
   $("sheet").classList.add("on"); document.body.style.overflow = "hidden";
 }
 function openCity(ct) {   /* overzicht: zalen in deze stad, met aantal concerten en het eerstvolgende */
@@ -1366,6 +1385,7 @@ function closeSheet(fromBack) {
   $("sheet").classList.remove("on"); document.body.style.overflow = ""; st.open = null;
   if (!fromBack && history.state && history.state.sheet) { try { history.back(); } catch (e) {} }
 }
+document.addEventListener("keydown", function (e) { if (e.key === "Escape" && $("sheet").classList.contains("on")) closeSheet(); });
 window.addEventListener("popstate", function () {
   if ($("sheet").classList.contains("on")) closeSheet(true);
   if (!$("menu").hidden) $("menu").hidden = true;

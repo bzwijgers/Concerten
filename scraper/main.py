@@ -355,6 +355,9 @@ def main():
             if isinstance(o.get(k), str) and o[k].startswith(TS): o[k] = "~" + o[k][len(TS):]
         return o
     pub = [slim(e) for e in sorted(events.values(), key=lambda e: (e["d"], e["v"], e["n"]))]
+    # afbeeldingen (vaak de tourposter) apart: de app laadt dit alleen als je een concert met kaartje opent
+    imgs = {e["u"]: e["img"] for e in events.values() if e.get("img") and e["d"] >= today}
+    json.dump(imgs, open(os.path.join(OUT, "img.json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     json.dump({"updated": now, "status": status, "alerts": alerts, "venues": tm_venues, "events": pub}, open(os.path.join(OUT, "events.json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     print("total", len(pub))
 

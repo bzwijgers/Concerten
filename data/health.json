@@ -55,7 +55,7 @@
 "good": 60
 },
 "concertgebouw": {
-"good": 32
+"good": 33
 },
 "corneel": {
 "good": 28
@@ -196,8 +196,7 @@
 "good": 44
 },
 "kade": {
-"good": 12,
-"since": "2026-10-17"
+"good": 12
 },
 "klokgebouw": {
 "good": 8
@@ -258,7 +257,8 @@
 "good": 159
 },
 "occii": {
-"good": 23
+"good": 23,
+"since": "2026-10-17"
 },
 "olt": {
 "good": 0

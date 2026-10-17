@@ -406,7 +406,7 @@ function mergeRemote(r) {
 function syncNow(manual) {
   if (!SYNC || !SYNC.token || syncBusy) return Promise.resolve();
   syncBusy = true; var sha = null, remoteTxt = "";
-  var fail = function (msg) { SYNC.err = msg; SYNC.errAt = new Date().toISOString(); save("ca-sync", SYNC); syncBusy = false; if (manual || $("syncst")) showSyncStatus(); };
+  var fail = function (msg) { var had = SYNC.err; SYNC.err = msg; SYNC.errAt = new Date().toISOString(); save("ca-sync", SYNC); syncBusy = false; if (manual || $("syncst")) showSyncStatus(); if (!had && st.tab === "agenda" && ALL.length) render(); };
   return ghApi("/contents/sync.json").then(function (res) {
     if (res.status === 404) return ghApi("").then(function (r2) { if (r2.status === 404) throw new Error("Opslag " + SYNC.owner + "/" + SYNC.repo + " niet gevonden, of de toegangscode heeft er geen toegang toe."); return null; });
     if (res.status === 401) throw new Error("De toegangscode klopt niet of is verlopen. Maak een nieuwe aan.");
@@ -428,7 +428,7 @@ function syncNow(manual) {
       return true;
     });
   }).then(function (ok) {
-    if (ok === true) { SYNC.last = new Date().toISOString(); delete SYNC.err; save("ca-sync", SYNC); }
+    if (ok === true) { var had = SYNC.err; SYNC.last = new Date().toISOString(); delete SYNC.err; save("ca-sync", SYNC); if ((had || manual) && st.tab === "agenda" && ALL.length) render(); }
     syncBusy = false; if (manual || $("syncst")) showSyncStatus();
   }).catch(function (e) { fail(e && e.message || String(e)); });
 }
@@ -576,6 +576,7 @@ function renderAgenda() {
   var html = "", days = {}, order = [];
   list.forEach(function (c) { if (!days[c.d]) { days[c.d] = []; order.push(c.d); } days[c.d].push(c); });
   var shown = 0;
+  if (SYNC && SYNC.token && SYNC.err) html += '<div class="since"><button data-syncfix style="border-color:rgba(255,107,107,.45);background:rgba(255,107,107,.08)"><b style="color:var(--red)">⚠ Synchroniseren werkt niet meer</b><span>' + esc(SYNC.err) + " Tik om het te herstellen.</span></button></div>";
   var sl = st.sinceList || [];
   if (sl.length && !st.sinceOff && !anyFilter()) {
     var ns = sl.filter(function (c) { return c.seen; }).length;
@@ -1165,6 +1166,7 @@ function toggle(id, k) {
 }
 $("main").addEventListener("click", function (e) {
   var t = e.target;
+  if (t.closest("[data-syncfix]")) { localStorage.removeItem("ca-sync"); var o_ = SYNC; SYNC = { owner: o_.owner, repo: o_.repo }; openSync(); return; }
   if (t.closest("[data-since-off]")) { st.sinceOff = true; render(); return; }
   if (t.closest("[data-since]")) { st.f.since = true; render(); window.scrollTo(0, 0); return; }
   if (t.closest("[data-wx]")) { var wm = marks[t.closest("[data-wx]").getAttribute("data-wx")]; if (wm) { wm.wk = t.closest("[data-wx]").getAttribute("data-wk"); save("ca-marks", marks); } render(); return; }

@@ -467,19 +467,61 @@ function showSyncStatus() {
   var el = $("syncst"); if (!el) return;
   el.innerHTML = !SYNC || !SYNC.token ? "Nog niet gekoppeld." : SYNC.err ? '<span style="color:var(--red)">⚠ ' + esc(SYNC.err) + "</span>" : "✓ Gesynchroniseerd: " + fmtWhen(SYNC.last);
 }
+/* koppelen met een QR-code: het gekoppelde apparaat toont owner/opslag/code, het nieuwe apparaat scant met de camera */
+function loadScript(src) { return new Promise(function (ok, no) { var sc = document.createElement("script"); sc.src = src; sc.onload = ok; sc.onerror = no; document.head.appendChild(sc); }); }
+function showQr() {
+  var box = $("qrbox"); if (!box || !SYNC || !SYNC.token) return;
+  box.innerHTML = '<p style="color:var(--muted)">QR-code laden…</p>';
+  (window.qrcode ? Promise.resolve() : loadScript("https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js")).then(function () {
+    var q = qrcode(0, "M"); q.addData("BCSYNC1|" + SYNC.owner + "|" + SYNC.repo + "|" + SYNC.token); q.make();
+    box.innerHTML = '<div style="background:#fff;padding:14px;border-radius:14px;display:inline-block;margin-top:10px">' + q.createSvgTag({ cellSize: 5, margin: 0 }) + "</div>" +
+      '<p style="color:var(--red);font-size:12.5px;margin-top:8px">Hierin zit je toegangscode: laat hem niemand anders scannen. Hij verdwijnt over 2 minuten.</p>';
+    setTimeout(function () { if ($("qrbox")) $("qrbox").innerHTML = ""; }, 120000);
+  }).catch(function () { box.innerHTML = '<p style="color:var(--red)">QR-code laden lukte niet (geen verbinding?).</p>'; });
+}
+var scanStream = null;
+function stopScan() { if (scanStream) { scanStream.getTracks().forEach(function (t) { t.stop(); }); scanStream = null; } }
+function startScan() {
+  var box = $("scanbox"); if (!box) return;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { box.innerHTML = '<p style="color:var(--red)">Dit apparaat kan hier de camera niet gebruiken.</p>'; return; }
+  box.innerHTML = '<video id="scanv" playsinline muted style="width:100%;max-width:360px;border-radius:14px;margin-top:10px;background:#000"></video><p id="scanmsg" style="color:var(--muted)">Richt de camera op de QR-code van je andere apparaat…</p><button class="lnk" data-scan-stop>Stoppen</button>';
+  (window.jsQR ? Promise.resolve() : loadScript("https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js")).then(function () {
+    return navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+  }).then(function (stream) {
+    scanStream = stream; var v = $("scanv"); v.srcObject = stream; v.setAttribute("playsinline", ""); v.play();
+    var c = document.createElement("canvas"), ctx = c.getContext("2d");
+    var tick = function () {
+      if (!scanStream || !$("scanv")) { stopScan(); return; }
+      if (v.readyState >= 2 && v.videoWidth) {
+        c.width = v.videoWidth; c.height = v.videoHeight; ctx.drawImage(v, 0, 0);
+        var res = jsQR(ctx.getImageData(0, 0, c.width, c.height).data, c.width, c.height);
+        if (res && /^BCSYNC1\|/.test(res.data)) {
+          var p = res.data.split("|"); stopScan();
+          SYNC = { owner: p[1], repo: p[2], token: p[3] }; save("ca-sync", SYNC); openSync(); $("syncst").textContent = "Gekoppeld, bezig met ophalen…"; syncNow(true); return;
+        }
+      }
+      setTimeout(tick, 250);
+    };
+    tick();
+  }).catch(function (e) { stopScan(); var m = $("scanmsg") || box; m.innerHTML = '<span style="color:var(--red)">Camera niet beschikbaar: ' + esc(e && e.name === "NotAllowedError" ? "geef de app toestemming voor de camera (Instellingen)." : (e && e.message) || String(e)) + "</span>"; });
+}
 function openSync() {
   var on = SYNC && SYNC.token;
   $("panel").innerHTML = '<div class="pb" style="margin-top:0;padding-top:22px"><h2>Synchroniseren</h2>' +
     '<p style="color:var(--muted)">Je kaartjes, interesses, notities, cijfers, \'Wie zag je?\', je zalen en je archief op al je apparaten gelijk, via een <b>privé-opslag op je eigen GitHub</b>. Alleen jij kunt die zien.</p>' +
     '<p id="syncst" style="margin:10px 0"></p>' +
-    (on ? '<div class="acts"><button class="btn pri" data-sync-now>Nu synchroniseren</button><button class="btn" data-sync-off>Ontkoppelen</button></div>' :
+    (on ? '<div class="acts"><button class="btn pri" data-sync-now>Nu synchroniseren</button><button class="btn" data-sync-off>Ontkoppelen</button></div>' +
+      '<div class="hl" style="margin-top:16px">Ander apparaat koppelen</div><p style="color:var(--muted);font-size:13.5px">Toon een QR-code en scan die met het andere apparaat (daar: Synchroniseren → <b>Koppelen met QR-code</b>). Dan hoef je de code niet te plakken.</p>' +
+      '<div class="acts"><button class="btn wide" data-sync-qr>QR-code tonen</button></div><div id="qrbox"></div>' :
     '<div class="hl" style="margin-top:14px">Eenmalig instellen (per apparaat alleen stap 3)</div><ol class="steps">' +
     '<li>Maak op GitHub een <b>privé-opslag</b>: <a href="https://github.com/new" target="_blank" rel="noopener">github.com/new ↗</a>. Naam <b>concerten-sync</b>, kies <b>Private</b> en vink <i>Add a README</i> aan.</li>' +
     '<li>Maak een <b>toegangscode</b>: <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">nieuwe toegangscode ↗</a>. Naam bv. <i>Concertagenda</i>, vervaldatum 1 jaar; bij <i>Repository access</i>: <b>Only select repositories</b> → concerten-sync; bij <i>Permissions → Contents</i>: <b>Read and write</b>. Kopieer de code (begint met github_pat_).</li>' +
     '<li>Vul hieronder in en tik op Koppelen. Doe dit op elk apparaat (telefoon, pc) met dezelfde code.</li></ol>' +
     '<div class="facts" style="margin:12px 0"><label class="fact"><span>GitHub-naam</span><input id="sgo" value="' + esc((SYNC && SYNC.owner) || "bzwijgers") + '" class="sin"></label><label class="fact"><span>Opslag</span><input id="sgr" value="' + esc((SYNC && SYNC.repo) || "concerten-sync") + '" class="sin"></label></div>' +
     '<label class="fact" style="display:block;margin-bottom:12px"><span>Toegangscode</span><span style="display:flex;gap:8px;align-items:center"><textarea id="sgt" rows="3" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Plak hier de code (github_pat_…)" class="sin" style="flex:1;resize:none;font:500 13px var(--f-b);background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:8px;-webkit-user-select:text;user-select:text"></textarea><button class="btn" type="button" data-sync-paste style="padding:6px 12px">Plakken</button></span></label>' +
-    '<div class="acts"><button class="btn pri wide" data-sync-on>Koppelen</button></div>') +
+    '<div class="acts"><button class="btn pri wide" data-sync-on>Koppelen</button></div>' +
+    '<div class="hl" style="margin-top:16px">Of: koppelen met een QR-code</div><p style="color:var(--muted);font-size:13.5px">Heb je al een gekoppeld apparaat? Tik daar bij Synchroniseren op <b>QR-code tonen</b> en scan hem hier.</p>' +
+    '<div class="acts"><button class="btn wide" data-sync-scan>Koppelen met QR-code</button></div><div id="scanbox"></div>') +
     '<p class="rooms" style="margin-top:14px;font-size:12px;color:var(--faint)">De toegangscode blijft alleen op dit apparaat. Wat op twee apparaten verschilt, wordt samengevoegd; een concert dat je ergens verwijdert, verdwijnt overal.</p></div>';
   showSheet(); showSyncStatus();
 }
@@ -1252,6 +1294,7 @@ function openArchCity(ct) {   /* archiefkaart: welke concerten zag je in deze st
   showSheet();
 }
 function closeSheet(fromBack) {
+  try { stopScan(); } catch (e) {}
   if (!$("sheet").classList.contains("on")) return;
   $("sheet").classList.remove("on"); document.body.style.overflow = ""; st.open = null;
   if (!fromBack && history.state && history.state.sheet) { try { history.back(); } catch (e) {} }
@@ -1425,6 +1468,9 @@ $("sheet").addEventListener("click", function (e) {
     else { $("sgt").focus(); alert("Houd het vak ingedrukt en kies Plakken."); }
     return;
   }
+  if (e.target.closest("[data-sync-qr]")) { showQr(); return; }
+  if (e.target.closest("[data-sync-scan]")) { startScan(); return; }
+  if (e.target.closest("[data-scan-stop]")) { stopScan(); $("scanbox").innerHTML = ""; return; }
   if (e.target.closest("[data-sync-now]")) { $("syncst").textContent = "Bezig…"; syncNow(true); return; }
   if (e.target.closest("[data-sync-off]")) { if (confirm("Dit apparaat ontkoppelen? Je gegevens blijven hier en op GitHub staan.")) { localStorage.removeItem("ca-sync"); SYNC = null; openSync(); } return; }
   var a = e.target.closest("[data-a]"); if (!a) return;

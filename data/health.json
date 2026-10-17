@@ -1,4 +1,5 @@
 {
+"_last": [],
 "ab": {
 "good": 254
 },
@@ -55,7 +56,7 @@
 "good": 60
 },
 "concertgebouw": {
-"good": 33
+"good": 34
 },
 "corneel": {
 "good": 28
@@ -257,8 +258,7 @@
 "good": 159
 },
 "occii": {
-"good": 23,
-"since": "2026-10-17"
+"good": 23
 },
 "olt": {
 "good": 0
@@ -276,13 +276,13 @@
 "good": 158
 },
 "pul": {
-"good": 61
+"good": 62
 },
 "qfactory": {
 "good": 38
 },
 "reflektor": {
-"good": 76
+"good": 75
 },
 "roma": {
 "good": 21
@@ -322,7 +322,7 @@
 "good": 50
 },
 "victorie": {
-"good": 97
+"good": 98
 },
 "vierad": {
 "good": 14

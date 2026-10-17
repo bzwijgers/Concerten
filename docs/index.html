@@ -876,7 +876,7 @@ function renderHist(yseg) {
     return yseg + '<div class="empty" style="padding:26px 6px">Lees hier je eigen lijst in: Excel of CSV met de kolommen <b>artiest, H/V/F, locatie, plaats, datum, land</b>.<br><br>' +
       'Het bestand blijft op dit apparaat; er gaat niets naar internet. Doe dit op elk apparaat waar je het wilt zien.<br><br><label class="btn pri" style="display:inline-flex;cursor:pointer">Archief inlezen<input type="file" accept=".xlsx,.xls,.csv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain,application/octet-stream" data-himport hidden></label></div>';
   var list = histEvenings();
-  var view = yseg + '<div class="seg" style="margin-top:8px">' + [["lijst", "Lijst"], ["art", "Artiesten"], ["fest", "Festivals"], ["kaart", "Kaart"], ["wereld", "Wereld"]].map(function (o) { return '<button data-aview="' + o[0] + '" aria-pressed="' + (st.aview === o[0]) + '">' + o[1] + "</button>"; }).join("") + "</div>";
+  var view = yseg + '<div class="seg" style="margin-top:8px">' + [["lijst", "Concerten"], ["art", "Artiesten"], ["fest", "Festivals"], ["kaart", "Kaart"], ["wereld", "Wereld"]].map(function (o) { return '<button data-aview="' + o[0] + '" aria-pressed="' + (st.aview === o[0]) + '">' + o[1] + "</button>"; }).join("") + "</div>";
   var foot = st.ayear === "arch" ? '<div class="note">Ingelezen: ' + HIST.rows + " regels, " + HIST.ev.length + " avonden en festivaldagen (" + HIST.at.slice(0, 10) + '). <label class="lnk" style="display:inline">Opnieuw inlezen<input type="file" accept=".xlsx,.xls,.csv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain,application/octet-stream" data-himport hidden></label> · <button class="lnk" data-hclear style="display:inline">Wissen</button></div>' : "";
   if (st.aview === "kaart" || st.aview === "wereld") {
     var per = {}, abroad = {}, akc = {};
@@ -1008,7 +1008,7 @@ function renderArchive() {
   if (st.hyear && !isRange && !years[st.hyear]) st.hyear = "";
   var inRange = function (y, r) { var p = r.split("-"); return y >= p[0] && y <= p[1]; };
   var list = !st.hyear ? all : isRange ? all.filter(function (e) { return inRange(e.d.slice(0, 4), st.hyear); }) : all.filter(function (e) { return e.d.slice(0, 4) === st.hyear; });
-  var tabs = '<div class="seg">' + [["lijst", "Lijst"], ["art", "Artiesten"], ["fest", "Festivals"], ["kaart", "Kaart"]].map(function (o) {
+  var tabs = '<div class="seg">' + [["lijst", "Concerten"], ["art", "Artiesten"], ["fest", "Festivals"], ["kaart", "Kaart"]].map(function (o) {
     return '<button data-aview="' + o[0] + '" aria-pressed="' + (st.aview === o[0] || (o[0] === "kaart" && st.aview === "wereld")) + '">' + o[1] + "</button>"; }).join("") + "</div>";
   var openB = blocks.filter(function (b) { var r = b[0] + "-" + b[1]; return st.hyear === r || (st.hyear && !isRange && inRange(st.hyear, r)); })[0];
   var top = [["", "Alle jaren"]].concat(years[cy] ? [[cy, cy]] : []).concat(blocks.map(function (b) { return [b[0] + "-" + b[1], b[1] + "–" + b[0] + (openB === b ? " ▴" : " ▾")]; }));

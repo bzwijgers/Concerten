@@ -908,6 +908,8 @@ function artView(list, srt) {
   list.forEach(function (e) { e.acts.forEach(function (a) { var k = nice(a[0]), o = A[k.toLowerCase()] = A[k.toLowerCase()] || { n: k, x: [] };
     o.x.push({ d: e.d, loc: e.loc, city: e.city, cc: e.cc, r: a[1], fn: e.fn }); }); });
   var arr = Object.keys(A).map(function (k) { var o = A[k]; o.x.sort(function (a, b) { return a.d < b.d ? 1 : -1; }); return o; });
+  var q = st.q.trim().toLowerCase();   /* zoek je op een naam, dan alleen die artiest(en), niet iedereen die die avond speelde */
+  if (q) { var byName = arr.filter(function (o) { return o.n.toLowerCase().indexOf(q) >= 0; }); if (byName.length) arr = byName; }
   if (srt === "n") arr.sort(function (a, b) { return a.n.localeCompare(b.n, "nl"); });
   else if (srt === "c") arr.sort(function (a, b) { return b.x.length - a.x.length || a.n.localeCompare(b.n, "nl"); });
   else arr.sort(function (a, b) { return a.x[0].d < b.x[0].d ? 1 : a.x[0].d > b.x[0].d ? -1 : a.n.localeCompare(b.n, "nl"); });

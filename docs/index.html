@@ -191,6 +191,7 @@ html.inapp #splash{background:transparent}
 .rz{font:700 12px var(--f-b);color:var(--faint);border:1px solid var(--line);border-radius:8px;height:28px}.rz.on{background:var(--gold);color:#1a1405;border-color:var(--gold)}
 .actrow{display:flex;align-items:center;gap:6px;margin:4px 0}.actrow input[type=checkbox]{width:20px;height:20px;accent-color:var(--soft);flex:none}
 .actrow input[type=text]{flex:1;min-width:0;border-radius:10px;border:1px solid var(--line);background:var(--bg2);color:var(--fg);font:500 14px var(--f-b);padding:8px 10px}
+.actrow.fest{flex-wrap:wrap}.actrow.fest input[data-actn]{flex:1 1 40%}.actrow.fest input[data-actz]{flex:1 1 30%;min-width:0;border-radius:10px;border:1px solid var(--line);background:var(--bg2);color:var(--fg);font:500 14px var(--f-b);padding:8px 10px}
 .actrow select{border-radius:10px;border:1px solid var(--line);background:var(--bg2);color:var(--fg);font:500 13px var(--f-b);padding:8px 4px}.actrow button{border:0;background:none;color:var(--faint);cursor:pointer;font-size:15px}
 .aedit textarea,.pb textarea{width:100%;min-height:64px;border-radius:12px;border:1px solid var(--line);background:var(--bg2);color:var(--fg);font:400 14px var(--f-b);padding:10px;resize:vertical}
 .lnk{border:0;background:none;color:var(--faint);font:600 13px var(--f-b);padding:10px 0 0;cursor:pointer;text-decoration:underline}
@@ -370,8 +371,15 @@ function restoreBackup(file) {
   rd.readAsText(file);
 }
 /* wie zag je bij een concert uit de app: [naam, H/V, gezien]; standaard uit de titel, voorprogramma niet aangevinkt */
+function isFestMark(m) { return !!(m && m.s && (VENUES[m.s.v] || {}).fest); }
+function festDays(m) {   /* alle dagen van het festival (einddatum uit het kaartje of de agenda; anders 3 dagen) */
+  var e = m.s.e || (ALL.filter(function (c) { return c.v === m.s.v && c.d === m.s.d; })[0] || {}).e || "", out = [], d = parse(m.s.d);
+  for (var i = 0; i < 10; i++) { var k = iso(d); out.push(k); if ((e && k >= e) || (!e && i >= 2)) break; d.setDate(d.getDate() + 1); }
+  return out;
+}
 function actsOf(m) {
   if (m.acts && m.acts.length) return m.acts;
+  if (isFestMark(m)) return [];
   var head = String(m.s.n || "").split(/\s+[-–—]\s+/)[0];
   var parts = head.split(/\s+(?:\+|en|w\/|with|met|support:?|feat\.?|ft\.?)\s+|\s*[,/|]\s+/i).map(function (x) { return x.trim(); }).filter(Boolean);
   if (!parts.length) parts = [m.s.n];
@@ -896,6 +904,13 @@ function histEvenings() {
   Object.keys(marks).forEach(function (id) { var m = marks[id]; if (!(m.t && m.s && m.s.d < TODAY)) return; var v = VENUES[m.s.v] || { label: m.s.v, city: "" };
     var dup = seen[m.s.d + "|" + (v.city || "").toLowerCase()];
     if (dup) { out.forEach(function (e) { if (e.d === m.s.d && e.city.toLowerCase() === (v.city || "").toLowerCase() && !e.mid) { e.mid = id; if (typeof (m.rv || {}).r === "number") e.r = m.rv.r; } }); return; }   /* staat al in je eigen lijst */
+    if (isFestMark(m)) {   /* per dag en zaal een eigen avond, met de festivalnaam */
+      var fl = v.label + " " + m.s.d.slice(0, 4), grp = {}, order = [];
+      seenActs(m).forEach(function (a) { var k = (a[3] || m.s.d) + "|" + (a[4] || ""); if (!grp[k]) { grp[k] = []; order.push(k); } grp[k].push([a[0], "F"]); });
+      if (!order.length) { order.push(m.s.d + "|"); grp[m.s.d + "|"] = []; }
+      order.sort().forEach(function (k, i) { var p = k.split("|"); out.push({ id: id, d: p[0], loc: p[1] || v.label, city: v.city, cc: v.cc || "NL", fn: fl, acts: grp[k], r: i ? undefined : (m.rv || {}).r, src: "a", festPart: i }); });
+      return;
+    }
     var sa = seenActs(m); if (!sa.length) sa = [[m.s.n, "H"]];
     out.push({ id: id, d: m.s.d, loc: v.label, city: v.city, cc: v.cc || "NL", acts: sa.map(function (a) { return [a[0], v.fest ? "F" : a[1]]; }), r: (m.rv || {}).r, src: "a" }); });
   if (st.cc) out = out.filter(function (e) { return (e.cc || "NL") === st.cc; });
@@ -1049,7 +1064,8 @@ function openHistCity(ct) {
   $("panel").innerHTML = '<div class="pb" style="margin-top:0;padding-top:22px"><h2>' + esc(ct) + '</h2><p style="color:var(--muted);margin:2px 0 10px">' + list.length + " keer geweest</p>" + list.map(histRow).join("") + "</div>";
   showSheet();
 }
-function appRow(a, xacts, xloc) { var d = parse(a.s.d), v = VENUES[a.s.v] || { label: a.s.v, city: "" }, r = a.rv.r;
+function appRow(a, xacts, xloc) { if (isFestMark(marks[a.id] || { s: a.s })) return festRow(a);
+  var d = parse(a.s.d), v = VENUES[a.s.v] || { label: a.s.v, city: "" }, r = a.rv.r;
       var open = st.aopen === a.id, stars = "", m0 = marks[a.id] || { s: a.s }, al = actsOf(m0), sa0 = xacts ? xacts.map(function (x) { return [x[0], x[1], true]; }) : al.filter(function (x) { return x[2] && x[0]; });
       var hs = sa0.filter(function (x) { return x[1] !== "V"; }), vs = sa0.filter(function (x) { return x[1] === "V"; });
       for (var i = 1; i <= 10; i++) { var f = typeof r === "number" ? (r >= i ? "full" : r >= i - 0.5 ? "half" : "") : "";
@@ -1065,6 +1081,34 @@ function appRow(a, xacts, xloc) { var d = parse(a.s.d), v = VENUES[a.s.v] || { l
           '<textarea data-rv placeholder="Korte review (optioneel)" style="margin-top:10px">' + esc(a.rv.txt || "") + "</textarea>" +
           (xacts ? "" : st.aconfirm === a.id ? '<div class="conf">Uit je archief verwijderen? Je cijfer en review gaan ook weg.<div class="acts" style="margin-top:8px"><button class="btn" data-adel style="color:var(--red)">Ja, verwijderen</button><button class="btn" data-anodel>Annuleren</button></div></div>'
                                 : '<button class="lnk" data-aask>Verwijderen uit archief</button>') + "</div>" : "") + "</div>"; }
+function starsHtml(r) { var stars = "";
+  for (var i = 1; i <= 10; i++) { var f = typeof r === "number" ? (r >= i ? "full" : r >= i - 0.5 ? "half" : "") : "";
+    stars += '<button class="rs ' + f + '" data-rate="' + i + '" aria-label="' + i + ' van 10"><svg viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/></svg></button>'; }
+  return '<div class="rate">' + stars + '<button class="rz' + (r === 0 ? " on" : "") + '" data-rate="0">0</button></div>'; }
+function festRow(a) {   /* festival uit de app: één regel; open = bands per dag en zaal invullen */
+  var m = marks[a.id] || { s: a.s }, v = VENUES[a.s.v] || { label: a.s.v, city: "" }, r = a.rv.r, open = st.aopen === a.id, days = festDays(m), al = actsOf(m);
+  var seen = al.filter(function (x) { return x[2] && x[0]; }), d0 = parse(days[0]), d1 = parse(days[days.length - 1]);
+  var dl = function (k) { var d = parse(k); return DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()]; };
+  var span = d0.getDate() + (days.length > 1 ? "–" + d1.getDate() : "") + " " + MONL[d1.getMonth()] + " " + d1.getFullYear();
+  var zalen = Object.keys(VENUES).filter(function (k) { return VENUES[k].city === v.city && k.indexOf("fest_") && !/^tm-/.test(k); }).map(function (k) { return VENUES[k].label; }).sort();
+  var rows = "", byDay = {};
+  al.forEach(function (x, i) { var dk = x[3] || days[0]; (byDay[dk] = byDay[dk] || []).push(i); });
+  days.forEach(function (dk) {
+    rows += '<div class="hl" style="margin:12px 0 2px">' + dl(dk) + "</div>" + (byDay[dk] || []).map(function (i) { var x = al[i];
+      return '<div class="actrow fest"><input type="checkbox" data-acts="' + i + '"' + (x[2] ? " checked" : "") + ' aria-label="gezien"><input type="text" data-actn="' + i + '" value="' + esc(x[0]) + '" placeholder="Band">' +
+        '<input type="text" data-actz="' + i + '" value="' + esc(x[4] || "") + '" placeholder="Zaal" list="zl-' + esc(a.id) + '">' +
+        '<select data-actd="' + i + '">' + days.map(function (k) { return '<option value="' + k + '"' + ((x[3] || days[0]) === k ? " selected" : "") + ">" + dl(k) + "</option>"; }).join("") + "</select>" +
+        '<button data-actdel="' + i + '" aria-label="Weghalen">✕</button></div>'; }).join("") +
+      '<button class="lnk" data-actadd="' + dk + '">+ band op ' + dl(dk) + "</button>";
+  });
+  return '<div class="arow' + (open ? " open" : "") + '" data-aid="' + esc(a.id) + '"><div class="ev" data-aopen>' + lg({ v: a.s.v, n: a.s.n, th: "" }) + '<div class="b"><div class="n">' + esc(v.label + " " + days[0].slice(0, 4)) + '</div><div class="s"><span class="bd fe">festival</span>' + span + " · " + esc(v.city) + "</div>" +
+    '<div class="s">' + (seen.length ? seen.length + (seen.length === 1 ? " band" : " bands") + " · " : "") + (open ? "▴" : "tik om je bands in te vullen ▾") + "</div>" +
+    (a.rv.txt && !open ? '<div class="s" style="white-space:normal;font-style:italic">“' + esc(a.rv.txt) + "”</div>" : "") + '</div><div class="tm" style="color:var(--gold)">' + (typeof r === "number" ? "★ " + String(r).replace(".", ",") : "–") + "</div></div>" +
+    (open ? '<div class="aedit">' + starsHtml(r) + '<datalist id="zl-' + esc(a.id) + '">' + zalen.map(function (z) { return '<option value="' + esc(z) + '">'; }).join("") + "</datalist>" + rows +
+      '<textarea data-rv placeholder="Korte review van het festival (optioneel)" style="margin-top:12px">' + esc(a.rv.txt || "") + "</textarea>" +
+      (st.aconfirm === a.id ? '<div class="conf">Uit je archief verwijderen? Je cijfer, review en bands gaan ook weg.<div class="acts" style="margin-top:8px"><button class="btn" data-adel style="color:var(--red)">Ja, verwijderen</button><button class="btn" data-anodel>Annuleren</button></div></div>'
+        : '<button class="lnk" data-aask>Verwijderen uit archief</button>') + "</div>" : "") + "</div>";
+}
 /* Historie: één lijst (je eigen archief + concerten uit de app), per jaar te bekijken */
 function yearSummary(list, y, all) {
   var zv = {}, zc = {}, ar = {}, before = {}, newv = [];
@@ -1137,7 +1181,8 @@ function renderArchive() {
   var shown = L.slice(0, st.hlimit || 300), lastY = "", html = "";
   shown.forEach(function (e) {
     if ((srt === "d" || srt === "o") && (!st.hyear || isRange) && e.d.slice(0, 4) !== lastY) { lastY = e.d.slice(0, 4); html += '<div class="yhead"><b>' + lastY + "</b><span>" + years[lastY] + "</span></div>"; }
-    if (e.src === "a" && marks[e.id]) html += appRow({ id: e.id, s: marks[e.id].s, rv: marks[e.id].rv || {} });
+    if (e.src === "a" && marks[e.id] && e.festPart) { /* andere dagen van hetzelfde festival: al in de festivalregel */ }
+    else if (e.src === "a" && marks[e.id]) html += appRow({ id: e.id, s: marks[e.id].s, rv: marks[e.id].rv || {} });
     else if (e.mid && marks[e.mid]) html += appRow({ id: e.mid, s: marks[e.mid].s, rv: marks[e.mid].rv || {} }, e.acts, e.loc);   /* ook in je eigen lijst: beoordelen kan, artiesten uit je lijst */
     else html += histRow(e);
   });
@@ -1307,7 +1352,7 @@ window.addEventListener("popstate", function () {
 });
 function toggle(id, k) {
   var c = findC(id), m = marks[id] || {};
-  m[k] = !m[k]; if (c) m.s = { n: c.n, d: c.d, v: c.v, r: c.r, u: c.u };
+  m[k] = !m[k]; if (c) m.s = { n: c.n, d: c.d, v: c.v, r: c.r, u: c.u, e: c.e };
   if (!m.i && !m.t) delete marks[id]; else marks[id] = m;
   save("ca-marks", marks); render(); openSheet(id);
 }
@@ -1321,7 +1366,7 @@ $("main").addEventListener("click", function (e) {
   if (t.closest("[data-actadd]") || t.closest("[data-actdel]")) {
     var ar_ = t.closest("[data-aid]"), m_ = ar_ && marks[ar_.getAttribute("data-aid")];
     if (m_) { m_.acts = actsOf(m_).map(function (x) { return x.slice(); });
-      if (t.closest("[data-actadd]")) m_.acts.push(["", "V", true]); else m_.acts.splice(+t.closest("[data-actdel]").getAttribute("data-actdel"), 1);
+      if (t.closest("[data-actadd]")) { var dk_ = t.closest("[data-actadd]").getAttribute("data-actadd"); m_.acts.push(isFestMark(m_) ? ["", "F", true, dk_ || m_.s.d, ""] : ["", "V", true]); } else m_.acts.splice(+t.closest("[data-actdel]").getAttribute("data-actdel"), 1);
       save("ca-marks", marks); try { buildSeen(); } catch (x) {} var y_ = scrollY; render(); window.scrollTo(0, y_); }
     return;
   }
@@ -1429,6 +1474,8 @@ function actEdit(e, render_) {   /* wijziging in 'Wie zag je?' bewaren */
   if (t.hasAttribute("data-acts")) { i = +t.getAttribute("data-acts"); m.acts = actsOf(m).map(function (x) { return x.slice(); }); m.acts[i][2] = t.checked; }
   else if (t.hasAttribute("data-actn")) { i = +t.getAttribute("data-actn"); m.acts = actsOf(m).map(function (x) { return x.slice(); }); m.acts[i][0] = t.value.trim(); }
   else if (t.hasAttribute("data-actr")) { i = +t.getAttribute("data-actr"); m.acts = actsOf(m).map(function (x) { return x.slice(); }); m.acts[i][1] = t.value; }
+  else if (t.hasAttribute("data-actd")) { i = +t.getAttribute("data-actd"); m.acts = actsOf(m).map(function (x) { return x.slice(); }); m.acts[i][3] = t.value; }
+  else if (t.hasAttribute("data-actz")) { i = +t.getAttribute("data-actz"); m.acts = actsOf(m).map(function (x) { return x.slice(); }); m.acts[i][4] = t.value.trim(); }
   else return false;
   save("ca-marks", marks); try { buildSeen(); } catch (x) {} if (render_) { var y = scrollY; render(); window.scrollTo(0, y); } return true;
 }

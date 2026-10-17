@@ -493,7 +493,11 @@ function rescueMarks() {   /* markering waarvan het concert niet meer onder hetz
     var n = m.s && m.s.n ? m.s.n : safeDec(String(u).split(/[?#]/)[0].replace(/\/$/, "").split("/").pop() || "").replace(/[-_]+/g, " ");
     var k = key(n), same = ALL.filter(function (c) { return c.d === d; });
     var hit = same.filter(function (c) { return c.u === u; })[0] || (k.length > 2 && same.filter(function (c) { var ck = key(c.n); return ck && (ck === k || ck.indexOf(k) === 0 || k.indexOf(ck) === 0); })[0]) ||
-      (same.filter(function (c) { return c.v === v; }).length === 1 ? same.filter(function (c) { return c.v === v; })[0] : null);
+      (same.filter(function (c) { return c.v === v; }).length === 1 ? same.filter(function (c) { return c.v === v; })[0] : null) ||
+      (function () {   /* titel binnen de andere titel ('Josh Ritter (solo)' in 'An Evening with Josh Ritter (solo)'), bv. als een zaal het concert overnam */
+        var f = nice(String(n || "")).toLowerCase().replace(/[^a-z0-9à-ÿ]/g, ""); if (f.length < 6) return null;
+        var hits = same.filter(function (c) { var g = nice(c.n).toLowerCase().replace(/[^a-z0-9à-ÿ]/g, ""); return g.length >= 6 && (g.indexOf(f) >= 0 || f.indexOf(g) >= 0); });
+        return hits.length === 1 ? hits[0] : null; })();
     if (!hit) { if (!m.s && v && d) m.s = { v: v, d: d, n: n || v, u: /^https?:/.test(u) ? u : "" }; return; }   /* niet gevonden: toch laten zien */
     var o = marks[hit.id] || {}; o.t = o.t || m.t; o.i = o.i || m.i; if (m.rv && !o.rv) o.rv = m.rv;
     o.s = { n: hit.n, d: hit.d, v: hit.v, r: hit.r, u: hit.u }; marks[hit.id] = o; delete marks[id]; moved++;
@@ -594,12 +598,12 @@ function openDate() {
 function setDate(a, b) { st.from = a || ""; st.to = b || ""; st.f.today = st.f.weekend = false; st.month = ""; closeSheet(); render(); window.scrollTo(0, 0); }
 function card(c, big) {
   var v = venue(c), d = parse(c.d), days = Math.round((parse(c.d) - parse(TODAY)) / 864e5), tt = travel(v.city);
-  if (!big) return '<div class="mc" data-id="' + esc(c.id) + '">' + lg(c) + '<div><b>' + esc(nice(c.n)) + "</b><span>" + DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()] + " · " + esc(v.label) + "</span></div></div>";
+  if (!big) return '<div class="mc" data-id="' + esc(c.id) + '">' + lg(c) + '<div><b>' + esc(nice(c.n)) + "</b><span>" + DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()] + " · " + where(c) + "</span></div></div>";
   var bg = c.th ? "" + c.th : logoSrc(c);
   return '<div class="next" data-id="' + esc(c.id) + '">' + (bg ? '<div class="bgimg" style="background-image:url(' + esc(bg) + ')"></div>' : "") +
     '<div class="cd">' + (days === 0 ? "VANDAAG" : days === 1 ? "MORGEN" : "nog " + days + " dagen") + "</div>" + lg(c) +
     '<div class="nn">' + esc(nice(c.n)) + '</div><div class="nv">' + DOWL[d.getDay()] + " " + d.getDate() + " " + MONL[d.getMonth()] + (c.t ? " · " + esc(c.t) : "") +
-    "<br>" + esc(v.label) + " · " + esc(v.city) + (tt !== null ? " · ± " + fmtT(tt) + " rijden" : "") + "</div></div>";
+    "<br>" + where(c) + " · " + esc(v.city) + (tt !== null ? " · ± " + fmtT(tt) + " rijden" : "") + "</div></div>";
 }
 function hero() {
   var tk = ALL.filter(function (c) { return c.d >= TODAY && has(c.id, "t"); });

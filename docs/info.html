@@ -103,7 +103,8 @@ h1{font-family:var(--f-display);font-weight:700;font-size:26px;letter-spacing:-.
 </style>
 <main class="doc">
 <p class="rooms" style="margin-top:14px">Versie 3.3 · 17 oktober 2026 · <a href="klassiek.html">klassieke weergave</a><br>
-Agenda bijgewerkt: <b id="upd">onbekend</b><span id="appv"></span><br>
+Agenda bijgewerkt: <b id="upd">onbekend</b><span id="appv"></span><br><span id="buildv" style="color:var(--muted,#999)"></span>
+<script>fetch("version.json?"+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){var d=new Date(j.at),p=function(n){return(n<10?"0":"")+n};document.getElementById("buildv").textContent="Gepubliceerd: "+d.getDate()+"-"+(d.getMonth()+1)+" "+p(d.getHours())+":"+p(d.getMinutes())+" ("+j.v+")";document.getElementById("buildv").insertAdjacentHTML("afterend","<br>")}).catch(function(){});</script>
 <a href="https://github.com/bzwijgers/Concerten/actions/workflows/update.yml" target="_blank" rel="noopener">Nu bijwerken ↗</a> (op GitHub: ‘Run workflow’, duurt 20 tot 60 minuten)</p>
 <div id="alerts" style="display:none;margin:10px 0 0;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,107,107,.45);background:rgba(255,107,107,.08);font-size:13px"></div>
 <script>(function(){try{var u=localStorage.getItem("ca-updated");if(u){var d=new Date(u),M=["jan","feb","mrt","apr","mei","jun","jul","aug","sep","okt","nov","dec"],p=function(n){return(n<10?"0":"")+n};

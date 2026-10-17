@@ -406,7 +406,17 @@ function badges(c) {
     (c.seen ? '<span class="bd sn">' + c.seen.n + "× gezien</span>" : "") + (c.o ? '<span class="bd ot">geen concert</span>' : "");
 }
 /* Rotown en BIRD organiseren ook elders (LantarenVenster, Maassilo, V11, Annabel...): toon de echte zaal */
-function where(c) { var v = venue(c); return (c.v === "rotown" || c.v === "bird") && c.r && c.r.toLowerCase() !== v.label.toLowerCase() ? esc(c.r) + " · via " + esc(v.label) : esc(v.label); }
+/* zalen die (ook) elders organiseren: Paradiso in Tolhuistuin/Bitterzoet, Tivoli in dB's, Rotown in V11 ... toon de echte zaal */
+var LBL = null;
+function otherVenue(c) {
+  if (!c.r) return null;
+  if (!LBL) { LBL = {}; Object.keys(VENUES).forEach(function (k) { if (k.indexOf("fest_") && VENUES[k].label) LBL[VENUES[k].label.toLowerCase()] = k; }); }
+  var r = c.r.toLowerCase().trim(), k = LBL[r] || LBL[r.replace(/^(de|het)\s+/, "")];
+  return k && k !== c.v ? VENUES[k] : null;
+}
+function where(c) { var v = venue(c), o = otherVenue(c);
+  if (o) return esc(o.label) + " · via " + esc(v.label);
+  return (c.v === "rotown" || c.v === "bird") && c.r && c.r.toLowerCase() !== v.label.toLowerCase() ? esc(c.r) + " · via " + esc(v.label) : esc(v.label); }
 function row(c) {
   var v = venue(c), t = (c.t || "").replace("deuren ", "");
   return '<div class="ev' + (has(c.id, "i") ? " star" : "") + '" data-id="' + esc(c.id) + '">' + lg(c) +

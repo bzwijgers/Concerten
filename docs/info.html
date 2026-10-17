@@ -87,6 +87,7 @@ h1{font-family:var(--f-display);font-weight:700;font-size:26px;letter-spacing:-.
 .tots div{display:flex;align-items:center;gap:10px}.tots .lflag{width:24px;height:16px}
 .tots .sum{font-weight:700;padding-left:34px}
 .ontw{display:block;text-align:center;padding:14px;border-radius:12px;background:#15131c;color:#f3efe6!important;text-decoration:none;font-weight:600;margin:16px 0}
+.bkb{display:inline-block;margin:4px 6px 4px 0;padding:9px 14px;border-radius:12px;border:1px solid var(--line,#333);background:transparent;color:inherit;font:600 14px inherit;cursor:pointer}
 </style></head><body>
 <div class="wrap">
 <header><div class="top"><h1>Info</h1><a class="info" href="./" onclick="try{sessionStorage.setItem(&quot;ca-info&quot;,&quot;1&quot;)}catch(e){}if(document.referrer.indexOf(location.origin)===0&amp;&amp;history.length>1){history.back();return false}">← Agenda</a></div></header>
@@ -108,6 +109,20 @@ Agenda bijgewerkt: <b id="upd">onbekend</b><span id="appv"></span><br>
 <script>(function(){try{var u=localStorage.getItem("ca-updated");if(u){var d=new Date(u),M=["jan","feb","mrt","apr","mei","jun","jul","aug","sep","okt","nov","dec"],p=function(n){return(n<10?"0":"")+n};
 document.getElementById("upd").textContent=d.getDate()+" "+M[d.getMonth()]+" "+d.getFullYear()+", "+p(d.getHours())+":"+p(d.getMinutes());}}catch(e){}
 var a=/ConcertAgendaApp\/([0-9.]+)/.exec(navigator.userAgent);if(a)document.getElementById("appv").textContent=" · telefoon-app "+a[1];})();</script>
+<h2>Back-up</h2>
+<p>Met <b>synchroniseren</b> (menu ⋯) staan je gegevens al veilig op je eigen GitHub. Een losse back-up kan daarnaast handig zijn, bijvoorbeeld voordat je iets groots verandert.</p>
+<p><button class="bkb" id="bk-make">Back-up maken</button> <label class="bkb">Back-up terugzetten<input type="file" id="bk-restore" accept=".json,application/json,text/plain,application/octet-stream" hidden></label></p>
+<p class="rooms">De back-up bevat je kaartjes, interesses, notities, cijfers, 'Wie zag je?', je zalen en je archief. Terugzetten voegt samen met wat er al staat; er gaat niets verloren.</p>
+<script>(function(){
+var L=function(k,d){try{var r=localStorage.getItem(k);return r?JSON.parse(r):d}catch(e){return d}};
+document.getElementById("bk-make").onclick=function(){var d=new Date(),p=function(n){return(n<10?"0":"")+n},day=d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate());
+ var data={app:"barrys-concerten",v:1,at:d.toISOString(),marks:L("ca-marks",{}),mine:L("ca-mine",[]),other:L("ca-other",false),hist:L("ca-hist",null)},name="concerten-backup-"+day+".json",txt=JSON.stringify(data);
+ try{if(window.AndroidApp&&AndroidApp.saveFile){AndroidApp.saveFile(name,txt);return}}catch(e){}
+ var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([txt],{type:"application/json"}));a.download=name;document.body.appendChild(a);a.click();a.remove();};
+document.getElementById("bk-restore").onchange=function(){var f=this.files&&this.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){
+ try{var b=JSON.parse(String(rd.result));if(!b||b.app!=="barrys-concerten")throw 0}catch(e){alert("Dit is geen back-up van de concertagenda.");return}
+ try{localStorage.setItem("ca-restore",String(rd.result))}catch(e){alert("Bewaren lukte niet.");return}location.href="./";};rd.readAsText(f);};
+})();</script>
 <h2>Doel van de app</h2>
 <p>Barry's concert agenda zet het concertprogramma van Nederlandse &amp; Belgische poppodia, zalen en festivals op één plek. Het is een persoonlijk hulpmiddel, geen ticketverkoper.</p>
 
@@ -116,7 +131,7 @@ var a=/ConcertAgendaApp\/([0-9.]+)/.exec(navigator.userAgent);if(a)document.getE
 <li><b>Synchroniseren</b> (menu ⋯): je kaartjes, interesses, notities, cijfers, 'Wie zag je?', je zalen en je archief op al je apparaten gelijk, via een privé-opslag op je eigen GitHub. Eenmalig instellen met een eigen toegangscode; de uitleg staat in het scherm zelf.</li>
 <li><b>Nieuw sinds je vorige bezoek</b>: bovenaan de agenda zie je wat er bij is gekomen sinds je de app de vorige keer opende. Tik erop om alleen die concerten te zien.</li>
 <li><b>Let op</b> (Mijn concerten): een concert met interesse is uitverkocht, of een gemarkeerd concert staat niet meer bij de zaal. Een rood stipje onderaan wijst je erop; met ✕ zet je een melding weg.</li>
-<li><b>Back-up</b> (menu ⋯): bewaart je kaartjes, interesses, notities, cijfers, zalen en archief in één bestand. Met <i>Back-up terugzetten</i> zet je ze terug of over op een ander apparaat; niets wat er al staat gaat verloren.</li>
+<li><b>Back-up</b>: zie hierboven op deze pagina.</li>
 <li><b>Jouw jaar</b> (Historie, per jaar): aantal concerten, zalen en steden, je meest bezochte zaal, vaakst geziene artiest, hoogste cijfer en zalen waar je voor het eerst was.</li>
 <li><b>× gezien</b>: speelt er een artiest die je al eens zag (uit je archief of een eerder kaartje), dan staat dat erbij en komt het concert bovenaan de dag.</li>
 <li><b>Alleen concerten</b>: clubnachten, feesten, kinderactiviteiten, films en lezingen zijn standaard verborgen. Via ⋯ → <i>Ook overige activiteiten tonen</i> zie je ze weer; zoeken vindt altijd alles.</li>

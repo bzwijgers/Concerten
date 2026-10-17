@@ -5,6 +5,9 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.webkit.JavascriptInterface
+import android.webkit.PermissionRequest
+import android.Manifest
+import android.content.pm.PackageManager
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceError
@@ -24,6 +27,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var web: WebView
     private var fileCb: ValueCallback<Array<Uri>>? = null
     private var pendingSave: String? = null
+    private var pendingCam: PermissionRequest? = null
+    // camera voor 'Koppelen met QR-code': eerst Android-toestemming, dan de pagina toestaan
+    private val camPerm = registerForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
+        val r = pendingCam; pendingCam = null
+        if (r != null) { if (ok) r.grant(arrayOf(PermissionRequest.RESOURCE_VIDEO_CAPTURE)) else r.deny() }
+    }
     // back-up opslaan: de gebruiker kiest zelf waar (Downloads, Drive, ...)
     private val saveDoc = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
         val uri = r.data?.data; val txt = pendingSave; pendingSave = null
@@ -83,6 +92,13 @@ class MainActivity : AppCompatActivity() {
             }
         }
         web.webChromeClient = object : WebChromeClient() {
+            override fun onPermissionRequest(request: PermissionRequest) {
+                runOnUiThread {
+                    if (!request.resources.contains(PermissionRequest.RESOURCE_VIDEO_CAPTURE) || request.origin.host != HOST) { request.deny(); return@runOnUiThread }
+                    if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) request.grant(arrayOf(PermissionRequest.RESOURCE_VIDEO_CAPTURE))
+                    else { pendingCam = request; camPerm.launch(Manifest.permission.CAMERA) }
+                }
+            }
             override fun onShowFileChooser(view: WebView, cb: ValueCallback<Array<Uri>>, params: FileChooserParams): Boolean {
                 fileCb?.onReceiveValue(null)
                 fileCb = cb

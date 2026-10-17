@@ -92,6 +92,11 @@ header.sc{border-bottom-color:var(--line)}
 .bd.tk{background:var(--green);color:#06210f}.bd.so{background:rgba(255,107,107,.18);color:var(--red)}
 .seenbox{margin:10px 0 0;padding:10px 12px;border-radius:12px;background:rgba(142,155,196,.12);color:#c9d1ee;font-size:13px;line-height:1.5}.seenbox b{display:block;color:#dfe5fb;margin-bottom:2px}
 .sin{width:100%;background:none;border:0;color:var(--fg);font:600 14px var(--f-b);outline:none;padding:2px 0}.steps{padding-left:20px;color:var(--muted);font-size:13.5px;line-height:1.5}.steps li{margin:6px 0}.steps b{color:var(--fg)}
+.ychips{margin-top:8px}.ychips .chip{padding:6px 12px;font-size:13px}
+.seg.small button{font-size:12.5px;padding:7px 4px}
+.sortbar{display:flex;align-items:center;justify-content:space-between;margin:12px 0 4px;color:var(--faint);font:700 11px var(--f-b);text-transform:uppercase;letter-spacing:.08em}
+.sortbar select{background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:6px 8px;font:600 13px var(--f-b);text-transform:none;letter-spacing:0}
+.yhead{position:sticky;top:var(--hh,150px);z-index:4;background:var(--bg);display:flex;align-items:baseline;gap:8px;padding:14px 0 4px}.yhead b{font:800 18px var(--f-d)}.yhead span{color:var(--faint);font-size:12px}
 .since{display:flex;align-items:stretch;gap:6px;margin:12px 0 2px}.since [data-since]{flex:1;text-align:left;border:1px solid rgba(142,155,196,.35);background:rgba(142,155,196,.12);color:var(--fg);border-radius:14px;padding:10px 12px;cursor:pointer;font:500 13px var(--f-b)}
 .since [data-since] b{display:block;font:700 14.5px var(--f-d)}.since [data-since] span{color:var(--muted)}.since .x{border:0;background:none;color:var(--faint);font-size:16px;cursor:pointer;padding:0 6px}
 .warn{margin:12px 0 4px;border:1px solid rgba(255,107,107,.35);background:rgba(255,107,107,.07);border-radius:14px;padding:6px 10px}.warn .hl{margin:6px 0 2px;color:var(--red)}
@@ -282,7 +287,7 @@ var ORPH = {};   /* gemarkeerde concerten die (nog) niet in de huidige agenda st
 function findC(id) { return ALL.filter(function (x) { return x.id === id; })[0] || ORPH[id]; }
 var st = { other: load("ca-other", false), ayear: String(NOW.getFullYear()), aview: "lijst", ovv: "kaart", ovreg: {}, venue: "", cc: "", asort: load("ca-asort", "d"), from: "", to: "", tab: "agenda", sub: "t", f: {}, q: "", city: "", month: "", limit: 250, open: null, more: {} };
 /* vernieuwen (naar beneden vegen) brengt je terug waar je was: scherm, filters, keuze in Historie, zoekterm */
-var KEEP_KEYS = ["tab", "sub", "ayear", "aview", "ovv", "hsort", "hrev", "arev", "f", "from", "to", "month", "city", "venue", "cc", "q"];
+var KEEP_KEYS = ["tab", "sub", "ayear", "hyear", "aview", "ovv", "hsort", "hrev", "arev", "f", "from", "to", "month", "city", "venue", "cc", "q"];
 try { var _v = JSON.parse(sessionStorage.getItem("ca-view") || "null"); if (_v) KEEP_KEYS.forEach(function (k) { if (k in _v) st[k] = _v[k]; }); } catch (e) {}
 var CHIPS = [["new", "Nieuw"], ["today", "Vandaag"], ["weekend", "Dit weekend"], ["date", "Datum"], ["near", "Binnen 1½ uur"], ["mine", "Mijn zalen"], ["fest", "Festivals"]];
 function travel(city) {
@@ -801,9 +806,10 @@ function histEvenings() {
   var out = (HIST && HIST.ev || []).map(function (e) { return { d: e.d, loc: e.loc, city: e.city, cc: e.cc, acts: e.acts, fn: e.fn, src: "x" }; });
   var seen = {}; out.forEach(function (e) { seen[e.d + "|" + e.city.toLowerCase()] = 1; });
   Object.keys(marks).forEach(function (id) { var m = marks[id]; if (!(m.t && m.s && m.s.d < TODAY)) return; var v = VENUES[m.s.v] || { label: m.s.v, city: "" };
-    if (seen[m.s.d + "|" + (v.city || "").toLowerCase()]) return;   /* staat al in je eigen lijst */
+    var dup = seen[m.s.d + "|" + (v.city || "").toLowerCase()];
+    if (dup) { if (typeof (m.rv || {}).r === "number") out.forEach(function (e) { if (e.d === m.s.d && e.city.toLowerCase() === (v.city || "").toLowerCase()) e.r = m.rv.r; }); return; }   /* staat al in je eigen lijst */
     var sa = seenActs(m); if (!sa.length) sa = [[m.s.n, "H"]];
-    out.push({ d: m.s.d, loc: v.label, city: v.city, cc: v.cc || "NL", acts: sa.map(function (a) { return [a[0], v.fest ? "F" : a[1]]; }), r: (m.rv || {}).r, src: "a" }); });
+    out.push({ id: id, d: m.s.d, loc: v.label, city: v.city, cc: v.cc || "NL", acts: sa.map(function (a) { return [a[0], v.fest ? "F" : a[1]]; }), r: (m.rv || {}).r, src: "a" }); });
   if (st.cc) out = out.filter(function (e) { return (e.cc || "NL") === st.cc; });
   var q = st.q.trim().toLowerCase();
   if (q) out = out.filter(function (e) { var dd = parse(e.d); return (e.acts.map(function (a) { return a[0]; }).join(" ") + " " + (e.fn || "") + " " + e.d + " " + dd.getDate() + "-" + (dd.getMonth() + 1) + "-" + dd.getFullYear() + " " + dd.getDate() + " " + MONL[dd.getMonth()] + " " + dd.getFullYear() + " " + e.loc + " " + e.city).toLowerCase().indexOf(q) >= 0; });
@@ -951,46 +957,7 @@ function openHistCity(ct) {
   $("panel").innerHTML = '<div class="pb" style="margin-top:0;padding-top:22px"><h2>' + esc(ct) + '</h2><p style="color:var(--muted);margin:2px 0 10px">' + list.length + " keer geweest</p>" + list.map(histRow).join("") + "</div>";
   showSheet();
 }
-function renderArchive() {
-  var out = Object.keys(marks).filter(function (id) { var m = marks[id]; return m.t && m.s && m.s.d < TODAY; }).map(function (id) { return { id: id, s: marks[id].s, rv: marks[id].rv || {} }; })
-    .sort(function (a, b) { return a.s.d < b.s.d ? 1 : -1; });
-  var years = {}; out.forEach(function (a) { years[a.s.d.slice(0, 4)] = 1; }); years[String(NOW.getFullYear())] = 1;
-  var ys = Object.keys(years).filter(function (y) { return y >= "2026"; }).sort();
-  if (st.ayear !== "arch" && st.ayear !== "all" && ys.indexOf(st.ayear) < 0) st.ayear = ys[ys.length - 1];
-  var yseg = '<div class="seg">' + ys.map(function (y) { return [y, y]; }).concat([["arch", "Archief"], ["all", "Alles"]]).map(function (o) {
-    return '<button data-ayear="' + o[0] + '" aria-pressed="' + (st.ayear === o[0]) + '">' + o[1] + "</button>"; }).join("") + "</div>";
-  if (st.ayear === "arch" || st.ayear === "all") return renderHist(yseg);
-  if (st.ayear !== "all") out = out.filter(function (a) { return a.s.d.slice(0, 4) === st.ayear; });
-  if (st.cc) out = out.filter(function (a) { return ((VENUES[a.s.v] || {}).cc || "NL") === st.cc; });
-  var q = st.q.trim().toLowerCase();
-  if (q) out = out.filter(function (a) { var v = VENUES[a.s.v] || { label: "", city: "" }; return (a.s.n + " " + v.label + " " + v.city).toLowerCase().indexOf(q) >= 0; });
-  if (st.asort === "n") out.sort(function (a, b) { return nice(a.s.n).localeCompare(nice(b.s.n), "nl"); });
-  if (st.asort === "r") out.sort(function (a, b) { var x = typeof a.rv.r === "number" ? a.rv.r : -1, y = typeof b.rv.r === "number" ? b.rv.r : -1; return y - x || (a.s.d < b.s.d ? 1 : -1); });
-  if (st.arev) out.reverse();
-  var rated = out.filter(function (a) { return typeof a.rv.r === "number"; });
-  var yearBox = "";
-  if (st.ayear !== "all" && !q && out.length && st.aview !== "kaart") {   /* jaaroverzicht */
-    var zv = {}, zc = {}, ar = {}, newv = [], hv = {};
-    ((HIST && HIST.ev) || []).forEach(function (e) { if (e.d.slice(0, 4) < st.ayear) hv[e.loc.toLowerCase().replace(/^(de|het|the)\s+/, "")] = 1; });
-    out.forEach(function (a) { var v = VENUES[a.s.v] || { label: a.s.v, city: "" }; zv[v.label] = (zv[v.label] || 0) + 1; if (v.city) zc[v.city] = 1; var mm = marks[a.id] || { s: a.s }; seenActs(mm).forEach(function (x) { ar[x[0]] = (ar[x[0]] || 0) + 1; });
-      var lk = v.label.toLowerCase().replace(/^(de|het|the)\s+/, ""); if (HIST && !hv[lk] && newv.indexOf(v.label) < 0) newv.push(v.label); });
-    var topk = function (o) { var k = Object.keys(o).sort(function (a, b) { return o[b] - o[a]; })[0]; return k ? [k, o[k]] : null; };
-    var tz = topk(zv), ta = topk(ar), best = rated.slice().sort(function (a, b) { return b.rv.r - a.rv.r; })[0];
-    yearBox = '<div class="hl">Jouw ' + st.ayear + "</div>" + '<div class="ys"><div><b>' + out.length + "</b><span>concerten</span></div><div><b>" + Object.keys(zv).length + "</b><span>zalen</span></div><div><b>" + Object.keys(zc).length + "</b><span>steden</span></div></div>" +
-      '<div class="yl">' + (tz ? "Meest bezocht: <b>" + esc(tz[0]) + "</b> (" + tz[1] + "×)<br>" : "") + (ta && ta[1] > 1 ? "Vaakst gezien: <b>" + esc(ta[0]) + "</b> (" + ta[1] + "×)<br>" : "") +
-      (best ? "Hoogste cijfer: <b>" + esc(shownName(marks[best.id] || { s: best.s })) + "</b> (★ " + String(best.rv.r).replace(".", ",") + ")<br>" : "") + (newv.length ? "Voor het eerst: <b>" + newv.slice(0, 6).map(esc).join(", ") + "</b>" + (newv.length > 6 ? " en nog " + (newv.length - 6) : "") : "") + "</div>";
-  }
-  var view = yseg + '<div class="seg" style="margin-top:8px">' + [["lijst", "Lijst"], ["kaart", "Kaart"]].map(function (o) { return '<button data-aview="' + o[0] + '" aria-pressed="' + (st.aview === o[0]) + '">' + o[1] + "</button>"; }).join("") + "</div>";
-  if (st.aview === "wereld" || st.aview === "art" || st.aview === "fest") st.aview = "lijst";
-  if (st.aview === "kaart") {   /* waar ben ik geweest: per stad het aantal concerten */
-    var per = {}; out.forEach(function (a) { var v = VENUES[a.s.v]; if (v && COORD[v.city]) per[v.city] = (per[v.city] || 0) + 1; });
-    var nc = Object.keys(per).length;
-    return view + '<div class="hl">' + out.length + " concerten in " + nc + (nc === 1 ? " stad" : " steden") + ' · tik op een stad</div><div class="mapbox">' + mapSvg(per, { attr: "data-acity", sel: "", ring: false }) +
-      '<div class="zoom"><button data-zoom="1.6">+</button><button data-zoom="0.625">−</button><button data-zoom="0">⟲</button></div></div>' + archStats(out);
-  }
-  var seg = '<div class="seg" style="margin-top:8px">' + [["d", "Datum"], ["n", "Artiest"], ["r", "Beoordeling"]].map(function (o) { return '<button data-asort="' + o[0] + '" aria-pressed="' + (st.asort === o[0]) + '">' + o[1] + (st.asort === o[0] ? (st.arev ? " ↑" : " ↓") : "") + "</button>"; }).join("") + "</div>";
-  return view + yearBox + seg + '<div class="hl">Gezien · ' + out.length + (rated.length ? " · gemiddeld " + (rated.reduce(function (t, a) { return t + a.rv.r; }, 0) / rated.length).toFixed(1).replace(".", ",") : "") + "</div>" +
-    (out.length ? out.map(function (a) { var d = parse(a.s.d), v = VENUES[a.s.v] || { label: a.s.v, city: "" }, r = a.rv.r;
+function appRow(a) { var d = parse(a.s.d), v = VENUES[a.s.v] || { label: a.s.v, city: "" }, r = a.rv.r;
       var open = st.aopen === a.id, stars = "", m0 = marks[a.id] || { s: a.s }, al = actsOf(m0), sa0 = al.filter(function (x) { return x[2] && x[0]; });
       var hs = sa0.filter(function (x) { return x[1] !== "V"; }), vs = sa0.filter(function (x) { return x[1] === "V"; });
       for (var i = 1; i <= 10; i++) { var f = typeof r === "number" ? (r >= i ? "full" : r >= i - 0.5 ? "half" : "") : "";
@@ -1005,8 +972,71 @@ function renderArchive() {
           '<button class="lnk" data-actadd>+ artiest toevoegen</button>' +
           '<textarea data-rv placeholder="Korte review (optioneel)" style="margin-top:10px">' + esc(a.rv.txt || "") + "</textarea>" +
           (st.aconfirm === a.id ? '<div class="conf">Uit je archief verwijderen? Je cijfer en review gaan ook weg.<div class="acts" style="margin-top:8px"><button class="btn" data-adel style="color:var(--red)">Ja, verwijderen</button><button class="btn" data-anodel>Annuleren</button></div></div>'
-                                : '<button class="lnk" data-aask>Verwijderen uit archief</button>') + "</div>" : "") + "</div>"; }).join("")
-    : '<div class="empty">Concerten met een kaartje komen hier na afloop.</div>');
+                                : '<button class="lnk" data-aask>Verwijderen uit archief</button>') + "</div>" : "") + "</div>"; }
+/* Historie: één lijst (je eigen archief + concerten uit de app), per jaar te bekijken */
+function yearSummary(list, y, all) {
+  var zv = {}, zc = {}, ar = {}, before = {}, newv = [];
+  all.forEach(function (e) { if (e.d.slice(0, 4) < y) before[e.loc.toLowerCase().replace(/^(de|het|the)\s+/, "")] = 1; });
+  list.forEach(function (e) { zv[e.loc] = (zv[e.loc] || 0) + 1; zc[e.city] = 1; e.acts.forEach(function (x) { ar[x[0]] = (ar[x[0]] || 0) + 1; });
+    var lk = e.loc.toLowerCase().replace(/^(de|het|the)\s+/, ""); if (!before[lk] && newv.indexOf(e.loc) < 0) newv.push(e.loc); });
+  var topk = function (o) { var k = Object.keys(o).sort(function (a, b) { return o[b] - o[a]; })[0]; return k ? [k, o[k]] : null; };
+  var tz = topk(zv), ta = topk(ar), best = list.filter(function (e) { return typeof e.r === "number"; }).sort(function (a, b) { return b.r - a.r; })[0];
+  var fd = list.filter(function (e) { return e.fn || e.acts.some(function (x) { return x[1] === "F"; }); }).length;
+  return '<div class="ys"><div><b>' + (list.length - fd) + "</b><span>concerten</span></div><div><b>" + Object.keys(zv).length + "</b><span>zalen</span></div><div><b>" + (fd || Object.keys(zc).length) + "</b><span>" + (fd ? "festivaldagen" : "steden") + "</span></div></div>" +
+    '<div class="yl">' + (tz ? "Meest bezocht: <b>" + esc(tz[0]) + "</b> (" + tz[1] + "×)<br>" : "") + (ta && ta[1] > 1 ? "Vaakst gezien: <b>" + esc(ta[0]) + "</b> (" + ta[1] + "×)<br>" : "") +
+    (best ? "Hoogste cijfer: <b>" + esc(best.acts.filter(function (x) { return x[1] !== "V"; }).map(function (x) { return x[0]; }).join(" & ") || best.loc) + "</b> (★ " + String(best.r).replace(".", ",") + ")<br>" : "") +
+    (newv.length ? "Voor het eerst: <b>" + newv.slice(0, 6).map(esc).join(", ") + "</b>" + (newv.length > 6 ? " en nog " + (newv.length - 6) : "") : "") + "</div>";
+}
+function renderArchive() {
+  var all = histEvenings(); if (!st.hyear) st.hyear = "";
+  if (["lijst", "art", "fest", "kaart", "wereld"].indexOf(st.aview) < 0) st.aview = "lijst";
+  var years = {}; all.forEach(function (e) { years[e.d.slice(0, 4)] = (years[e.d.slice(0, 4)] || 0) + 1; });
+  var ys = Object.keys(years).sort().reverse();
+  if (st.hyear && !years[st.hyear]) st.hyear = "";
+  var list = st.hyear ? all.filter(function (e) { return e.d.slice(0, 4) === st.hyear; }) : all;
+  var tabs = '<div class="seg">' + [["lijst", "Lijst"], ["art", "Artiesten"], ["fest", "Festivals"], ["kaart", "Kaart"]].map(function (o) {
+    return '<button data-aview="' + o[0] + '" aria-pressed="' + (st.aview === o[0] || (o[0] === "kaart" && st.aview === "wereld")) + '">' + o[1] + "</button>"; }).join("") + "</div>";
+  var ychips = ys.length ? '<div class="chips ychips">' + [["", "Alle jaren"]].concat(ys.map(function (y) { return [y, y]; })).map(function (o) {
+    return '<button class="chip" data-hyear="' + o[0] + '" aria-pressed="' + (st.hyear === o[0]) + '">' + o[1] + "</button>"; }).join("") + "</div>" : "";
+  var head = tabs + ychips;
+  var imp = '<input type="file" accept=".xlsx,.xls,.csv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain,application/octet-stream" data-himport hidden>';
+  var foot = HIST && HIST.ev ? '<div class="note">Je eigen lijst: ' + HIST.rows + " regels, " + HIST.ev.length + " avonden en festivaldagen (ingelezen " + HIST.at.slice(0, 10) + '). <label class="lnk" style="display:inline">Opnieuw inlezen' + imp + '</label> · <button class="lnk" data-hclear style="display:inline">Wissen</button></div>'
+    : '<div class="note">Heb je een eigen lijst van eerdere concerten (Excel of CSV met artiest, H/V/F, locatie, plaats, datum, land)? <label class="lnk" style="display:inline">Lees hem hier in' + imp + "</label>; daarna staat hij op al je gekoppelde apparaten.</div>";
+  if (!all.length) return head + '<div class="empty">Concerten waarvoor je een kaartje had, komen hier na afloop vanzelf.</div>' + foot;
+  if (st.aview === "kaart" || st.aview === "wereld") {
+    var per = {}, abroad = {}, akc = {};
+    list.forEach(function (e) { var c = COORD[e.city] || XCOORD[e.city]; if (c) { COORD[e.city] = c; per[e.city] = (per[e.city] || 0) + 1; } else { var ak = e.city + flag(e.cc); akc[ak] = e.city; abroad[ak] = (abroad[ak] || 0) + 1; } });
+    var ab = Object.keys(abroad).sort(function (a, b) { return abroad[b] - abroad[a]; });
+    var ksub = '<div class="seg small" style="margin-top:10px"><button data-aview="kaart" aria-pressed="' + (st.aview === "kaart") + '">Nederland &amp; België</button><button data-aview="wereld" aria-pressed="' + (st.aview === "wereld") + '">Wereld' + (ab.length ? " · " + ab.length : "") + "</button></div>";
+    WPER = {}; WCC = {}; list.forEach(function (e) { if (!(COORD[e.city] || XCOORD[e.city]) && WCOORD[e.city]) { WPER[e.city] = (WPER[e.city] || 0) + 1; WCC[e.cc] = 1; } });
+    var wn = Object.keys(WPER).length;
+    if (st.aview === "wereld") { if (wn) setTimeout(drawWorld, 0);
+      return head + ksub + (wn ? '<div class="mapbox" id="wmap"><div class="empty">Wereldkaart laden…</div></div>' : '<div class="empty">Geen concerten in het buitenland' + (st.hyear ? " in " + st.hyear : "") + ".</div>") +
+        ab.map(function (k) { return '<div class="trow" data-hcity="' + esc(akc[k]) + '" style="cursor:pointer"><span>' + esc(k) + "</span><b>" + abroad[k] + "× ›</b></div>"; }).join(""); }
+    WPER = null;
+    return head + ksub + '<div class="hl">' + list.length + " avonden · tik op een stad</div>" + '<div class="mapbox">' + mapSvg(per, { attr: "data-hcity", sel: "", ring: false }) +
+      '<div class="zoom"><button data-zoom="1.6">+</button><button data-zoom="0.625">−</button><button data-zoom="0">⟲</button></div></div>' + histStats(list);
+  }
+  var srt = st.hsort || "d";
+  if (st.aview === "art") return head + artView(list, srt) + foot;
+  if (st.aview === "fest") return head + festView(list, srt) + foot;
+  /* lijst */
+  var opts = [["d", "Nieuwste eerst"], ["o", "Oudste eerst"], ["n", "Artiest A–Z"], ["r", "Hoogste cijfer"]];
+  if (["d", "o", "n", "r"].indexOf(srt) < 0) srt = "d";
+  var name0 = function (e) { return nice(e.fn || (e.acts[0] || [e.loc])[0]); };
+  var L = list.slice();
+  if (srt === "o") L.reverse();
+  if (srt === "n") L.sort(function (a, b) { return name0(a).localeCompare(name0(b), "nl"); });
+  if (srt === "r") L = L.filter(function (e) { return typeof e.r === "number"; }).sort(function (a, b) { return b.r - a.r || (a.d < b.d ? 1 : -1); });
+  var sortSel = '<div class="sortbar"><span>' + L.length + (L.length === 1 ? " avond" : " avonden") + (srt === "r" ? " met een cijfer" : "") + '</span><select data-hsortsel aria-label="Sorteren">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + (srt === o[0] ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") + "</select></div>";
+  var yb = st.hyear && !st.q.trim() ? '<div class="hl">Jouw ' + st.hyear + "</div>" + yearSummary(list, st.hyear, all) : "";
+  var shown = L.slice(0, st.hlimit || 300), lastY = "", html = "";
+  shown.forEach(function (e) {
+    if ((srt === "d" || srt === "o") && !st.hyear && e.d.slice(0, 4) !== lastY) { lastY = e.d.slice(0, 4); html += '<div class="yhead"><b>' + lastY + "</b><span>" + years[lastY] + "</span></div>"; }
+    if (e.src === "a" && marks[e.id]) html += appRow({ id: e.id, s: marks[e.id].s, rv: marks[e.id].rv || {} }); else html += histRow(e);
+  });
+  if (!L.length) html = '<div class="empty">' + (srt === "r" ? "Nog geen concerten met een cijfer. Open een concert uit de app en geef het sterren." : "Niets gevonden.") + "</div>";
+  return head + yb + sortSel + html + (L.length > shown.length ? '<button class="others" data-hmore>nog ' + (L.length - shown.length) + " tonen</button>" : "") + foot;
 }
 /* overzicht: kaart met het gebied binnen 1,5 uur, en de maanden */
 var OV = { z: 1, cx: 160, cy: 220 };
@@ -1081,7 +1111,7 @@ function renderOv() {
 function render() {
   try { var _k = {}; KEEP_KEYS.forEach(function (k) { _k[k] = st[k]; }); sessionStorage.setItem("ca-view", JSON.stringify(_k)); } catch (e) {}
   try { var wn = ALL.length ? warnings().length : 0; document.querySelector('nav [data-tab="mine"]').classList.toggle("dot", wn > 0); } catch (e) {}
-  var inA = st.tab === "a" && (st.ayear === "arch" || st.ayear === "all");
+  var inA = st.tab === "a";
   $("sbar").classList.toggle("on", inA || !!st.q || $("sb").getAttribute("aria-pressed") === "true");   /* een actieve zoekterm is altijd te zien */
   $("q").placeholder = inA ? "Zoek artiest, festival, zaal, plaats of datum (bv. 1985)" : "Zoek artiest, zaal of stad";
   if ($("otherlbl")) $("otherlbl").textContent = st.other ? "Alleen concerten tonen" : "Ook overige activiteiten tonen";
@@ -1190,6 +1220,7 @@ $("main").addEventListener("click", function (e) {
   if (t.closest("[data-fx]")) { var fx2 = t.closest("[data-fx]").getAttribute("data-fx"); st.fx = st.fx || {}; st.fx[fx2] = !st.fx[fx2]; var y2 = scrollY; render(); window.scrollTo(0, y2); return; }
   if (t.closest("[data-ax]")) { var ax = t.closest("[data-ax]").getAttribute("data-ax"); st.ax = st.ax || {}; st.ax[ax] = !st.ax[ax]; var y1 = scrollY; render(); window.scrollTo(0, y1); return; }
   if (t.closest("[data-hx]")) { var hx = t.closest("[data-hx]").getAttribute("data-hx"); st.hx = st.hx || {}; st.hx[hx] = !st.hx[hx]; var y0 = scrollY; render(); window.scrollTo(0, y0); return; }
+  if (t.closest("[data-hyear]")) { st.hyear = t.closest("[data-hyear]").getAttribute("data-hyear"); st.hlimit = 300; render(); window.scrollTo(0, 0); return; }
   if (t.closest("[data-hmore]")) { st.hlimit = (st.hlimit || 300) + 500; var yy = scrollY; render(); window.scrollTo(0, yy); return; }
   if (t.closest("[data-hclear]")) { if (confirm("Je ingelezen archief wissen" + (SYNC && SYNC.token ? " (op al je gekoppelde apparaten)" : " van dit apparaat") + "? Je Excel-bestand zelf blijft gewoon bestaan.")) { HIST = null; try { localStorage.removeItem("ca-hist"); localStorage.setItem("ca-histdel", String(Date.now())); } catch (x) {} syncSoon(); render(); } return; }
   if (t.closest("[data-hcity]") && !OV.dragged) { openHistCity(t.closest("[data-hcity]").getAttribute("data-hcity")); return; }
@@ -1268,7 +1299,8 @@ function actEdit(e, render_) {   /* wijziging in 'Wie zag je?' bewaren */
   else return false;
   save("ca-marks", marks); try { buildSeen(); } catch (x) {} if (render_) { var y = scrollY; render(); window.scrollTo(0, y); } return true;
 }
-$("main").addEventListener("change", function (e) { if (actEdit(e, true)) return; });
+$("main").addEventListener("change", function (e) { if (actEdit(e, true)) return;
+  var ss = e.target.closest("[data-hsortsel]"); if (ss) { st.hsort = ss.value; st.hrev = false; render(); } });
 $("main").addEventListener("change", function (e) { var f = e.target.closest("[data-himport]"); if (f && f.files && f.files[0]) importHist(f.files[0]); });
 $("panel").addEventListener("input", function (e) {   /* notitie bij een kaartje bewaren tijdens het typen */
   var ta = e.target.closest("[data-note]"); if (!ta || !st.open) return;

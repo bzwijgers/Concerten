@@ -367,6 +367,7 @@ function actsOf(m) {
   if (!parts.length) parts = [m.s.n];
   return parts.map(function (n, i) { return [nice(n), i ? "V" : "H", !i]; });
 }
+function shownName(m) { var h = seenActs(m).filter(function (x) { return x[1] !== "V"; }); return h.length ? h.map(function (x) { return x[0]; }).join(" & ") : nice(m.s.n); }
 function seenActs(m) { return actsOf(m).filter(function (a) { return a[2] && a[0]; }); }
 /* synchroniseren via een privé-opslag op je eigen GitHub (alleen met jouw toegangscode; die blijft op dit apparaat) */
 var SYNC = load("ca-sync", null), syncBusy = false, syncTimer = 0;
@@ -580,6 +581,13 @@ function renderAgenda() {
   if (sl.length && !st.sinceOff && !anyFilter()) {
     var ns = sl.filter(function (c) { return c.seen; }).length;
     html += '<div class="since"><button data-since><b>✦ ' + sl.length + " nieuw sinds je vorige bezoek</b>" + (ns ? "<span>" + ns + (ns === 1 ? " van een artiest" : " van artiesten") + " die je eerder zag</span>" : "<span>tik om ze te zien</span>") + '</button><button class="x" data-since-off aria-label="Verbergen">✕</button></div>';
+  }
+  if ((st.f["new"] || st.f.since) && list.length) {
+    var seenNew = list.filter(function (c) { return c.seen; });
+    if (seenNew.length) {
+      html += '<div class="hl" style="margin-top:14px">★ Van artiesten die je eerder zag · ' + seenNew.length + "</div>" + seenNew.map(row).join("") +
+        '<div class="hl" style="margin-top:18px">Alle nieuwe concerten · ' + list.length + "</div>";
+    }
   }
   if (!list.length) html += '<div class="empty">Niets gevonden. ' + (anyFilter() ? '<button class="others" data-clear style="margin-top:12px">Alle filters uit</button>' : "") + "</div>";
   order.forEach(function (d) {
@@ -964,13 +972,13 @@ function renderArchive() {
   if (st.ayear !== "all" && !q && out.length && st.aview !== "kaart") {   /* jaaroverzicht */
     var zv = {}, zc = {}, ar = {}, newv = [], hv = {};
     ((HIST && HIST.ev) || []).forEach(function (e) { if (e.d.slice(0, 4) < st.ayear) hv[e.loc.toLowerCase().replace(/^(de|het|the)\s+/, "")] = 1; });
-    out.forEach(function (a) { var v = VENUES[a.s.v] || { label: a.s.v, city: "" }; zv[v.label] = (zv[v.label] || 0) + 1; if (v.city) zc[v.city] = 1; var k = nice(a.s.n).split(/\s+[+&]\s+| - /)[0]; ar[k] = (ar[k] || 0) + 1;
+    out.forEach(function (a) { var v = VENUES[a.s.v] || { label: a.s.v, city: "" }; zv[v.label] = (zv[v.label] || 0) + 1; if (v.city) zc[v.city] = 1; var mm = marks[a.id] || { s: a.s }; seenActs(mm).forEach(function (x) { ar[x[0]] = (ar[x[0]] || 0) + 1; });
       var lk = v.label.toLowerCase().replace(/^(de|het|the)\s+/, ""); if (HIST && !hv[lk] && newv.indexOf(v.label) < 0) newv.push(v.label); });
     var topk = function (o) { var k = Object.keys(o).sort(function (a, b) { return o[b] - o[a]; })[0]; return k ? [k, o[k]] : null; };
     var tz = topk(zv), ta = topk(ar), best = rated.slice().sort(function (a, b) { return b.rv.r - a.rv.r; })[0];
     yearBox = '<div class="hl">Jouw ' + st.ayear + "</div>" + '<div class="ys"><div><b>' + out.length + "</b><span>concerten</span></div><div><b>" + Object.keys(zv).length + "</b><span>zalen</span></div><div><b>" + Object.keys(zc).length + "</b><span>steden</span></div></div>" +
       '<div class="yl">' + (tz ? "Meest bezocht: <b>" + esc(tz[0]) + "</b> (" + tz[1] + "×)<br>" : "") + (ta && ta[1] > 1 ? "Vaakst gezien: <b>" + esc(ta[0]) + "</b> (" + ta[1] + "×)<br>" : "") +
-      (best ? "Hoogste cijfer: <b>" + esc(nice(best.s.n)) + "</b> (★ " + String(best.rv.r).replace(".", ",") + ")<br>" : "") + (newv.length ? "Voor het eerst: <b>" + newv.slice(0, 6).map(esc).join(", ") + "</b>" + (newv.length > 6 ? " en nog " + (newv.length - 6) : "") : "") + "</div>";
+      (best ? "Hoogste cijfer: <b>" + esc(shownName(marks[best.id] || { s: best.s })) + "</b> (★ " + String(best.rv.r).replace(".", ",") + ")<br>" : "") + (newv.length ? "Voor het eerst: <b>" + newv.slice(0, 6).map(esc).join(", ") + "</b>" + (newv.length > 6 ? " en nog " + (newv.length - 6) : "") : "") + "</div>";
   }
   var view = yseg + '<div class="seg" style="margin-top:8px">' + [["lijst", "Lijst"], ["kaart", "Kaart"]].map(function (o) { return '<button data-aview="' + o[0] + '" aria-pressed="' + (st.aview === o[0]) + '">' + o[1] + "</button>"; }).join("") + "</div>";
   if (st.aview === "wereld" || st.aview === "art" || st.aview === "fest") st.aview = "lijst";

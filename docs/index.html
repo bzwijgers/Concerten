@@ -799,6 +799,12 @@ function venueKeyFor(loc, city) {   /* logo als de zaal ook in de agenda staat *
   var l = loc.toLowerCase().replace(/^(de|het|the)\s+/, "");
   return Object.keys(VENUES).filter(function (k) { var v = VENUES[k]; return v.label && v.label.toLowerCase().replace(/^(de|het|the)\s+/, "").indexOf(l) === 0 && (!city || !v.city || v.city.toLowerCase() === city.toLowerCase()); })[0];
 }
+/* datum in alle schrijfwijzen, om op te zoeken: 1985-06-12, 12-6-1985, 12-06-1985, 12/6/1985, 12.6.1985, 12 juni 1985, 12 jun 1985, juni 1985, 6-1985 */
+function dateWords(iso) {
+  var p = iso.split("-"), y = p[0], m = +p[1], d = +p[2], mm = pad(m), dd = pad(d), ml = MONL[m - 1], ms = MON[m - 1];
+  return [iso, d + "-" + m + "-" + y, dd + "-" + mm + "-" + y, d + "/" + m + "/" + y, dd + "/" + mm + "/" + y, d + "." + m + "." + y, dd + "." + mm + "." + y,
+    d + " " + ml + " " + y, d + " " + ms + " " + y, ml + " " + y, m + "-" + y, mm + "-" + y, "'" + y.slice(2)].join(" ");
+}
 function histEvenings() {
   if (HIST && !histFixed && Object.keys(COORD).length) { histFixed = true; HIST.ev.forEach(function (e) { e.city = canonCity(e.city);
     if (e.city === "Deurne" && /rivierenhof|lotto|sportpaleis|arenberg/i.test(e.loc)) { e.city = "Antwerpen"; e.cc = "BE"; }
@@ -812,7 +818,7 @@ function histEvenings() {
     out.push({ id: id, d: m.s.d, loc: v.label, city: v.city, cc: v.cc || "NL", acts: sa.map(function (a) { return [a[0], v.fest ? "F" : a[1]]; }), r: (m.rv || {}).r, src: "a" }); });
   if (st.cc) out = out.filter(function (e) { return (e.cc || "NL") === st.cc; });
   var q = st.q.trim().toLowerCase();
-  if (q) out = out.filter(function (e) { var dd = parse(e.d); return (e.acts.map(function (a) { return a[0]; }).join(" ") + " " + (e.fn || "") + " " + e.d + " " + dd.getDate() + "-" + (dd.getMonth() + 1) + "-" + dd.getFullYear() + " " + dd.getDate() + " " + MONL[dd.getMonth()] + " " + dd.getFullYear() + " " + e.loc + " " + e.city).toLowerCase().indexOf(q) >= 0; });
+  if (q) out = out.filter(function (e) { var dd = parse(e.d); return (e.acts.map(function (a) { return a[0]; }).join(" ") + " " + (e.fn || "") + " " + dateWords(e.d) + " " + e.loc + " " + e.city).toLowerCase().indexOf(q) >= 0; });
   return out.sort(function (a, b) { return a.d < b.d ? 1 : -1; });
 }
 function flag(cc) { return !cc || cc === "NL" || cc.length !== 2 ? "" : " " + String.fromCodePoint(0x1F1E6 + cc.charCodeAt(0) - 65, 0x1F1E6 + cc.charCodeAt(1) - 65); }
@@ -1112,7 +1118,7 @@ function render() {
   try { var _k = {}; KEEP_KEYS.forEach(function (k) { _k[k] = st[k]; }); sessionStorage.setItem("ca-view", JSON.stringify(_k)); } catch (e) {}
   try { var wn = ALL.length ? warnings().length : 0; document.querySelector('nav [data-tab="mine"]').classList.toggle("dot", wn > 0); } catch (e) {}
   var inA = st.tab === "a";
-  $("sbar").classList.toggle("on", inA || !!st.q || $("sb").getAttribute("aria-pressed") === "true");   /* een actieve zoekterm is altijd te zien */
+  $("sbar").classList.toggle("on", !!st.q || $("sb").getAttribute("aria-pressed") === "true");   /* een actieve zoekterm is altijd te zien */
   $("q").placeholder = inA ? "Zoek artiest, festival, zaal, plaats of datum (bv. 1985)" : "Zoek artiest, zaal of stad";
   if ($("otherlbl")) $("otherlbl").textContent = st.other ? "Alleen concerten tonen" : "Ook overige activiteiten tonen";
   Array.prototype.forEach.call(document.querySelectorAll(".flagb"), function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-cc") === st.cc)); });

@@ -478,7 +478,7 @@ function openSync() {
     '<li>Maak een <b>toegangscode</b>: <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">nieuwe toegangscode ↗</a>. Naam bv. <i>Concertagenda</i>, vervaldatum 1 jaar; bij <i>Repository access</i>: <b>Only select repositories</b> → concerten-sync; bij <i>Permissions → Contents</i>: <b>Read and write</b>. Kopieer de code (begint met github_pat_).</li>' +
     '<li>Vul hieronder in en tik op Koppelen. Doe dit op elk apparaat (telefoon, pc) met dezelfde code.</li></ol>' +
     '<div class="facts" style="margin:12px 0"><label class="fact"><span>GitHub-naam</span><input id="sgo" value="' + esc((SYNC && SYNC.owner) || "bzwijgers") + '" class="sin"></label><label class="fact"><span>Opslag</span><input id="sgr" value="' + esc((SYNC && SYNC.repo) || "concerten-sync") + '" class="sin"></label></div>' +
-    '<label class="fact" style="display:block;margin-bottom:12px"><span>Toegangscode</span><input id="sgt" type="password" autocomplete="off" placeholder="github_pat_…" class="sin"></label>' +
+    '<label class="fact" style="display:block;margin-bottom:12px"><span>Toegangscode</span><span style="display:flex;gap:8px;align-items:center"><input id="sgt" type="text" inputmode="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="github_pat_…" class="sin" style="-webkit-text-security:disc;flex:1"><button class="btn" type="button" data-sync-paste style="padding:6px 12px">Plakken</button></span></label>' +
     '<div class="acts"><button class="btn pri wide" data-sync-on>Koppelen</button></div>') +
     '<p class="rooms" style="margin-top:14px;font-size:12px;color:var(--faint)">De toegangscode blijft alleen op dit apparaat. Wat op twee apparaten verschilt, wordt samengevoegd; een concert dat je ergens verwijdert, verdwijnt overal.</p></div>';
   showSheet(); showSyncStatus();
@@ -1415,9 +1415,15 @@ $("sheet").addEventListener("click", function (e) {
   if (e.target.closest("[data-hdok]")) { var hf = $("hfrom").value, ht = $("hto").value; if (hf && ht && ht < hf) { var x_ = hf; hf = ht; ht = x_; } st.hfrom = hf; st.hto = ht; if (hf || ht) st.hyear = ""; closeSheet(); render(); window.scrollTo(0, 0); return; }
   if (e.target.closest("[data-hdclear]")) { st.hfrom = st.hto = ""; closeSheet(); render(); return; }
   if (e.target.closest("[data-sync-on]")) {
-    var tok = $("sgt").value.trim(), ow = $("sgo").value.trim(), rp = $("sgr").value.trim();
+    var tok = $("sgt").value.replace(/\s+/g, ""), ow = $("sgo").value.trim(), rp = $("sgr").value.trim();
     if (!/^(github_pat_|ghp_)/.test(tok)) { alert("Plak de toegangscode van GitHub (begint met github_pat_)."); return; }
     SYNC = { owner: ow, repo: rp, token: tok }; save("ca-sync", SYNC); openSync(); $("syncst").textContent = "Bezig…"; syncNow(true); return;
+  }
+  if (e.target.closest("[data-sync-paste]")) {   /* plakken met één tik (iPad/iPhone plakken soms lastig in een codeveld) */
+    e.preventDefault();
+    if (navigator.clipboard && navigator.clipboard.readText) navigator.clipboard.readText().then(function (t) { $("sgt").value = String(t || "").replace(/\s+/g, ""); }).catch(function () { $("sgt").focus(); alert("Plakken lukte niet automatisch. Houd het vak ingedrukt en kies Plakken."); });
+    else { $("sgt").focus(); alert("Houd het vak ingedrukt en kies Plakken."); }
+    return;
   }
   if (e.target.closest("[data-sync-now]")) { $("syncst").textContent = "Bezig…"; syncNow(true); return; }
   if (e.target.closest("[data-sync-off]")) { if (confirm("Dit apparaat ontkoppelen? Je gegevens blijven hier en op GitHub staan.")) { localStorage.removeItem("ca-sync"); SYNC = null; openSync(); } return; }

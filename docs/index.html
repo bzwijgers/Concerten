@@ -313,7 +313,7 @@ function cleanTitle(n, v) {
 /* geen concert: clubnachten, feesten, kinderactiviteiten, film, lezingen, spelletjes. Bewust smal (bands als 'Kids With Buns' of 'Bloc Party' blijven) */
 var OTHER = new RegExp([
   "\\bacademy\\s*:", "\\b(artist|author) talk\\b", "\\bq&a\\b", "film & talk", "\\bscreening\\b", "\\bdocumentar(y|e)\\b", "nacht van de .*film", "food\\.film",
-  "spelletjesavond", "co-?working", "\\bbingo\\b", "\\bopen podium\\b", "opening expo", "\\bexpositie\\b", "tentoonstelling", "\\bjam sessions?\\b", "\\bseminar\\b", "\\bworkshop\\b",
+  "spelletjesavond", "co-?working", "\\bcursus\\b", "avondcursus", "kleuter", "\\(\\d+\\s*-\\s*\\d+\\s*j(aar)?\\)", "zing-?cirkel", "peuter", "baby(concert|voorstelling)", "\\bbingo\\b", "\\bopen podium\\b", "opening expo", "\\bexpositie\\b", "tentoonstelling", "\\bjam sessions?\\b", "\\bseminar\\b", "\\bworkshop\\b",
   "poppentheater", "verhalentheater", "kindervoorstelling", "kinderfeest", "kindercarnaval", "kinderfestival", "kids middag", "kids & kunst", "^kids halloween", "kids edition", "\\bteen party\\b", "kleine theater", "theatertroep", "theatershow",
   "\\bclubnacht\\b", "\\bclub ?night\\b", "\\brave\\b", "silent disco", "\\bfoute?\\b.*\\b(party|feest|feestje)\\b", "\\b4 uur fout\\b", "qmusic", "techno (night|tuesday)", "history of house",
   "\\b(halloween|pride|queer|indie|teen|thrash metal|k-pop|r&b|reggae ska|swing reunion|80'?s|90'?s|00'?s) ?(pop )?(party|feest|night)\\b", "\\bhouse party\\b", "dj party", "\\bborrel\\b", "rnborrel", "creatives cafe",
@@ -388,10 +388,10 @@ function ghApi(path, opt) {
   opt.cache = "no-store";
   return fetch("https://api.github.com/repos/" + encodeURIComponent(SYNC.owner) + "/" + encodeURIComponent(SYNC.repo) + path, opt);
 }
+/* sync.json = je markeringen (klein, bij elke wijziging); hist.json = je archief (alleen als dat verandert) */
 function syncState() {
-  var h = HIST && HIST.ev ? HIST : null;
-  return { app: "barrys-concerten-sync", v: 1, marks: marks, del: DEL || load("ca-del", {}), mine: mine, minet: +(localStorage.getItem("ca-minet") || 0),
-    hist: h, histdel: +(localStorage.getItem("ca-histdel") || 0) };
+  return { app: "barrys-concerten-sync", v: 2, marks: marks, del: DEL || load("ca-del", {}), mine: mine, minet: +(localStorage.getItem("ca-minet") || 0),
+    histat: HIST && HIST.at ? HIST.at : "", histdel: +(localStorage.getItem("ca-histdel") || 0) };
 }
 function mergeRemote(r) {
   if (!r || r.app !== "barrys-concerten-sync") return false;
@@ -405,39 +405,59 @@ function mergeRemote(r) {
   });
   var cut = Date.now() - 180 * 864e5; Object.keys(DEL).forEach(function (id) { if (DEL[id] < cut) delete DEL[id]; });
   if ((r.minet || 0) > +(localStorage.getItem("ca-minet") || 0)) { mine = r.mine || []; localStorage.setItem("ca-mine", JSON.stringify(mine)); localStorage.setItem("ca-minet", String(r.minet)); changed = true; }
-  var lat = HIST && HIST.at ? Date.parse(HIST.at) || 0 : 0, rat = r.hist && r.hist.at ? Date.parse(r.hist.at) || 0 : 0, hd = Math.max(+(localStorage.getItem("ca-histdel") || 0), r.histdel || 0);
-  localStorage.setItem("ca-histdel", String(hd));
-  if (hd > Math.max(lat, rat)) { if (HIST) { HIST = null; localStorage.removeItem("ca-hist"); changed = true; } }
-  else if (rat > lat && r.hist) { HIST = r.hist; histFixed = false; try { localStorage.setItem("ca-hist", JSON.stringify(HIST)); } catch (e) {} changed = true; }
+  localStorage.setItem("ca-histdel", String(Math.max(+(localStorage.getItem("ca-histdel") || 0), r.histdel || 0)));
+  if (r.hist && r.hist.ev && histNewer(r.hist.at)) { setHist(r.hist); changed = true; }   /* oude vorm: archief zat in sync.json */
   localStorage.setItem("ca-marks", JSON.stringify(marks)); localStorage.setItem("ca-del", JSON.stringify(DEL)); snapMarks();
   return changed;
 }
-function syncNow(manual) {
-  if (!SYNC || !SYNC.token || syncBusy) return Promise.resolve();
-  syncBusy = true; var sha = null, remoteTxt = "";
-  var fail = function (msg) { var had = SYNC.err; SYNC.err = msg; SYNC.errAt = new Date().toISOString(); save("ca-sync", SYNC); syncBusy = false; if (manual || $("syncst")) showSyncStatus(); if (!had && st.tab === "agenda" && ALL.length) render(); };
-  return ghApi("/contents/sync.json").then(function (res) {
-    if (res.status === 404) return ghApi("").then(function (r2) { if (r2.status === 404) throw new Error("Opslag " + SYNC.owner + "/" + SYNC.repo + " niet gevonden, of de toegangscode heeft er geen toegang toe."); return null; });
+function histAt() { return HIST && HIST.at ? Date.parse(HIST.at) || 0 : 0; }
+function histNewer(at) { var t = Date.parse(at || "") || 0; return t > histAt() && t > +(localStorage.getItem("ca-histdel") || 0); }
+function setHist(h) { HIST = h; histFixed = false; try { localStorage.setItem("ca-hist", JSON.stringify(h)); } catch (e) {} }
+function ghGet(name) {   /* {sha, txt} of null als het bestand er (nog) niet is */
+  return ghApi("/contents/" + name).then(function (res) {
+    if (res.status === 404) return null;
     if (res.status === 401) throw new Error("De toegangscode klopt niet of is verlopen. Maak een nieuwe aan.");
     if (res.status === 403) throw new Error("Geen toestemming: geef de toegangscode bij 'Contents' de rechten Read and write.");
     if (!res.ok) throw new Error("GitHub antwoordt met fout " + res.status + ".");
-    return res.json().then(function (j) { sha = j.sha;
-      if (j.content && j.encoding === "base64") return b64dec(j.content);
-      return ghApi("/git/blobs/" + j.sha).then(function (b) { return b.json(); }).then(function (b) { return b64dec(b.content); });   /* groter dan 1 MB */
+    return res.json().then(function (j) {
+      if (j.content && j.encoding === "base64") return { sha: j.sha, txt: b64dec(j.content) };
+      return ghApi("/git/blobs/" + j.sha).then(function (b) { return b.json(); }).then(function (b) { return { sha: j.sha, txt: b64dec(b.content) }; });   /* groter dan 1 MB */
     });
-  }).then(function (txt) {
-    remoteTxt = txt || "";
-    var changed = false; if (txt) { try { changed = mergeRemote(JSON.parse(txt)); } catch (e) {} }
+  });
+}
+function ghPut(name, txt, sha) {
+  return ghApi("/contents/" + name, { method: "PUT", body: JSON.stringify({ message: "sync " + new Date().toISOString(), content: b64enc(txt), sha: sha || undefined }) }).then(function (res) {
+    if (res.status === 409 || res.status === 422) return "conflict";
+    if (!res.ok) throw new Error(res.status === 403 || res.status === 404 ? "Schrijven mislukt: geef de toegangscode bij 'Contents' de rechten Read and write." : "Opslaan op GitHub mislukt (" + res.status + ").");
+    return "ok";
+  });
+}
+function syncNow(manual, tries) {
+  if (!SYNC || !SYNC.token || (syncBusy && !tries)) return Promise.resolve();
+  syncBusy = true; tries = tries || 0;
+  var fail = function (msg) { var had = SYNC.err; SYNC.err = msg; SYNC.errAt = new Date().toISOString(); save("ca-sync", SYNC); syncBusy = false; if (manual || $("syncst")) showSyncStatus(); if (!had && st.tab === "agenda" && ALL.length) render(); };
+  var remote = null, rh = null, changed = false;
+  return ghGet("sync.json").then(function (f) {
+    if (!f) return ghApi("").then(function (r2) { if (r2.status === 404) throw new Error("Opslag " + SYNC.owner + "/" + SYNC.repo + " niet gevonden, of de toegangscode heeft er geen toegang toe."); });
+    remote = f; var r = null; try { r = JSON.parse(f.txt); } catch (e) {}
+    changed = mergeRemote(r);
+    if (r && r.histat && histNewer(r.histat)) return ghGet("hist.json").then(function (h) { if (h) { try { var hj = JSON.parse(h.txt); if (hj && hj.ev) { setHist(hj); changed = true; } } catch (e) {} } });
+  }).then(function () {
+    var hd = +(localStorage.getItem("ca-histdel") || 0);
+    if (HIST && hd > histAt()) { HIST = null; localStorage.removeItem("ca-hist"); changed = true; }
     if (changed) { try { rescueMarks(); buildSeen(); } catch (e) {} if (ALL.length) { var y = scrollY; render(); window.scrollTo(0, y); } }
+    /* archief versturen als het hier nieuwer is dan wat GitHub kent */
+    var rat = 0; try { rat = Date.parse(JSON.parse(remote ? remote.txt : "{}").histat || "") || 0;   /* oude vorm (archief in sync.json): opnieuw als hist.json versturen */ } catch (e) {}
+    if (HIST && HIST.ev && histAt() > rat) return ghGet("hist.json").then(function (h) { return ghPut("hist.json", JSON.stringify(HIST), h && h.sha); });
+    return "ok";
+  }).then(function (hres) {
+    if (hres === "conflict") return "conflict";
     var out = JSON.stringify(syncState());
-    if (out === remoteTxt) return true;
-    return ghApi("/contents/sync.json", { method: "PUT", body: JSON.stringify({ message: "sync " + new Date().toISOString(), content: b64enc(out), sha: sha || undefined }) }).then(function (res) {
-      if (res.status === 409 || res.status === 422) { syncBusy = false; return syncNow(manual); }   /* tegelijk gewijzigd op een ander apparaat: opnieuw */
-      if (!res.ok) throw new Error(res.status === 403 || res.status === 404 ? "Schrijven mislukt: geef de toegangscode bij 'Contents' de rechten Read and write." : "Opslaan op GitHub mislukt (" + res.status + ").");
-      return true;
-    });
-  }).then(function (ok) {
-    if (ok === true) { var had = SYNC.err; SYNC.last = new Date().toISOString(); delete SYNC.err; save("ca-sync", SYNC); if ((had || manual) && st.tab === "agenda" && ALL.length) render(); }
+    if (remote && out === remote.txt) return "ok";
+    return ghPut("sync.json", out, remote && remote.sha);
+  }).then(function (res) {
+    if (res === "conflict") { if (tries < 3) return syncNow(manual, tries + 1); throw new Error("Tegelijk gewijzigd op een ander apparaat; probeer het zo nog eens."); }   /* opnieuw ophalen en samenvoegen */
+    var had = SYNC.err; SYNC.last = new Date().toISOString(); delete SYNC.err; save("ca-sync", SYNC); if ((had || manual) && st.tab === "agenda" && ALL.length) render();
     syncBusy = false; if (manual || $("syncst")) showSyncStatus();
   }).catch(function (e) { fail(e && e.message || String(e)); });
 }

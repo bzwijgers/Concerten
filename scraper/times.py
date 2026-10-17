@@ -5,7 +5,8 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import date, timedelta
 from common import fetch
 
-VENUES = ("melkweg", "effenaar", "hedon", "mezz", "patronaat", "pul", "dynamo", "boerderij", "gebouwt", "amare", "nobel", "annabel")
+VENUES = ("melkweg", "effenaar", "hedon", "mezz", "patronaat", "pul", "dynamo", "boerderij", "gebouwt", "amare", "nobel", "annabel",
+          "reflektor", "vorstin", "depot")
 PER_VENUE = 120     # nieuwe pagina's per zaal per run
 RETRY_DAYS = 14     # niets gevonden: na zoveel dagen opnieuw proberen (tijd kan later bekend worden)
 
@@ -38,6 +39,11 @@ def find_time(page):
             return dt.strftime("%H:%M")
         if sd[1:3] != ("00", "00"):
             return f"{sd[1]}:{sd[2]}"          # zoals de zaal het schrijft (geen tijdzone-omrekening)
+    m = re.search(r'<time[^>]*datetime="(\d{4}-\d\d-\d\d)T(\d\d):(\d\d)(?::\d\d)?Z"', page)   # Het Depot: <time datetime="...Z"> in UTC
+    if m and (m.group(2), m.group(3)) != ("00", "00"):
+        from datetime import datetime
+        from zoneinfo import ZoneInfo
+        return datetime.fromisoformat(f"{m.group(1)}T{m.group(2)}:{m.group(3)}+00:00").astimezone(ZoneInfo("Europe/Amsterdam")).strftime("%H:%M")
     m = re.search(r'class="[^"]*date__time[^"]*">\s*(\d{1,2}):(\d{2})\s*<', page)   # Melkweg: tijd in de paginakop
     if m and _hm(m.group(1), m.group(2)):
         return _hm(m.group(1), m.group(2))
@@ -49,7 +55,7 @@ def find_time(page):
         dr = [_hm(h, m) for h, m, l in pairs if not re.match(START, l, re.I)]
         if st and st[0]: return st[0]
         if dr and dr[0]: return "deuren " + dr[0]
-    lab =r"(?i)\b(" + START + "|" + DOOR + r")\b\s*:?\s*\|?\s*(?:om\s*)?(\d{1,2})[:.](\d{2})"
+    lab =r"(?i)\b(" + START + "|" + DOOR + r")\b\s*[:•·]?\s*\|?\s*(?:om\s*)?(\d{1,2})[:.](\d{2})"   # ook 'Deuren • 19:30' (Reflektor)
     start = door = None
     for m in re.finditer(lab, t):
         v = _hm(m.group(2), m.group(3))

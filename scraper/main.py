@@ -200,6 +200,15 @@ def main():
         fresh[key] = [e for e in fresh[key] if not gone.search(e["n"])]
         for e in fresh[key]: e["n"] = newdate.sub("", e["n"]).strip()
         if len(fresh[key]) < before: print(f"{key}: {before - len(fresh[key])} geannuleerd/verplaatst weggelaten")
+    # hetzelfde concert twee keer bij dezelfde zaal (andere link, zelfde dag, titel en tijd): één houden
+    for key in fresh:
+        seen_, keep_ = set(), []
+        for e in fresh[key]:
+            k_ = (e["d"], _re.sub(r"[^a-z0-9]", "", e["n"].lower()), e.get("t") or "")
+            if k_ in seen_: continue
+            seen_.add(k_); keep_.append(e)
+        if len(keep_) < len(fresh[key]): print(f"{key}: {len(fresh[key]) - len(keep_)} dubbel weggelaten")
+        fresh[key] = keep_
     # aanvangstijden aanvullen van de eigen detailpagina's (eenmalig per concert, onthouden in data/times.json)
     try:
         times.fill(fresh, DATA)

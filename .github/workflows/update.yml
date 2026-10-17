@@ -53,10 +53,8 @@ jobs:
           if [ -f data/alerts.md ]; then
             if [ -z "$N" ]; then gh issue create --title "$T" --body-file data/alerts.md
             else
-              OLD=$(gh issue view "$N" --json body --jq .body | grep -o '(`[a-z0-9_-]*`)' | sort)
-              NEW=$(grep -o '(`[a-z0-9_-]*`)' data/alerts.md | sort)
               gh issue edit "$N" --body-file data/alerts.md
-              [ "$OLD" = "$NEW" ] || gh issue comment "$N" --body "Gewijzigd: $(grep -c '^- ' data/alerts.md) zaal/zalen met problemen. @bzwijgers"
+              [ -f data/alerts.changed ] && gh issue comment "$N" --body "Gewijzigd: $(grep -c '^- ' data/alerts.md) zaal/zalen met problemen. @bzwijgers" || true
             fi
           elif [ -n "$N" ]; then
             gh issue close "$N" --comment "Alles werkt weer. @bzwijgers"

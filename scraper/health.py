@@ -42,14 +42,22 @@ def check(status, data_dir, root, min_events, skip=("ticketswap",)):
                 h["good"] = cnt; why = ""          # al een week zo: geaccepteerd als nieuw normaal
         if why:
             h.setdefault("since", t)
-            alerts.append({"v": key, "name": names.get(key, key), "why": why, "since": h["since"]})
+            # pas melden als het probleem er de vorige dag ook al was: een storing van één run is normaal
+            if h["since"] < t:
+                alerts.append({"v": key, "name": names.get(key, key), "why": why, "since": h["since"]})
         else:
             h.pop("since", None)
             if st.get("ok") and not st.get("manual"):
                 h["good"] = cnt
-    for k in [k for k in health if k not in status]:
+    for k in [k for k in health if k not in status and not k.startswith("_")]:
         del health[k]
+    keys = sorted(a["v"] for a in alerts)
+    changed = keys != health.get("_last", [])
+    health["_last"] = keys
     json.dump(health, open(hp, "w", encoding="utf-8"), ensure_ascii=False, indent=0, sort_keys=True)
+    flag = os.path.join(data_dir, "alerts.changed")   # voor de melding op GitHub: alleen een bericht als de lijst echt verandert
+    if changed: open(flag, "w").write("1")
+    elif os.path.exists(flag): os.remove(flag)
     md = os.path.join(data_dir, "alerts.md")
     if alerts:
         lines = ["@bzwijgers, de dagelijkse update vond problemen bij deze zalen:", ""]

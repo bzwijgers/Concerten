@@ -1,7 +1,7 @@
 {
 "_last": [],
 "ab": {
-"good": 252
+"good": 250
 },
 "afasdome": {
 "good": 32
@@ -173,7 +173,7 @@
 "good": 56
 },
 "gebouwt": {
-"good": 67
+"good": 68
 },
 "gigant": {
 "good": 37
@@ -224,7 +224,7 @@
 "good": 3
 },
 "manifesto": {
-"good": 15
+"good": 14
 },
 "meester": {
 "good": 20
@@ -264,7 +264,8 @@
 "good": 0
 },
 "p3": {
-"good": 61
+"good": 61,
+"since": "2026-10-18"
 },
 "paard": {
 "good": 165

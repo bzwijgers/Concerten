@@ -39,9 +39,20 @@ jobs:
           git config user.name "concert-agenda-bot"; git config user.email "bot@users.noreply.github.com"
           git add -A data docs/data docs/thumbs docs/logos
           git diff --cached --quiet || git commit -m "Update concerten $(date -u +%F)"
-          # botst dit met een andere update die net klaar was: de gegevens van deze (nieuwere) run winnen
-          git pull --rebase -X theirs -q origin main || { git checkout --theirs . 2>/dev/null; git add -A; GIT_EDITOR=true git rebase --continue; }
-          git push
+          # kwamen er tijdens deze run nieuwe commits bij (pc-lijst, app-wijziging): daarbovenop zetten.
+          # Gegevens van deze run winnen; een nieuwe pc-lijst in data/inbox blijft staan voor de volgende run.
+          for i in 1 2 3 4; do
+            git push -q && exit 0
+            git fetch -q origin main
+            if ! git rebase -q -X theirs origin/main; then
+              git diff --name-only --diff-filter=U | while read -r f; do
+                if [[ "$f" == data/inbox/* ]] && git cat-file -e "origin/main:$f" 2>/dev/null; then git checkout origin/main -- "$f"
+                elif [ -e "$f" ]; then git add "$f"; else git rm -q --cached "$f" 2>/dev/null || true; fi
+              done || true
+              GIT_EDITOR=true git rebase --continue || { git rebase --abort; sleep 5; }
+            fi
+          done
+          exit 1
       - name: Melding bij problemen met zalen
         continue-on-error: true
         if: steps.gate.outputs.run == '1'

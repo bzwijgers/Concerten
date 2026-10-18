@@ -63,6 +63,23 @@ class MainActivity : AppCompatActivity() {
         if (savedInstanceState == null) bars(false)
         web.addJavascriptInterface(object {
             @JavascriptInterface fun splashDone() { runOnUiThread { bars(true) } }
+            // poster delen (Instagram, WhatsApp, ...): bestand in de cache zetten en het deelmenu van Android openen
+            @JavascriptInterface fun shareImage(b64: String, mime: String, text: String) {
+                try {
+                    val dir = java.io.File(cacheDir, "share").apply { mkdirs() }
+                    val ext = if (mime.contains("png")) "png" else if (mime.contains("webp")) "webp" else "jpg"
+                    val f = java.io.File(dir, "poster.$ext")
+                    f.writeBytes(android.util.Base64.decode(b64, android.util.Base64.DEFAULT))
+                    val uri = androidx.core.content.FileProvider.getUriForFile(this@MainActivity, "$packageName.files", f)
+                    val i = Intent(Intent.ACTION_SEND).setType(mime).putExtra(Intent.EXTRA_STREAM, uri).putExtra(Intent.EXTRA_TEXT, text).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    runOnUiThread { startActivity(Intent.createChooser(i, "Poster delen")) }
+                } catch (e: Exception) {
+                    runOnUiThread { android.widget.Toast.makeText(this@MainActivity, "Delen mislukt: " + e.message, android.widget.Toast.LENGTH_LONG).show() }
+                }
+            }
+            @JavascriptInterface fun shareText(text: String) {
+                runOnUiThread { startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text), "Delen")) }
+            }
             @JavascriptInterface fun saveFile(name: String, content: String) {
                 runOnUiThread {
                     pendingSave = content
@@ -102,8 +119,9 @@ class MainActivity : AppCompatActivity() {
             override fun onShowFileChooser(view: WebView, cb: ValueCallback<Array<Uri>>, params: FileChooserParams): Boolean {
                 fileCb?.onReceiveValue(null)
                 fileCb = cb
-                val i = Intent(Intent.ACTION_GET_CONTENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*")
-                return try { pick.launch(Intent.createChooser(i, "Kies je concertlijst")); true }
+                val img = params.acceptTypes.any { it.startsWith("image") }   // poster toevoegen: foto's; archief: elk bestand
+                val i = Intent(Intent.ACTION_GET_CONTENT).addCategory(Intent.CATEGORY_OPENABLE).setType(if (img) "image/*" else "*/*")
+                return try { pick.launch(Intent.createChooser(i, if (img) "Kies een poster" else "Kies je concertlijst")); true }
                 catch (e: Exception) { fileCb = null; false }
             }
         }

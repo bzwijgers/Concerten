@@ -101,7 +101,14 @@ header.sc{border-bottom-color:var(--line)}
 .sortbar{display:flex;align-items:center;justify-content:space-between;margin:12px 0 4px;color:var(--faint);font:700 11px var(--f-b);text-transform:uppercase;letter-spacing:.08em}
 .sortbar select{background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:6px 8px;font:600 13px var(--f-b);text-transform:none;letter-spacing:0}
 .yhead{position:sticky;top:var(--hh,150px);z-index:4;background:var(--bg);display:flex;align-items:baseline;gap:8px;padding:14px 0 4px}.yhead b{font:800 18px var(--f-d)}.yhead span{color:var(--faint);font-size:12px}
-.posters{display:flex;gap:10px;overflow-x:auto;margin:6px 0 8px}.posters a{flex:none}.posters img{height:220px;max-width:85vw;border-radius:12px;object-fit:contain;background:var(--card2);display:block}
+.posters{display:flex;gap:10px;overflow-x:auto;margin:6px 0 6px;padding-bottom:4px}.pst{flex:none;position:relative;padding:0;border:0;background:none;cursor:pointer}.pst img{height:220px;max-width:70vw;border-radius:12px;object-fit:contain;background:var(--card2);display:block}
+.ptag{position:absolute;left:6px;bottom:6px;font-size:11px;padding:2px 7px;border-radius:9px;background:rgba(0,0,0,.6);color:#fff}
+.padd{width:130px;height:220px;border:1.5px dashed var(--line);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--faint);font-size:13px;text-align:center}.padd b{font-size:30px;font-weight:400}
+.pstat{font-size:12.5px;color:var(--faint);margin:2px 0 4px}.pstat a{color:inherit}.pstat .lnk{font-size:12.5px;padding:0;margin:0}
+#pview{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.94);display:flex;flex-direction:column}#pview[hidden]{display:none}
+#pview img{flex:1;min-height:0;width:100%;object-fit:contain;padding:calc(env(safe-area-inset-top, 0px) + 54px) 10px 10px}
+#pview .pvbar{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding:10px 12px calc(env(safe-area-inset-bottom, 0px) + 16px)}#pview .pvbar .btn{min-width:110px}
+#pview .xclose{position:absolute;top:calc(env(safe-area-inset-top, 0px) + 10px);right:12px;float:none;margin:0}
 .since{display:flex;align-items:stretch;gap:6px;margin:12px 0 2px}.since [data-since]{flex:1;text-align:left;border:1px solid rgba(142,155,196,.35);background:rgba(142,155,196,.12);color:var(--fg);border-radius:14px;padding:10px 12px;cursor:pointer;font:500 13px var(--f-b)}
 .since [data-since] b{display:block;font:700 14.5px var(--f-d)}.since [data-since] span{color:var(--muted)}.since .x{border:0;background:none;color:var(--faint);font-size:16px;cursor:pointer;padding:0 6px}
 .warn{margin:12px 0 4px;border:1px solid rgba(255,107,107,.35);background:rgba(255,107,107,.07);border-radius:14px;padding:6px 10px}.warn .hl{margin:6px 0 2px;color:var(--red)}
@@ -233,6 +240,7 @@ window.onerror = function (msg, src, line) { try { var m = localStorage.getItem(
   <div class="chips" id="chips"></div>
 </div></header>
 <main class="wrap" id="main"><div class="empty">Laden…</div></main>
+<div id="pview" hidden><button class="xclose" data-pvclose aria-label="Sluiten">✕</button><img alt="poster"><div class="pvbar"><button class="btn pri" data-pvshare>Delen</button><a class="btn" data-pvsrc target="_blank" rel="noopener" hidden>Bron ↗</a><button class="btn" data-pvdel style="color:var(--red)" hidden>Weghalen</button></div></div>
 <div class="sheet" id="sheet"><div class="bk" data-close></div><div class="panel" id="panel"></div></div>
 <nav id="nav" class="bottombar">
   <button data-tab="agenda" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Agenda</button>
@@ -1311,19 +1319,106 @@ function ics(c) {
     "SUMMARY:" + nice(c.n), "LOCATION:" + v.label + ", " + v.city, "URL:" + c.u, "BEGIN:VALARM", "TRIGGER:-P1D", "ACTION:DISPLAY", "DESCRIPTION:Morgen: " + nice(c.n), "END:VALARM", "END:VEVENT", "END:VCALENDAR"].join("\r\n");
   var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([txt], { type: "text/calendar" })); a.download = "concert.ics"; a.click();
 }
-/* posters bij een concert met kaartje: afbeelding van de zaal (en van Ticketmaster als die hetzelfde concert heeft) */
-var IMGS = null;
+/* posters bij een concert met kaartje: je eigen posters en die van de artiest staan in je privé sync-opslag (posters/), de afbeelding van de zaal komt van de zaalsite */
+var IMGS = null, AUTO = null, AUTOat = 0, PBLOB = {}, PV = [], PVI = -1, PVB = null;
+function ghRaw(path) {   /* afbeelding uit je privé-opslag; bewaard op het apparaat zodat hij niet steeds opnieuw geladen wordt */
+  if (PBLOB[path]) return Promise.resolve(PBLOB[path]);
+  var key = location.origin + "/__poster/" + path, cc = null;
+  var cached = window.caches ? caches.open("ca-posters").then(function (c_) { cc = c_; return c_.match(key); }).then(function (r) { return r ? r.blob() : null; }).catch(function () { return null; }) : Promise.resolve(null);
+  return cached.then(function (b) {
+    if (b && b.size) return b;
+    return fetch("https://api.github.com/repos/" + encodeURIComponent(SYNC.owner) + "/" + encodeURIComponent(SYNC.repo) + "/contents/" + path, { headers: { Authorization: "Bearer " + SYNC.token, Accept: "application/vnd.github.raw" }, cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.blob(); })
+      .then(function (b) { try { if (cc) cc.put(key, new Response(b)); } catch (e) {} return b; });
+  }).then(function (b) { PBLOB[path] = { url: URL.createObjectURL(b), blob: b }; return PBLOB[path]; });
+}
+function loadAuto(force) {
+  if (!SYNC || !SYNC.token) return Promise.resolve({});
+  if (AUTO && !force && Date.now() - AUTOat < 300000) return Promise.resolve(AUTO);
+  return ghGet("posters/auto.json").then(function (r) { AUTO = r ? JSON.parse(r.txt) : {}; AUTOat = Date.now(); return AUTO; }).catch(function () { return AUTO || {}; });
+}
+function posterRequest(id) {   /* vraagt je sync-opslag om (opnieuw) posters van de artiest te zoeken */
+  if (!SYNC || !SYNC.token) return;
+  AUTO = null;
+  ghGet("posters/request.json").catch(function () { return null; }).then(function (r) { return ghPut("posters/request.json", JSON.stringify({ id: id || "", at: new Date().toISOString() }), r && r.sha); }).catch(function () {});
+}
 function loadPosters(c) {
-  var box = $("posters"); if (!box) return;
-  (IMGS ? Promise.resolve(IMGS) : fetch("data/img.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; })).then(function (m) {
-    IMGS = m; var box = $("posters"); if (!box || st.open !== c.id) return;
-    var key = nice(c.n).toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 10), list = [];
-    var add = function (u) { if (u && list.indexOf(u) < 0) list.push(u); };
-    add(m[c.u]); if (c.th) add(String(c.th).indexOf("thumbs/") === 0 ? "" : c.th);
-    ALL.forEach(function (x) { if (x !== c && x.d === c.d && nice(x.n).toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 10) === key) add(m[x.u]); });
-    box.innerHTML = list.length ? list.map(function (u) { return '<a href="' + esc(u) + '" target="_blank" rel="noopener"><img src="' + esc(u) + '" alt="poster" loading="lazy" onerror="this.parentNode.remove()"></a>'; }).join("")
-      : '<span style="color:var(--faint);font-size:13px">De zaal heeft geen afbeelding bij dit concert. Zoek hieronder verder.</span>';
+  var id = c.id, m = marks[id] || {}; if (!$("posters")) return;
+  var imgs = IMGS ? Promise.resolve(IMGS) : fetch("data/img.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; });
+  Promise.all([imgs, loadAuto()]).then(function (res) {
+    IMGS = res[0]; var au = (res[1].marks || {})[id] || null; if (!$("posters") || st.open !== id) return;
+    var items = [], seen = {}, add = function (it) { var k = it.p || it.u; if (k && !seen[k]) { seen[k] = 1; items.push(it); } };
+    (m.pst || []).forEach(function (p) { add({ k: "Eigen", p: p }); });
+    (au && au.img || []).forEach(function (x) { add({ k: x.k === "zaal" ? "Zaal" : "Artiest", p: x.p, src: x.src }); });
+    if (!(au && au.img || []).some(function (x) { return x.k === "zaal"; })) {
+      var key = nice(c.n).toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 10);
+      add({ k: "Zaal", u: IMGS[c.u] });
+      ALL.forEach(function (x) { if (x !== c && x.d === c.d && nice(x.n).toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 10) === key) add({ k: "Zaal", u: IMGS[x.u] }); });
+    }
+    PV = items;
+    $("posters").innerHTML = items.map(function (it, i) {
+      return '<button class="pst" data-pv="' + i + '"><img ' + (it.u ? 'src="' + esc(it.u) + '"' : 'data-pp="' + esc(it.p) + '"') + ' alt="poster" loading="lazy" onerror="this.parentNode.remove()"><span class="ptag">' + it.k + "</span></button>"; }).join("") +
+      '<label class="pst padd"><input type="file" accept="image/*" data-pup hidden><b>＋</b><span>Poster toevoegen</span></label>';
+    [].forEach.call($("posters").querySelectorAll("img[data-pp]"), function (im) { ghRaw(im.getAttribute("data-pp")).then(function (o) { im.src = o.url; }).catch(function () { im.parentNode.remove(); }); });
+    var host = function (u) { try { return new URL(u).hostname.replace(/^www\./, ""); } catch (e) { return u; } };
+    $("pstat").innerHTML = !SYNC || !SYNC.token ? "Zet synchroniseren aan om posters te bewaren en de artiest te laten zoeken."
+      : !au ? "De poster van de artiest wordt gezocht; kijk over een paar minuten nog eens."
+      : (au.site ? 'Site van de artiest: <a href="' + esc(au.site) + '" target="_blank" rel="noopener">' + esc(host(au.site)) + "</a> · " : (au.msg ? esc(au.msg) + " · " : "")) + '<button class="lnk" data-psite>' + (au.site ? "andere site" : "site invullen") + "</button>";
   });
+}
+function shrink(file) {   /* foto verkleinen tot max. 1600 px (jpg), zodat opslaan en laden snel gaat */
+  return new Promise(function (ok, no) {
+    var u = URL.createObjectURL(file), im = new Image();
+    im.onload = function () { var f = Math.min(1, 1600 / Math.max(im.width, im.height)), cv = document.createElement("canvas"); cv.width = Math.round(im.width * f); cv.height = Math.round(im.height * f);
+      cv.getContext("2d").drawImage(im, 0, 0, cv.width, cv.height); URL.revokeObjectURL(u); ok(cv.toDataURL("image/jpeg", 0.87).split(",")[1]); };
+    im.onerror = function () { URL.revokeObjectURL(u); no(new Error("dit bestand is geen afbeelding")); };
+    im.src = u;
+  });
+}
+function addPoster(file) {
+  var id = st.open; if (!id || !marks[id]) return;
+  if (!SYNC || !SYNC.token) { alert("Zet eerst synchroniseren aan (menu → Synchroniseren). Je posters worden in je eigen privé-opslag bewaard, zodat je ze op al je apparaten hebt."); return; }
+  $("pstat").textContent = "Poster opslaan…";
+  shrink(file).then(function (b64) {
+    var path = "posters/eigen/" + Date.now().toString(36) + ".jpg";
+    return ghApi("/contents/" + path, { method: "PUT", body: JSON.stringify({ message: "poster", content: b64 }) }).then(function (r) {
+      if (!r.ok) throw new Error("fout " + r.status);
+      var m = marks[id]; if (!m) return; m.pst = (m.pst || []).concat([path]); save("ca-marks", marks); if (st.open === id) openSheet(id);
+    });
+  }).catch(function (e) { if ($("pstat")) $("pstat").textContent = "Opslaan mislukt (" + e.message + "). Probeer het nog eens."; });
+}
+function openPoster(i) {
+  var it = PV[i]; if (!it) return; PVI = i; PVB = null;
+  var v = $("pview"), im = v.querySelector("img"); im.src = it.p ? (PBLOB[it.p] || {}).url || "" : it.u;
+  v.querySelector("[data-pvdel]").hidden = it.k !== "Eigen";
+  v.querySelector("[data-pvsrc]").hidden = !it.src; if (it.src) v.querySelector("[data-pvsrc]").href = it.src;
+  v.hidden = false; try { history.pushState({ pv: 1 }, ""); } catch (e) {}
+  /* het bestand alvast klaarzetten: delen moet direct op de tik gebeuren (iPhone/iPad) */
+  (it.p ? ghRaw(it.p).then(function (o) { im.src = o.url; return o.blob; }) : fetch(it.u, { mode: "cors" }).then(function (r) { if (!r.ok) throw 0; return r.blob(); }))
+    .then(function (b) { if (PVI === i) PVB = b; }).catch(function () {});
+}
+function closePoster(fromBack) { var v = $("pview"); if (v.hidden) return; v.hidden = true; PVI = -1; if (!fromBack && history.state && history.state.pv) { try { history.back(); } catch (e) {} } }
+function sharePoster() {
+  var it = PV[PVI], c = findC(st.open); if (!it) return;
+  var txt = c ? nice(c.n) + " · " + venue(c).label + ", " + venue(c).city : "", b = PVB;
+  if (b) {
+    var type = /^image\/(jpeg|png|webp|gif)/.test(b.type) ? b.type.split(";")[0] : "image/jpeg", name = "poster." + type.split("/")[1].replace("jpeg", "jpg");
+    if (window.AndroidApp && AndroidApp.shareImage) { var fr = new FileReader(); fr.onload = function () { AndroidApp.shareImage(String(fr.result).split(",")[1], type, txt); }; fr.readAsDataURL(b); return; }
+    var f = new File([b], name, { type: type });
+    if (navigator.canShare && navigator.canShare({ files: [f] })) { navigator.share({ files: [f], text: txt }).catch(function () {}); return; }
+    var a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = name; document.body.appendChild(a); a.click(); a.remove(); return;
+  }
+  var u = it.u || it.src || "";   /* afbeelding die de zaalsite niet als bestand afgeeft: de link delen */
+  if (window.AndroidApp && AndroidApp.shareText) AndroidApp.shareText(txt + "\n" + u);
+  else if (navigator.share) navigator.share({ text: txt, url: u }).catch(function () {});
+  else window.open(u, "_blank");
+}
+function delPoster() {
+  var it = PV[PVI], id = st.open, m = marks[id]; if (!it || it.k !== "Eigen" || !m) return;
+  if (!confirm("Deze poster weghalen?")) return;
+  m.pst = (m.pst || []).filter(function (p) { return p !== it.p; }); if (!m.pst.length) delete m.pst; save("ca-marks", marks);
+  ghApi("/contents/" + it.p).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { if (j && j.sha) ghApi("/contents/" + it.p, { method: "DELETE", body: JSON.stringify({ message: "poster weg", sha: j.sha }) }); }).catch(function () {});
+  closePoster(); openSheet(id);
 }
 function openSheet(id) {
   var c = findC(id); if (!c) return;
@@ -1340,7 +1435,7 @@ function openSheet(id) {
     '<a class="btn" href="' + esc(c.u) + '" target="_blank" rel="noopener">Zaal ↗</a>' +
     '<a class="btn" href="' + esc(c.k || c.ka || "https://www.ticketswap.nl/search?q=" + encodeURIComponent(c.n)) + '" target="_blank" rel="noopener">TicketSwap ↗</a>' +
     '<a class="btn wide" href="' + esc(gcal(c)) + '" target="_blank" rel="noopener">📅 Zet in Google Agenda</a></div>' +
-    (tk ? '<div class="hl" style="margin-top:16px">Posters</div><div id="posters" class="posters"><span style="color:var(--faint);font-size:13px">Laden…</span></div>' +
+    (tk ? '<div class="hl" style="margin-top:16px">Posters</div><div id="posters" class="posters"><span style="color:var(--faint);font-size:13px">Laden…</span></div><div id="pstat" class="pstat"></div>' +
       '<a class="lnk" href="https://www.google.com/search?tbm=isch&q=' + encodeURIComponent(nice(c.n).split(/\s+[-–:]\s+|\s+\+\s+/)[0] + " tour poster " + c.d.slice(0, 4)) + '" target="_blank" rel="noopener">Meer tourposters zoeken ↗</a>' : "") +
     (tk ? '<div class="hl" style="margin-top:16px">Notitie</div><textarea data-note placeholder="Bijv. met wie, stoel- of rijnummer, parkeren, treintijden">' + esc((marks[id] || {}).note || "") + "</textarea>" : "") + "</div>";
   showSheet(); if (tk) loadPosters(c);
@@ -1385,8 +1480,20 @@ function closeSheet(fromBack) {
   $("sheet").classList.remove("on"); document.body.style.overflow = ""; st.open = null;
   if (!fromBack && history.state && history.state.sheet) { try { history.back(); } catch (e) {} }
 }
-document.addEventListener("keydown", function (e) { if (e.key === "Escape" && $("sheet").classList.contains("on")) closeSheet(); });
+document.addEventListener("keydown", function (e) { if (e.key !== "Escape") return; if (!$("pview").hidden) closePoster(); else if ($("sheet").classList.contains("on")) closeSheet(); });
+$("pview").addEventListener("click", function (e) {
+  if (e.target.closest("[data-pvshare]")) sharePoster(); else if (e.target.closest("[data-pvdel]")) delPoster(); else if (e.target.closest("[data-pvclose]") || e.target === this) closePoster();
+});
+$("panel").addEventListener("change", function (e) { var f = e.target.closest("[data-pup]"); if (f && f.files && f.files[0]) { addPoster(f.files[0]); f.value = ""; } });
+$("panel").addEventListener("click", function (e) {
+  var pv = e.target.closest("[data-pv]"); if (pv) { openPoster(+pv.getAttribute("data-pv")); return; }
+  if (e.target.closest("[data-psite]")) { var m = marks[st.open]; if (!m) return; var a = ((AUTO || {}).marks || {})[st.open] || {};
+    var u = prompt("Website van de artiest (bijv. https://www.artiest.com). Leeg laten = zelf laten zoeken.", m.asite || a.site || ""); if (u === null) return;
+    u = u.trim(); if (u && !/^https?:\/\//i.test(u)) u = "https://" + u; if (u) m.asite = u; else delete m.asite; save("ca-marks", marks);
+    var id = st.open; $("pstat").textContent = "Opgeslagen. De posters worden opnieuw gezocht; kijk over een paar minuten nog eens."; setTimeout(function () { posterRequest(id); }, 6000); }
+});
 window.addEventListener("popstate", function () {
+  if (!$("pview").hidden) { closePoster(true); return; }
   if ($("sheet").classList.contains("on")) closeSheet(true);
   if (!$("menu").hidden) $("menu").hidden = true;
 });
@@ -1395,6 +1502,7 @@ function toggle(id, k) {
   m[k] = !m[k]; if (c) m.s = { n: c.n, d: c.d, v: c.v, r: c.r, u: c.u, e: c.e };
   if (!m.i && !m.t) delete marks[id]; else marks[id] = m;
   save("ca-marks", marks); render(); openSheet(id);
+  if (k === "t" && m.t) setTimeout(function () { posterRequest(id); }, 6000);   /* na de sync: posters van de artiest laten zoeken */
 }
 $("main").addEventListener("click", function (e) {
   var t = e.target;

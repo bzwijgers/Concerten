@@ -63,8 +63,9 @@ def parse_list(page):
         genres = [g.strip() for g in (re.search(r'data-genre="([^"]*)"', li) or [None, ""])[1].split(",") if g.strip()]
         sub = txt((re.search(r'agenda-list-item__text">(.*?)</p>', li, re.S) or [None, ""])[1])
         room = sub.split("| in ", 1)[1].strip() if "| in " in sub else ""
+        im = re.findall(r'(https://media\.tivolivredenburg\.nl/\w+) 2x', li) or re.findall(r'<img src="(https://media\.tivolivredenburg\.nl/\w+)"', li)   # afbeelding bij het concert
         out.append({"id": m.group(1), "u": u, "n": txt(a.group(2)), "d": f"{m.group(4)}-{int(m.group(3)):02d}-{int(m.group(2)):02d}",
-                    "g": genres, "r": room, "s": "agenda-list-item__label\">Uitverkocht" in li})
+                    "g": genres, "r": room, "s": "agenda-list-item__label\">Uitverkocht" in li, "img": im[-1] if im else ""})
     nxt = re.search(r'href="([^"]+/agenda/page/\d+/)"', page)
     return out, nxt.group(1) if nxt else None
 
@@ -165,7 +166,7 @@ def main():
         sys.exit(f"Gestopt: {ex}. Tivoli laat deze verbinding nu niet door; er is niets veranderd.")
     complete = pages >= 2 and len(listed) >= 100 and not cut
     out = [{"v": "tivoli", "d": e["d"], "n": e["n"], "u": e["u"], "t": times.get(e["id"], ""), "r": e["r"],
-            "s": e["s"], "c": False, "g": e["g"]} for e in sorted(events, key=lambda e: (e["d"], e["n"]))]
+            "s": e["s"], "c": False, "g": e["g"], "img": e.get("img", "")} for e in sorted(events, key=lambda e: (e["d"], e["n"]))]
     print(f"{len(listed)} items op de site, {len(out)} concerten na filter, {len(todo)} tijden opgehaald, volledig={complete}")
     if len(out) < 20:
         sys.exit("Te weinig concerten gevonden; niets gedaan.")

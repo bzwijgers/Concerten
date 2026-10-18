@@ -4,7 +4,7 @@
 "good": 252
 },
 "afasdome": {
-"good": 33
+"good": 32
 },
 "amare": {
 "good": 35
@@ -26,7 +26,7 @@
 "good": 73
 },
 "bolwerk": {
-"good": 58
+"good": 57
 },
 "bos": {
 "good": 45
@@ -38,7 +38,7 @@
 "good": 3
 },
 "bridges": {
-"good": 28
+"good": 27
 },
 "burgerweeshuis": {
 "good": 49
@@ -47,7 +47,7 @@
 "good": 33
 },
 "capsloc": {
-"good": 16
+"good": 15
 },
 "casino": {
 "good": 11
@@ -56,28 +56,28 @@
 "good": 59
 },
 "concertgebouw": {
-"good": 34
+"good": 31
 },
 "corneel": {
 "good": 27
 },
 "dbs": {
-"good": 59
+"good": 58
 },
 "depot": {
 "good": 106
 },
 "doornroosje": {
-"good": 207
+"good": 205
 },
 "dynamo": {
-"good": 60
+"good": 58
 },
 "effenaar": {
 "good": 115
 },
 "ekko": {
-"good": 69
+"good": 67
 },
 "engel": {
 "good": 102
@@ -170,10 +170,10 @@
 "good": 0
 },
 "fluor": {
-"good": 58
+"good": 56
 },
 "gebouwt": {
-"good": 68
+"good": 67
 },
 "gigant": {
 "good": 37
@@ -185,19 +185,19 @@
 "good": 86
 },
 "hedon": {
-"good": 130
+"good": 127
 },
 "helling": {
-"good": 66
+"good": 65
 },
 "hof": {
 "good": 32
 },
 "iduna": {
-"good": 44
+"good": 42
 },
 "kade": {
-"good": 12
+"good": 11
 },
 "klokgebouw": {
 "good": 8
@@ -206,7 +206,7 @@
 "good": 16
 },
 "kroepoek": {
-"good": 30
+"good": 29
 },
 "lantaren": {
 "good": 70
@@ -218,7 +218,7 @@
 "good": 18
 },
 "luxor": {
-"good": 125
+"good": 124
 },
 "maassilo": {
 "good": 3
@@ -230,28 +230,28 @@
 "good": 20
 },
 "melkweg": {
-"good": 289
+"good": 285
 },
 "metropool": {
-"good": 143
+"good": 142
 },
 "mezz": {
-"good": 141
+"good": 137
 },
 "musicon": {
-"good": 61
+"good": 60
 },
 "muziekgieterij": {
-"good": 103
+"good": 102
 },
 "n9": {
 "good": 19
 },
 "neushoorn": {
-"good": 93
+"good": 90
 },
 "nobel": {
-"good": 107
+"good": 104
 },
 "nor": {},
 "o13": {
@@ -267,10 +267,10 @@
 "good": 61
 },
 "paard": {
-"good": 168
+"good": 165
 },
 "paradiso": {
-"good": 440
+"good": 434
 },
 "patronaat": {
 "good": 156
@@ -279,25 +279,25 @@
 "good": 61
 },
 "qfactory": {
-"good": 38
+"good": 37
 },
 "reflektor": {
-"good": 75
+"good": 74
 },
 "roma": {
 "good": 21
 },
 "rotown": {
-"good": 139
+"good": 137
 },
 "simplon": {
-"good": 50
+"good": 48
 },
 "sounddog": {
-"good": 18
+"good": 17
 },
 "sowhat": {
-"good": 24
+"good": 23
 },
 "spot": {
 "good": 206
@@ -334,7 +334,7 @@
 "good": 71
 },
 "vorstin": {
-"good": 54
+"good": 53
 },
 "w2": {
 "good": 16

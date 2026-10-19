@@ -1,23 +1,25 @@
 {
 "_last": [],
 "ab": {
-"good": 249
+"good": 251
 },
 "afasdome": {
-"good": 32
+"good": 33
 },
 "amare": {
-"good": 34
+"good": 35
 },
 "annabel": {
 "good": 12
 },
 "baroeg": {
-"good": 29
+"good": 30
 },
-"bibelot": {},
+"bibelot": {
+"good": 63
+},
 "bird": {
-"good": 37
+"good": 38
 },
 "bitterzoet": {
 "good": 5
@@ -32,7 +34,7 @@
 "good": 45
 },
 "bosuil": {
-"good": 61
+"good": 62
 },
 "botanique": {
 "good": 3
@@ -47,16 +49,16 @@
 "good": 32
 },
 "capsloc": {
-"good": 15
+"good": 16
 },
 "casino": {
-"good": 11
+"good": 12
 },
 "cinetol": {
-"good": 58
+"good": 59
 },
 "concertgebouw": {
-"good": 29
+"good": 27
 },
 "corneel": {
 "good": 27
@@ -68,16 +70,16 @@
 "good": 105
 },
 "doornroosje": {
-"good": 203
+"good": 207
 },
 "dynamo": {
-"good": 55
+"good": 56
 },
 "effenaar": {
 "good": 113
 },
 "ekko": {
-"good": 65
+"good": 66
 },
 "engel": {
 "good": 99
@@ -185,10 +187,10 @@
 "good": 85
 },
 "hedon": {
-"good": 126
+"good": 128
 },
 "helling": {
-"good": 64
+"good": 66
 },
 "hof": {
 "good": 32
@@ -206,7 +208,7 @@
 "good": 16
 },
 "kroepoek": {
-"good": 29
+"good": 30
 },
 "lantaren": {
 "good": 70
@@ -218,13 +220,13 @@
 "good": 17
 },
 "luxor": {
-"good": 123
+"good": 125
 },
 "maassilo": {
 "good": 3
 },
 "manifesto": {
-"good": 14
+"good": 15
 },
 "meester": {
 "good": 19
@@ -233,10 +235,10 @@
 "good": 283
 },
 "metropool": {
-"good": 142
+"good": 143
 },
 "mezz": {
-"good": 136
+"good": 137
 },
 "musicon": {
 "good": 59
@@ -251,14 +253,14 @@
 "good": 90
 },
 "nobel": {
-"good": 104
+"good": 105
 },
 "nor": {},
 "o13": {
 "good": 155
 },
 "occii": {
-"good": 22
+"good": 21
 },
 "olt": {
 "good": 0
@@ -267,19 +269,19 @@
 "good": 61
 },
 "paard": {
-"good": 162
+"good": 163
 },
 "paradiso": {
-"good": 432
+"good": 439
 },
 "patronaat": {
-"good": 153
+"good": 156
 },
 "pul": {
 "good": 60
 },
 "qfactory": {
-"good": 37
+"good": 38
 },
 "reflektor": {
 "good": 74
@@ -291,26 +293,27 @@
 "good": 137
 },
 "simplon": {
-"good": 48
+"good": 49
 },
 "sounddog": {
 "good": 17
 },
 "sowhat": {
-"good": 23
+"good": 23,
+"since": "2026-10-19"
 },
 "spot": {
 "good": 203
 },
 "ticketmaster": {
-"good": 700
+"good": 704
 },
 "tivoli": {},
 "tolhuistuin": {
-"good": 14
+"good": 15
 },
 "trix": {
-"good": 129
+"good": 130
 },
 "v11": {
 "good": 19
@@ -322,7 +325,7 @@
 "good": 50
 },
 "victorie": {
-"good": 95
+"good": 97
 },
 "vierad": {
 "good": 14
@@ -334,7 +337,7 @@
 "good": 70
 },
 "vorstin": {
-"good": 52
+"good": 53
 },
 "w2": {
 "good": 17

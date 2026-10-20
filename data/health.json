@@ -1,7 +1,9 @@
 {
-"_last": [],
+"_last": [
+"sowhat"
+],
 "ab": {
-"good": 251
+"good": 250
 },
 "afasdome": {
 "good": 33
@@ -37,7 +39,7 @@
 "good": 62
 },
 "botanique": {
-"good": 3
+"good": 2
 },
 "bridges": {
 "good": 26
@@ -55,10 +57,10 @@
 "good": 12
 },
 "cinetol": {
-"good": 59
+"good": 58
 },
 "concertgebouw": {
-"good": 27
+"good": 24
 },
 "corneel": {
 "good": 27
@@ -70,16 +72,16 @@
 "good": 105
 },
 "doornroosje": {
-"good": 207
+"good": 205
 },
 "dynamo": {
-"good": 56
+"good": 54
 },
 "effenaar": {
 "good": 113
 },
 "ekko": {
-"good": 66
+"good": 65
 },
 "engel": {
 "good": 99
@@ -187,7 +189,7 @@
 "good": 85
 },
 "hedon": {
-"good": 128
+"good": 127
 },
 "helling": {
 "good": 66
@@ -232,19 +234,19 @@
 "good": 19
 },
 "melkweg": {
-"good": 283
+"good": 285
 },
 "metropool": {
-"good": 143
+"good": 141
 },
 "mezz": {
 "good": 137
 },
 "musicon": {
-"good": 59
+"good": 58
 },
 "muziekgieterij": {
-"good": 101
+"good": 100
 },
 "n9": {
 "good": 19
@@ -266,13 +268,14 @@
 "good": 0
 },
 "p3": {
-"good": 61
+"good": 61,
+"since": "2026-10-20"
 },
 "paard": {
 "good": 163
 },
 "paradiso": {
-"good": 439
+"good": 435
 },
 "patronaat": {
 "good": 156
@@ -303,10 +306,10 @@
 "since": "2026-10-19"
 },
 "spot": {
-"good": 203
+"good": 201
 },
 "ticketmaster": {
-"good": 704
+"good": 702
 },
 "tivoli": {},
 "tolhuistuin": {
@@ -340,7 +343,7 @@
 "good": 53
 },
 "w2": {
-"good": 17
+"good": 18
 },
 "walhalla": {
 "good": 45

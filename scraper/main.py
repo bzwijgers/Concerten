@@ -136,6 +136,18 @@ def main():
                     print(f"{key}: {len(got)} (tweede poging)")
             except Exception as ex:
                 print(f"{key}: tweede poging mislukt", ex)
+    # nog steeds niets (vaak: zaal heeft haar site omgebouwd): zelf de concertpagina's op hun site zoeken.
+    # Niet voor zalen met een reservelijst van de pc of een feed (die blokkeren GitHub, dat lost zoeken niet op).
+    import heal
+    for key, fn in failed:
+        if key in fresh or key in ("tivoli", "dbs", "o13", "bolwerk", "bibelot", "nor", "kade"): continue
+        try:
+            got = [e for e in heal.discover(key) if today <= e["d"] <= (date.today() + timedelta(days=600)).isoformat()]
+            if len(got) >= max(3, MIN_EVENTS.get(key, 3)):
+                fresh[key] = got
+                status[key] = {"ok": True, "count": len(got), "at": now, "healed": True}
+        except Exception as ex:
+            print(f"{key}: zelfherstel mislukt", ex)
     for _k in ("o13", "bolwerk", "bibelot", "nor", "kade"): merge_pc_inbox(_k)
     merge_tivoli_inbox()
     # Tivoli komt van de eigen pc (data/manual/tivoli.json); is die lijst ouder dan 3 dagen, dan de oude feed

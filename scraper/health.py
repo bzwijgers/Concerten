@@ -47,7 +47,7 @@ def check(status, data_dir, root, min_events, skip=("ticketswap",)):
                 alerts.append({"v": key, "name": names.get(key, key), "why": why, "since": h["since"]})
         else:
             h.pop("since", None)
-            if st.get("ok") and not st.get("manual"):
+            if st.get("ok") and not st.get("manual") and not st.get("healed"):   # zelfherstel is geen nieuw normaal
                 h["good"] = cnt
     for k in [k for k in health if k not in status and not k.startswith("_")]:
         del health[k]

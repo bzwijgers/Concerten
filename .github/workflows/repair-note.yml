@@ -1,0 +1,20 @@
+name: repair-note
+# de ochtendcontrole (Claude-routine) schrijft data/repair.md; dit zet het als bericht bij de melding, zodat Barry een mail krijgt
+on:
+  push:
+    paths: ["data/repair.md"]
+permissions:
+  contents: read
+  issues: write
+jobs:
+  note:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [ -s data/repair.md ] || exit 0
+          N=$(gh issue list --state all --search "Zalen met problemen in:title" --json number,state --jq 'sort_by(.state != "OPEN") | .[0].number // empty')
+          if [ -n "$N" ]; then gh issue comment "$N" --body-file data/repair.md
+          else gh issue create --title "Ochtendcontrole concertagenda" --body-file data/repair.md; fi

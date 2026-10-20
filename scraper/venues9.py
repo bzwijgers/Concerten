@@ -8,7 +8,7 @@ from venues6 import _from_urls, _links
 # key: (lijstpagina's, patroon voor concertpagina's, naam die van de paginatitel af moet)
 SITES = {
     "bitterzoet": (["https://www.bitterzoet.com/agenda/", "https://www.bitterzoet.com/"], r"bitterzoet\.com/event/[^/]+/?$", "Bitterzoet"),
-    "sowhat": (["https://www.so-what.nl/agenda/", "https://www.so-what.nl/"], r"so-what\.nl/event/[^/]+/?$", "Poppodium So What!|So What!|So What"),
+    "sowhat": (["https://www.so-what.nl/agenda/", "https://www.so-what.nl/"], r"so-what\.nl/(?:event|agenda)/[^/]+/?$", "Poppodium So What!|So What!|So What"),
     "kroepoek": (["https://www.kroepoekfabriek.nl/agenda/"], r"kroepoekfabriek\.nl/agenda/[^/]+/?$", "Poppodium De Kroepoekfabriek|De Kroepoekfabriek|Kroepoekfabriek"),
     "cacao": (["https://www.cacaofabriek.nl/agenda?type=concert"] + [f"https://www.cacaofabriek.nl/agenda?type=concert&page={n}" for n in range(2, 6)],
               r"cacaofabriek\.nl/agenda/[a-z0-9-]+-\d\d-\d\d-20\d\d$", "De Cacaofabriek|Cacaofabriek"),   # alleen concerten, geen films
@@ -43,7 +43,8 @@ def bitterzoet():   # clubnachten (deuren na 23:00) en afgelaste avonden niet
         if re.search(r"cancel+ed|afgelast", e["n"], re.I) or re.search(r"(2[3-9]|0\d):\d\d$", e.get("t", "")): continue
         out.append(e)
     return out
-def sowhat(): return _site("sowhat")
+def sowhat():   # sinds okt 2026 staan ook lidmaatschap en bierverkoop in hun agenda
+    return [e for e in _site("sowhat") if not re.search(r"lidmaatschap|craftbeer|adventskalender|karao", e["n"], re.I)]
 def kroepoek(): return _site("kroepoek")
 def cacao():   # titel zonder de datum erachter ('Robben Ford (US) | zo 18 okt 2026')
     out = _site("cacao")

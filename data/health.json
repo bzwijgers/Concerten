@@ -172,7 +172,8 @@
 "good": 0
 },
 "fluor": {
-"good": 56
+"good": 56,
+"since": "2026-10-21"
 },
 "gebouwt": {
 "good": 66
@@ -220,7 +221,7 @@
 "good": 18
 },
 "luxor": {
-"good": 130
+"good": 129
 },
 "maassilo": {
 "good": 3
@@ -250,7 +251,7 @@
 "good": 19
 },
 "neushoorn": {
-"good": 90
+"good": 91
 },
 "nobel": {
 "good": 105
@@ -290,7 +291,7 @@
 "good": 21
 },
 "rotown": {
-"good": 137
+"good": 138
 },
 "simplon": {
 "good": 49

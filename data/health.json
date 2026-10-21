@@ -1,9 +1,7 @@
 {
-"_last": [
-"sowhat"
-],
+"_last": [],
 "ab": {
-"good": 253
+"good": 250
 },
 "afasdome": {
 "good": 33
@@ -18,7 +16,7 @@
 "good": 31
 },
 "bibelot": {
-"good": 63
+"good": 71
 },
 "bird": {
 "good": 41
@@ -39,7 +37,7 @@
 "good": 62
 },
 "botanique": {
-"good": 2
+"good": 0
 },
 "bridges": {
 "good": 26
@@ -57,7 +55,7 @@
 "good": 12
 },
 "cinetol": {
-"good": 59
+"good": 58
 },
 "concertgebouw": {
 "good": 12
@@ -66,19 +64,19 @@
 "good": 27
 },
 "dbs": {
-"good": 57
+"good": 56
 },
 "depot": {
 "good": 106
 },
 "doornroosje": {
-"good": 209
+"good": 207
 },
 "dynamo": {
-"good": 54
+"good": 52
 },
 "effenaar": {
-"good": 113
+"good": 112
 },
 "ekko": {
 "good": 65
@@ -186,13 +184,13 @@
 "good": 49
 },
 "ha": {
-"good": 85
+"good": 84
 },
 "hedon": {
 "good": 128
 },
 "helling": {
-"good": 66
+"good": 65
 },
 "hof": {
 "good": 32
@@ -207,7 +205,7 @@
 "good": 8
 },
 "kreun": {
-"good": 16
+"good": 14
 },
 "kroepoek": {
 "good": 30
@@ -234,10 +232,10 @@
 "good": 20
 },
 "melkweg": {
-"good": 286
+"good": 285
 },
 "metropool": {
-"good": 143
+"good": 142
 },
 "mezz": {
 "good": 139
@@ -252,8 +250,7 @@
 "good": 19
 },
 "neushoorn": {
-"good": 90,
-"since": "2026-10-20"
+"good": 90
 },
 "nobel": {
 "good": 105
@@ -263,7 +260,7 @@
 "good": 157
 },
 "occii": {
-"good": 24
+"good": 23
 },
 "olt": {
 "good": 0
@@ -275,7 +272,7 @@
 "good": 165
 },
 "paradiso": {
-"good": 442
+"good": 438
 },
 "patronaat": {
 "good": 159
@@ -302,11 +299,10 @@
 "good": 17
 },
 "sowhat": {
-"good": 23,
-"since": "2026-10-19"
+"good": 22
 },
 "spot": {
-"good": 203
+"good": 201
 },
 "ticketmaster": {
 "good": 706
@@ -316,13 +312,13 @@
 "good": 15
 },
 "trix": {
-"good": 131
+"good": 130
 },
 "v11": {
 "good": 20
 },
 "vanpolanen": {
-"good": 10
+"good": 9
 },
 "vera": {
 "good": 50

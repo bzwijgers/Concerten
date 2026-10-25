@@ -1,8 +1,5 @@
 {
-"_last": [
-"bolwerk",
-"nor"
-],
+"_last": [],
 "ab": {
 "good": 242
 },
@@ -19,8 +16,7 @@
 "good": 32
 },
 "bibelot": {
-"good": 67,
-"since": "2026-10-25"
+"good": 65
 },
 "bird": {
 "good": 36
@@ -32,8 +28,7 @@
 "good": 70
 },
 "bolwerk": {
-"good": 57,
-"since": "2026-10-24"
+"good": 55
 },
 "bos": {
 "good": 46
@@ -42,7 +37,7 @@
 "good": 63
 },
 "botanique": {
-"good": 3
+"good": 0
 },
 "bridges": {
 "good": 25
@@ -219,7 +214,7 @@
 "good": 69
 },
 "lockkeepers": {
-"good": 8
+"good": 10
 },
 "lottoarena": {
 "good": 17
@@ -260,9 +255,7 @@
 "nobel": {
 "good": 105
 },
-"nor": {
-"since": "2026-10-24"
-},
+"nor": {},
 "o13": {
 "good": 152
 },
@@ -273,7 +266,8 @@
 "good": 0
 },
 "p3": {
-"good": 61
+"good": 61,
+"since": "2026-10-25"
 },
 "paard": {
 "good": 157

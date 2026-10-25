@@ -1,10 +1,13 @@
 {
-"_last": [],
+"_last": [
+"bolwerk",
+"nor"
+],
 "ab": {
-"good": 243
+"good": 242
 },
 "afasdome": {
-"good": 32
+"good": 31
 },
 "amare": {
 "good": 35
@@ -13,41 +16,42 @@
 "good": 12
 },
 "baroeg": {
-"good": 33
+"good": 32
 },
 "bibelot": {
-"good": 67
+"good": 67,
+"since": "2026-10-25"
 },
 "bird": {
-"good": 38
+"good": 36
 },
 "bitterzoet": {
 "good": 5
 },
 "boerderij": {
-"good": 71
+"good": 70
 },
 "bolwerk": {
 "good": 57,
 "since": "2026-10-24"
 },
 "bos": {
-"good": 50
+"good": 46
 },
 "bosuil": {
 "good": 63
 },
 "botanique": {
-"good": 0
+"good": 3
 },
 "bridges": {
-"good": 26
+"good": 25
 },
 "burgerweeshuis": {
-"good": 53
+"good": 51
 },
 "cacao": {
-"good": 34
+"good": 33
 },
 "capsloc": {
 "good": 15
@@ -56,34 +60,34 @@
 "good": 14
 },
 "cinetol": {
-"good": 55
+"good": 54
 },
 "concertgebouw": {
-"good": 7
+"good": 5
 },
 "corneel": {
-"good": 26
+"good": 25
 },
 "dbs": {
 "good": 55
 },
 "depot": {
-"good": 103
+"good": 102
 },
 "doornroosje": {
-"good": 200
+"good": 197
 },
 "dynamo": {
-"good": 45
+"good": 43
 },
 "effenaar": {
-"good": 113
+"good": 112
 },
 "ekko": {
-"good": 65
+"good": 63
 },
 "engel": {
-"good": 109
+"good": 108
 },
 "fest_alcatraz": {
 "good": 1
@@ -131,7 +135,7 @@
 "good": 0
 },
 "fest_lotd": {
-"good": 0
+"good": 1
 },
 "fest_lowlands": {
 "good": 1
@@ -173,31 +177,31 @@
 "good": 0
 },
 "fluor": {
-"good": 54
+"good": 53
 },
 "gebouwt": {
-"good": 64
+"good": 63
 },
 "gigant": {
-"good": 36
+"good": 35
 },
 "grenswerk": {
 "good": 49
 },
 "ha": {
-"good": 86
+"good": 84
 },
 "hedon": {
-"good": 127
+"good": 125
 },
 "helling": {
-"good": 62
+"good": 60
 },
 "hof": {
-"good": 35
+"good": 34
 },
 "iduna": {
-"good": 42
+"good": 41
 },
 "kade": {
 "good": 11
@@ -212,7 +216,7 @@
 "good": 28
 },
 "lantaren": {
-"good": 70
+"good": 69
 },
 "lockkeepers": {
 "good": 8
@@ -221,28 +225,28 @@
 "good": 17
 },
 "luxor": {
-"good": 130
+"good": 128
 },
 "maassilo": {
 "good": 3
 },
 "manifesto": {
-"good": 15
+"good": 14
 },
 "meester": {
-"good": 22
+"good": 21
 },
 "melkweg": {
-"good": 276
+"good": 271
 },
 "metropool": {
-"good": 144
+"good": 139
 },
 "mezz": {
-"good": 143
+"good": 140
 },
 "musicon": {
-"good": 66
+"good": 65
 },
 "muziekgieterij": {
 "good": 102
@@ -254,71 +258,70 @@
 "good": 92
 },
 "nobel": {
-"good": 106
+"good": 105
 },
 "nor": {
 "since": "2026-10-24"
 },
 "o13": {
-"good": 154
+"good": 152
 },
 "occii": {
-"good": 25
+"good": 24
 },
 "olt": {
 "good": 0
 },
 "p3": {
-"good": 59,
-"since": "2026-10-24"
-},
-"paard": {
-"good": 161
-},
-"paradiso": {
-"good": 430
-},
-"patronaat": {
-"good": 164
-},
-"pul": {
 "good": 61
 },
+"paard": {
+"good": 157
+},
+"paradiso": {
+"good": 426
+},
+"patronaat": {
+"good": 160
+},
+"pul": {
+"good": 60
+},
 "qfactory": {
-"good": 34
+"good": 32
 },
 "reflektor": {
-"good": 80
+"good": 79
 },
 "roma": {
 "good": 21
 },
 "rotown": {
-"good": 137
+"good": 133
 },
 "simplon": {
-"good": 50
+"good": 49
 },
 "sounddog": {
 "good": 16
 },
 "sowhat": {
-"good": 23
+"good": 24
 },
 "spot": {
-"good": 196
+"good": 194
 },
 "ticketmaster": {
-"good": 707
+"good": 699
 },
 "tivoli": {
-"good": 326
+"good": 324
 },
 "tolhuistuin": {
-"good": 13
+"good": 12
 },
 "trix": {
-"good": 127
+"good": 126
 },
 "v11": {
 "good": 19
@@ -330,7 +333,7 @@
 "good": 50
 },
 "victorie": {
-"good": 95
+"good": 94
 },
 "vierad": {
 "good": 15
@@ -342,15 +345,15 @@
 "good": 72
 },
 "vorstin": {
-"good": 56
+"good": 55
 },
 "w2": {
-"good": 18
+"good": 19
 },
 "walhalla": {
 "good": 45
 },
 "worm": {
-"good": 9
+"good": 8
 }
 }

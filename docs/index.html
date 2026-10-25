@@ -1397,7 +1397,10 @@ function addPoster(files, foto) {
         if (foto && files.length > 1 && $("fstat")) $("fstat").textContent = "Foto's opslaan… " + done + " van " + files.length;
       });
     });
-  }, Promise.resolve()).then(function () { if (st.open === id) openSheet(id); })
+  }, Promise.resolve()).then(function () {
+    if (st.open === id) openSheet(id);
+    if (foto) { setTimeout(function () { posterRequest(id); }, 8000); if ($("fstat")) $("fstat").textContent = "Je gemaakte poster krijgt over een paar minuten je eerste foto als achtergrond."; }
+  })
     .catch(function (e) { if (st_) st_.textContent = "Opslaan mislukt (" + e.message + "). Probeer het nog eens."; if (done && st.open === id) openSheet(id); });
 }
 function openPoster(i) {
@@ -1432,6 +1435,7 @@ function delPoster() {
   m[k] = (m[k] || []).filter(function (p) { return p !== it.p; }); if (!m[k].length) delete m[k]; save("ca-marks", marks);
   ghApi("/contents/" + it.p).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { if (j && j.sha) ghApi("/contents/" + it.p, { method: "DELETE", body: JSON.stringify({ message: "poster weg", sha: j.sha }) }); }).catch(function () {});
   closePoster(); openSheet(id);
+  if (k === "fot") setTimeout(function () { posterRequest(id); }, 8000);   /* gemaakte poster opnieuw, met de volgende foto of zonder */
 }
 function openSheet(id) {
   var c = findC(id); if (!c) return;

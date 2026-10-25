@@ -1,5 +1,7 @@
-@bzwijgers, ochtendcontrole 2026-10-21:
+@bzwijgers, ochtendcontrole 2026-10-25:
 
-- **Neushoorn**: de zaal herstelde zichzelf vanochtend (58 concerten gevonden via de reservemethode). De eigen scraper werkte vanochtend even niet, waarschijnlijk omdat de site van Neushoorn op dat moment opnieuw werd gepubliceerd (06:05). Ik heb de site nu zelf gecontroleerd: de agenda staat gewoon op dezelfde plek en de scraper levert nu weer 91 concerten met goede titels en datums. Er was dus niets aan de code te repareren; ik heb niets aangepast. Ik heb een nieuwe update gestart zodat Neushoorn vandaag met alle 91 concerten in de agenda komt.
+- **Het Bolwerk**: de agenda kon sinds 2026-10-24 niet worden opgehaald ("geen zoekindex gevonden"). Deze zaal wordt op jouw eigen pc opgehaald, dus ik kan dit niet herstellen. Ik heb niets aangepast. Draait het pc-programma (tools/tivoli_pc.py) nog? De laatst bekende concerten blijven in de agenda staan.
+- **Nieuwe Nor**: de website geeft sinds 2026-10-24 een foutmelding 403 (toegang geweigerd). Ook deze zaal gaat via jouw pc, dus ik kan hier niets aan doen en ik probeer de blokkade niet te omzeilen. De laatst bekende concerten blijven in de agenda staan.
+- Alle andere zalen werken; er is vandaag niets door het systeem zelf hersteld.
 
-Alles is in orde, tenzij Neushoorn morgen opnieuw uitvalt; dan kijk ik verder.
+Er is niets gerepareerd: beide problemen horen bij de pc-zalen, dus daar moet jij even naar kijken.

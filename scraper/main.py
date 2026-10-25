@@ -196,7 +196,7 @@ def main():
             if not fn_.endswith(".json"): continue
             m = load(os.path.join(mdir, fn_), None)
             if not m or m["venue"] in fresh: continue
-            if m["venue"] != "tivoli" and (m.get("checked") or "") < (date.today() - timedelta(days=4)).isoformat():
+            if m["venue"] != "tivoli" and (m.get("checked") or "") < (date.today() - timedelta(days=10)).isoformat():   # pc een week uit (vakantie): lijst blijft bruikbaar
                 continue   # reservelijst van de pc te oud: dan liever de laatst bekende lijst laten staan
             got = [e for e in m["events"] if e["d"] >= today]
             fresh[m["venue"]] = got

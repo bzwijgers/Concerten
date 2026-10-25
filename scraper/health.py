@@ -17,6 +17,18 @@ def labels(root):
         return {}
 
 
+PC = ("tivoli", "o13", "bolwerk", "bibelot", "nor", "kade")   # zalen die GitHub blokkeren en via Barry's pc lopen
+
+
+def pc_checked(data_dir, key):
+    """Datum van de laatste lijst van de pc voor deze zaal, '' als onbekend; None als de zaal niet via de pc loopt."""
+    if key not in PC: return None
+    try:
+        return json.load(open(os.path.join(data_dir, "manual", key + ".json"), encoding="utf-8")).get("checked") or ""
+    except Exception:
+        return ""
+
+
 def check(status, data_dir, root, min_events, skip=("ticketswap",)):
     hp = os.path.join(data_dir, "health.json")
     try:
@@ -32,10 +44,13 @@ def check(status, data_dir, root, min_events, skip=("ticketswap",)):
         h = health.setdefault(key, {})
         cnt = st.get("count") or 0
         why = ""
-        if not st.get("ok"):
+        pc = pc_checked(data_dir, key)
+        if not st.get("ok") and pc is not None:   # zaal die via de eigen pc loopt: de pc heeft te lang geen lijst gestuurd
+            why = "je pc heeft sinds " + (pc or "?") + " geen nieuwe lijst gestuurd (staat de pc uit?)"
+        elif not st.get("ok"):
             why = "werkt niet: " + (st.get("error") or "onbekende fout")[:140]
-        elif st.get("manual") and key != "tivoli" and (st.get("checked") or "") < (today - timedelta(days=3)).isoformat():
-            why = "draait op een oude reservelijst van de pc (" + (st.get("checked") or "?") + ")"
+        elif st.get("manual") and (st.get("checked") or "") < (today - timedelta(days=7)).isoformat():
+            why = "je pc heeft sinds " + (st.get("checked") or "?") + " geen nieuwe lijst gestuurd (staat de pc uit?)"
         elif min_events.get(key, 3) > 0 and h.get("good", 0) >= MIN_BASE and cnt < DROP * h["good"]:
             why = f"veel minder concerten: normaal {h['good']}, nu {cnt}"
             if h.get("since") and h["since"] <= (today - timedelta(days=ACCEPT_DAYS)).isoformat() and cnt > 0:

@@ -1,7 +1,7 @@
 {
 "_last": [],
 "ab": {
-"good": 241
+"good": 243
 },
 "afasdome": {
 "good": 31
@@ -16,7 +16,7 @@
 "good": 32
 },
 "bibelot": {
-"good": 65
+"good": 66
 },
 "bird": {
 "good": 36
@@ -28,49 +28,49 @@
 "good": 69
 },
 "bolwerk": {
-"good": 55
+"good": 54
 },
 "bos": {
-"good": 46
+"good": 52
 },
 "bosuil": {
 "good": 62
 },
 "botanique": {
-"good": 0
+"good": 3
 },
 "bridges": {
 "good": 25
 },
 "burgerweeshuis": {
-"good": 50
+"good": 51
 },
 "cacao": {
 "good": 32
 },
 "capsloc": {
-"good": 14
+"good": 15
 },
 "casino": {
 "good": 14
 },
 "cinetol": {
-"good": 53
+"good": 55
 },
 "concertgebouw": {
-"good": 5
+"good": 4
 },
 "corneel": {
 "good": 25
 },
 "dbs": {
-"good": 54
+"good": 55
 },
 "depot": {
 "good": 102
 },
 "doornroosje": {
-"good": 197
+"good": 199
 },
 "dynamo": {
 "good": 41
@@ -82,7 +82,7 @@
 "good": 62
 },
 "engel": {
-"good": 106
+"good": 105
 },
 "fest_alcatraz": {
 "good": 1
@@ -184,19 +184,19 @@
 "good": 49
 },
 "ha": {
-"good": 82
+"good": 80
 },
 "hedon": {
 "good": 125
 },
 "helling": {
-"good": 60
+"good": 61
 },
 "hof": {
 "good": 33
 },
 "iduna": {
-"good": 40
+"good": 38
 },
 "kade": {
 "good": 11
@@ -211,16 +211,16 @@
 "good": 28
 },
 "lantaren": {
-"good": 68
+"good": 71
 },
 "lockkeepers": {
 "good": 10
 },
 "lottoarena": {
-"good": 17
+"good": 18
 },
 "luxor": {
-"good": 126
+"good": 125
 },
 "maassilo": {
 "good": 3
@@ -232,32 +232,32 @@
 "good": 21
 },
 "melkweg": {
-"good": 269
+"good": 271
 },
 "metropool": {
 "good": 139
 },
 "mezz": {
-"good": 138
+"good": 140
 },
 "musicon": {
 "good": 63
 },
 "muziekgieterij": {
-"good": 102
+"good": 101
 },
 "n9": {
 "good": 16
 },
 "neushoorn": {
-"good": 92
+"good": 94
 },
 "nobel": {
-"good": 104
+"good": 105
 },
 "nor": {},
 "o13": {
-"good": 151
+"good": 152
 },
 "occii": {
 "good": 23
@@ -266,25 +266,25 @@
 "good": 0
 },
 "p3": {
-"good": 60
+"good": 62
 },
 "paard": {
-"good": 156
+"good": 158
 },
 "paradiso": {
-"good": 424
+"good": 429
 },
 "patronaat": {
-"good": 159
+"good": 161
 },
 "pul": {
-"good": 59
+"good": 60
 },
 "qfactory": {
-"good": 32
+"good": 34
 },
 "reflektor": {
-"good": 79
+"good": 80
 },
 "roma": {
 "good": 21
@@ -293,7 +293,7 @@
 "good": 133
 },
 "simplon": {
-"good": 49
+"good": 50
 },
 "sounddog": {
 "good": 15
@@ -302,10 +302,10 @@
 "good": 23
 },
 "spot": {
-"good": 192
+"good": 194
 },
 "ticketmaster": {
-"good": 698
+"good": 710
 },
 "tivoli": {
 "good": 324
@@ -314,10 +314,10 @@
 "good": 12
 },
 "trix": {
-"good": 124
+"good": 130
 },
 "v11": {
-"good": 19
+"good": 20
 },
 "vanpolanen": {
 "good": 9

@@ -1363,7 +1363,8 @@ function loadPosters(c) {
     $("posters").innerHTML = items.slice(0, np).map(tile).join("") +
       '<label class="pst padd"><input type="file" accept="image/*" data-pup hidden><b>＋</b><span>Poster toevoegen</span></label>';
     $("fotos").innerHTML = items.slice(np).map(function (it, i) { return tile(it, np + i); }).join("") +
-      (fot.length < 4 ? '<label class="pst padd"><input type="file" accept="image/*" multiple data-fup hidden><b>＋</b><span>Foto toevoegen<br>(' + fot.length + " van 4)</span></label>" : "");
+      (fot.length < 4 ? '<label class="pst padd"><input type="file" accept="image/*" multiple data-fup hidden><b>＋</b><span>Foto toevoegen<br>(' + fot.length + " van 4)</span></label>" +
+        (navigator.clipboard && navigator.clipboard.read ? '<button class="pst padd" data-fpaste><b>📋</b><span>Foto plakken</span></button>' : "") : "");
     [].forEach.call($("panel").querySelectorAll("img[data-pp]"), function (im) { ghRaw(im.getAttribute("data-pp")).then(function (o) { im.src = o.url; }).catch(function () { im.parentNode.remove(); }); });
     var host = function (u) { try { return new URL(u).hostname.replace(/^www\./, ""); } catch (e) { return u; } };
     $("pstat").innerHTML = !SYNC || !SYNC.token ? "Zet synchroniseren aan om posters te bewaren en de artiest te laten zoeken."
@@ -1503,8 +1504,24 @@ $("pview").addEventListener("click", function (e) {
   if (e.target.closest("[data-pvshare]")) sharePoster(); else if (e.target.closest("[data-pvdel]")) delPoster(); else if (e.target.closest("[data-pvclose]") || e.target === this) closePoster();
 });
 $("panel").addEventListener("change", function (e) { var f = e.target.closest("[data-pup],[data-fup]"); if (f && f.files && f.files.length) { addPoster(f.files, f.hasAttribute("data-fup")); f.value = ""; } });
+/* foto plakken: Ctrl+V op de pc, of de knop 'Foto plakken' (gekopieerd uit WhatsApp, Foto's, een website ...) */
+function pasteFiles(list) { return [].filter.call(list || [], function (f) { return /^image\//.test(f.type); }); }
+document.addEventListener("paste", function (e) {
+  if (!$("fotos") || !st.open || /^(INPUT|TEXTAREA)$/.test((e.target || {}).tagName || "")) return;
+  var fs = pasteFiles(e.clipboardData && e.clipboardData.files); if (!fs.length) return;
+  e.preventDefault(); addPoster(fs, true);
+});
+function pasteButton() {
+  navigator.clipboard.read().then(function (items) {
+    var it = items.filter(function (x) { return x.types.some(function (t) { return /^image\//.test(t); }); })[0];
+    if (!it) throw new Error("leeg");
+    var t = it.types.filter(function (t) { return /^image\//.test(t); })[0];
+    return it.getType(t).then(function (b) { addPoster([new File([b], "geplakt." + t.split("/")[1], { type: t })], true); });
+  }).catch(function () { if ($("fstat")) $("fstat").textContent = "Geen foto gevonden om te plakken. Kopieer eerst een foto (lang drukken op de foto → Kopieer) en tik dan op 'Foto plakken'."; });
+}
 $("panel").addEventListener("click", function (e) {
   var pv = e.target.closest("[data-pv]"); if (pv) { openPoster(+pv.getAttribute("data-pv")); return; }
+  if (e.target.closest("[data-fpaste]")) { pasteButton(); return; }
   if (e.target.closest("[data-psite]")) { var m = marks[st.open]; if (!m) return; var a = ((AUTO || {}).marks || {})[st.open] || {};
     var u = prompt("Website van de artiest (bijv. https://www.artiest.com). Leeg laten = zelf laten zoeken.", m.asite || a.site || ""); if (u === null) return;
     u = u.trim(); if (u && !/^https?:\/\//i.test(u)) u = "https://" + u; if (u) m.asite = u; else delete m.asite; save("ca-marks", marks);

@@ -1,7 +1,7 @@
 {
 "_last": [],
 "ab": {
-"good": 243
+"good": 246
 },
 "afasdome": {
 "good": 31
@@ -37,7 +37,7 @@
 "good": 62
 },
 "botanique": {
-"good": 3
+"good": 0
 },
 "bridges": {
 "good": 25
@@ -55,7 +55,7 @@
 "good": 14
 },
 "cinetol": {
-"good": 55
+"good": 54
 },
 "concertgebouw": {
 "good": 4
@@ -67,7 +67,7 @@
 "good": 55
 },
 "depot": {
-"good": 102
+"good": 101
 },
 "doornroosje": {
 "good": 199
@@ -238,7 +238,7 @@
 "good": 139
 },
 "mezz": {
-"good": 140
+"good": 139
 },
 "musicon": {
 "good": 63
@@ -272,7 +272,7 @@
 "good": 158
 },
 "paradiso": {
-"good": 429
+"good": 426
 },
 "patronaat": {
 "good": 161
@@ -302,7 +302,7 @@
 "good": 23
 },
 "spot": {
-"good": 194
+"good": 193
 },
 "ticketmaster": {
 "good": 710
@@ -314,7 +314,7 @@
 "good": 12
 },
 "trix": {
-"good": 130
+"good": 131
 },
 "v11": {
 "good": 20

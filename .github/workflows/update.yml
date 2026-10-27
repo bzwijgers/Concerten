@@ -1,8 +1,8 @@
 name: update
 on:
   schedule:
-    - cron: "0 4 * * *"   # 04:00 UTC = 05:00/06:00 Amsterdam; de tweede dekt zomer-/wintertijd
-    - cron: "0 5 * * *"
+    - cron: "0 5 * * *"   # 05:00 UTC = 06:00/07:00 Amsterdam; de tweede dekt zomer-/wintertijd
+    - cron: "0 6 * * *"
   workflow_dispatch:
   push:
     paths: ["data/inbox/**"]
@@ -20,12 +20,12 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - run: pip install beautifulsoup4 lxml pillow
-      - name: Eén keer per ochtend vanaf 06:00 Amsterdamse tijd (of als hij met de hand / door de pc gestart is)
+      - name: Eén keer per ochtend vanaf 07:00 Amsterdamse tijd (of als hij met de hand / door de pc gestart is)
         id: gate
         run: |
           H=$(TZ=Europe/Amsterdam date +%H); D=$(TZ=Europe/Amsterdam date +%F)
           if [ "${{ github.event_name }}" != "schedule" ]; then echo run=1 >> $GITHUB_OUTPUT
-          elif [ "$H" -ge 6 ] && [ "$(cat data/lastsched.txt 2>/dev/null)" != "$D" ]; then echo "$D" > data/lastsched.txt; echo run=1 >> $GITHUB_OUTPUT
+          elif [ "$H" -ge 7 ] && [ "$(cat data/lastsched.txt 2>/dev/null)" != "$D" ]; then echo "$D" > data/lastsched.txt; echo run=1 >> $GITHUB_OUTPUT
           else echo run=0 >> $GITHUB_OUTPUT; fi
       - name: Scrape
         if: steps.gate.outputs.run == '1'

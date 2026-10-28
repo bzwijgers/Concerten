@@ -738,11 +738,13 @@ function renderNew(list) {
   if (!list.length) return html + '<div class="empty">Deze week is er (met deze filters) niets nieuws aangekondigd. <button class="others" data-clear style="margin-top:12px">Alle filters uit</button></div>';
   order.forEach(function (d0) {
     var all = days[d0], score = function (c) { return (has(c.id, "t") ? 8 : 0) + (has(c.id, "i") ? 4 : 0) + (c.seen ? 2 : 0) + (inMine(c) ? 1 : 0); };
-    var mineL = all.filter(function (c) { return score(c) > 0; }), rest = all.filter(function (c) { return score(c) === 0; });
+    /* kaartje, interesse en artiesten die je eerder zag altijd tonen (bovenaan); 'alleen in je zalen' telt mee tot 8 */
+    var mineL = all.filter(function (c) { return score(c) > 0; }).sort(function (a, b) { return (score(b) >= 2) - (score(a) >= 2) || score(b) - score(a) || (a.d < b.d ? -1 : a.d > b.d ? 1 : 0); }),
+      rest = all.filter(function (c) { return score(c) === 0; }), strong = mineL.filter(function (c) { return score(c) >= 2; }).length;
     var open = st.more["n" + d0], dd = parse(d0);
     var lbl = d0 === TODAY ? "Vandaag aangekondigd" : d0 === y ? "Gisteren aangekondigd" : DOWL[dd.getDay()].replace(/^./, function (x) { return x.toUpperCase(); }) + " " + dd.getDate() + " " + MONL[dd.getMonth()];
     html += '<div class="day"><b>' + lbl + "</b><span>" + all.length + " nieuw</span></div>";
-    var showMine = open ? mineL : mineL.slice(0, 8), showRest = open ? rest : rest.slice(0, Math.max(0, 6 - showMine.length));
+    var showMine = open ? mineL : mineL.slice(0, Math.max(8, strong)), showRest = open ? rest : rest.slice(0, Math.max(0, 6 - showMine.length));
     if (showMine.length) html += (rest.length ? '<div class="sub">Voor jou</div>' : "") + showMine.map(rowNew).join("");
     if (showRest.length) html += (showMine.length ? '<div class="sub">Overige</div>' : "") + showRest.map(rowNew).join("");
     var hidden = all.length - showMine.length - showRest.length;

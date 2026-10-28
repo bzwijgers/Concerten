@@ -25,7 +25,8 @@
 "good": 4
 },
 "boerderij": {
-"good": 68
+"good": 68,
+"since": "2026-10-28"
 },
 "bolwerk": {
 "good": 54
@@ -73,7 +74,8 @@
 "good": 197
 },
 "dynamo": {
-"good": 42
+"good": 42,
+"since": "2026-10-28"
 },
 "effenaar": {
 "good": 110
@@ -115,7 +117,7 @@
 "good": 0
 },
 "fest_itg": {
-"good": 1
+"good": 0
 },
 "fest_itgwo": {
 "good": 1
@@ -172,7 +174,8 @@
 "good": 0
 },
 "fluor": {
-"good": 55
+"good": 55,
+"since": "2026-10-28"
 },
 "gebouwt": {
 "good": 62
@@ -266,7 +269,8 @@
 "good": 1
 },
 "p3": {
-"good": 62
+"good": 62,
+"since": "2026-10-28"
 },
 "paard": {
 "good": 159
@@ -278,7 +282,8 @@
 "good": 164
 },
 "pul": {
-"good": 61
+"good": 61,
+"since": "2026-10-28"
 },
 "qfactory": {
 "good": 34
@@ -344,7 +349,8 @@
 "good": 20
 },
 "walhalla": {
-"good": 44
+"good": 44,
+"since": "2026-10-28"
 },
 "worm": {
 "good": 8

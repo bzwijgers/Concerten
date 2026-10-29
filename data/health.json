@@ -10,7 +10,7 @@
 "good": 34
 },
 "annabel": {
-"good": 12
+"good": 11
 },
 "baroeg": {
 "good": 35
@@ -22,7 +22,7 @@
 "good": 38
 },
 "bitterzoet": {
-"good": 4
+"good": 5
 },
 "boerderij": {
 "good": 67
@@ -31,7 +31,7 @@
 "good": 53
 },
 "bos": {
-"good": 52
+"good": 49
 },
 "bosuil": {
 "good": 63
@@ -58,13 +58,13 @@
 "good": 54
 },
 "concertgebouw": {
-"good": 4
+"good": 3
 },
 "corneel": {
 "good": 27
 },
 "dbs": {
-"good": 55
+"good": 54
 },
 "depot": {
 "good": 101
@@ -73,13 +73,13 @@
 "good": 198
 },
 "dynamo": {
-"good": 46
+"good": 45
 },
 "effenaar": {
 "good": 113
 },
 "ekko": {
-"good": 64
+"good": 63
 },
 "engel": {
 "good": 107
@@ -172,7 +172,7 @@
 "good": 0
 },
 "fluor": {
-"good": 55
+"good": 54
 },
 "gebouwt": {
 "good": 63
@@ -187,7 +187,7 @@
 "good": 79
 },
 "hedon": {
-"good": 127
+"good": 126
 },
 "helling": {
 "good": 62
@@ -240,10 +240,10 @@
 "good": 145
 },
 "mezz": {
-"good": 144
+"good": 142
 },
 "musicon": {
-"good": 67
+"good": 66
 },
 "muziekgieterij": {
 "good": 98
@@ -255,7 +255,7 @@
 "good": 96
 },
 "nobel": {
-"good": 105
+"good": 104
 },
 "nor": {},
 "o13": {
@@ -268,13 +268,14 @@
 "good": 1
 },
 "p3": {
-"good": 62
+"good": 62,
+"since": "2026-10-29"
 },
 "paard": {
 "good": 159
 },
 "paradiso": {
-"good": 439
+"good": 436
 },
 "patronaat": {
 "good": 166
@@ -292,16 +293,16 @@
 "good": 21
 },
 "rotown": {
-"good": 135
+"good": 133
 },
 "simplon": {
 "good": 51
 },
 "sounddog": {
-"good": 15
+"good": 19
 },
 "sowhat": {
-"good": 23
+"good": 25
 },
 "spot": {
 "good": 194
@@ -319,7 +320,7 @@
 "good": 127
 },
 "v11": {
-"good": 22
+"good": 21
 },
 "vanpolanen": {
 "good": 9

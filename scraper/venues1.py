@@ -80,7 +80,13 @@ def boerderij():
 
 # ---------- Melkweg (homepage list reaches ~1 year) ----------
 def melkweg():
-    h = fetch("https://www.melkweg.nl/nl/agenda/")
+    for i in range(3):   # 2026-10-29/30: de agendapagina gaf af en toe een 404 vanaf GitHub, later weer gewoon 200: opnieuw proberen
+        try:
+            h = fetch("https://www.melkweg.nl/nl/agenda/")
+            break
+        except RuntimeError:
+            if i == 2: raise
+            time.sleep(60)
     s = BeautifulSoup(h, "lxml")
     out = []
     for day in s.select('[class*="event-list-day__title"] time'):

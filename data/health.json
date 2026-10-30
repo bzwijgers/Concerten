@@ -3,7 +3,7 @@
 "melkweg"
 ],
 "ab": {
-"good": 230
+"good": 242
 },
 "afasdome": {
 "good": 31
@@ -149,10 +149,16 @@
 "fest_pinkpop": {
 "good": 1
 },
+"fest_pitfest": {
+"good": 1
+},
 "fest_pukkelpop": {
 "good": 1
 },
 "fest_roadburn": {
+"good": 1
+},
+"fest_soh": {
 "good": 1
 },
 "fest_suikerrock": {
@@ -180,22 +186,22 @@
 "good": 54
 },
 "gebouwt": {
-"good": 62
+"good": 63
 },
 "gigant": {
-"good": 35
+"good": 34
 },
 "grenswerk": {
 "good": 49
 },
 "ha": {
-"good": 82
+"good": 81
 },
 "hedon": {
 "good": 126
 },
 "helling": {
-"good": 62
+"good": 61
 },
 "hof": {
 "good": 32
@@ -210,7 +216,7 @@
 "good": 8
 },
 "kreun": {
-"good": 59
+"good": 13
 },
 "kroepoek": {
 "good": 30
@@ -225,7 +231,7 @@
 "good": 17
 },
 "luxor": {
-"good": 128
+"good": 126
 },
 "maassilo": {
 "good": 3
@@ -250,7 +256,7 @@
 "good": 65
 },
 "muziekgieterij": {
-"good": 97
+"good": 96
 },
 "n9": {
 "good": 18
@@ -263,7 +269,7 @@
 },
 "nor": {},
 "o13": {
-"good": 147
+"good": 146
 },
 "occii": {
 "good": 23
@@ -321,7 +327,7 @@
 "good": 17
 },
 "trix": {
-"good": 123
+"good": 124
 },
 "v11": {
 "good": 20

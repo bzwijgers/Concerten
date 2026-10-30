@@ -1146,9 +1146,13 @@ function appRow(a, xacts, xloc, xtitle) { if (!xacts && !xloc && isFestMark(mark
   var d = parse(a.s.d), v = VENUES[a.s.v] || { label: a.s.v, city: "" }, r = a.rv.r;
       var open = st.aopen === a.id, stars = "", m0 = marks[a.id] || { s: a.s, acts: DEFACTS[a.id] }, al = actsOf(m0), sa0 = xacts ? xacts.map(function (x) { return [x[0], x[1], true]; }) : al.filter(function (x) { return x[2] && x[0]; });
       var hs = sa0.filter(function (x) { return x[1] !== "V"; }), vs = sa0.filter(function (x) { return x[1] === "V"; });
+      /* festival bij een zaal (Left of the Dial bij Rotown): de naam van het festival als titel, de bands als aantal */
+      var fa = sa0.filter(function (x) { return x[1] === "F"; });
+      if (fa.length && !xtitle) { var fh = hs.filter(function (x) { return x[1] !== "F"; }); xtitle = fh.length ? fh.map(function (x) { return x[0]; }).join(" & ") : nice(a.s.n); hs = []; }
       for (var i = 1; i <= 10; i++) { var f = typeof r === "number" ? (r >= i ? "full" : r >= i - 0.5 ? "half" : "") : "";
         stars += '<button class="rs ' + f + '" data-rate="' + i + '" aria-label="' + i + ' van 10"><svg viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/></svg></button>'; }
-      return '<div class="arow' + (open ? " open" : "") + '" data-aid="' + esc(a.id) + '"><div class="ev" data-aopen>' + lg({ v: a.s.v, n: a.s.n, th: "" }) + '<div class="b"><div class="n">' + esc(xtitle || (hs.length ? hs.map(function (x) { return x[0]; }).join(" & ") : nice(a.s.n))) + '</div><div class="s">' + d.getDate() + " " + MONL[d.getMonth()] + " " + d.getFullYear() + " · " + esc(xloc || v.label) + flag(v.cc) + "</div>" +
+      return '<div class="arow' + (open ? " open" : "") + '" data-aid="' + esc(a.id) + '"><div class="ev" data-aopen>' + lg({ v: a.s.v, n: a.s.n, th: "" }) + '<div class="b"><div class="n">' + esc(xtitle || (hs.length ? hs.map(function (x) { return x[0]; }).join(" & ") : nice(a.s.n))) + '</div><div class="s">' + (fa.length ? '<span class="bd fe">festival</span>' : "") + d.getDate() + " " + MONL[d.getMonth()] + " " + d.getFullYear() + " · " + esc(xloc || v.label) + flag(v.cc) + "</div>" +
+        (fa.length ? '<div class="s">' + fa.length + (fa.length === 1 ? " band" : " bands") + " gezien</div>" : "") +
         (vs.length ? '<div class="s">met: ' + esc(vs.map(function (x) { return x[0]; }).join(", ")) + "</div>" : "") +
         (a.rv.txt && !open ? '<div class="s" style="white-space:normal;font-style:italic">“' + esc(a.rv.txt) + "”</div>" : "") + '</div><div class="tm" style="color:var(--gold)">' + (typeof r === "number" ? "★ " + String(r).replace(".", ",") : "–") + "</div></div>" +
         (open ? '<div class="aedit"><div class="rate">' + stars + '<button class="rz' + (r === 0 ? " on" : "") + '" data-rate="0">0</button></div>' +

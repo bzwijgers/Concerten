@@ -3,7 +3,7 @@
 "melkweg"
 ],
 "ab": {
-"good": 243
+"good": 246
 },
 "afasdome": {
 "good": 31
@@ -21,7 +21,7 @@
 "good": 68
 },
 "bird": {
-"good": 39
+"good": 40
 },
 "bitterzoet": {
 "good": 5
@@ -36,7 +36,7 @@
 "good": 50
 },
 "bosuil": {
-"good": 63
+"good": 64
 },
 "botanique": {
 "good": 3
@@ -45,10 +45,10 @@
 "good": 25
 },
 "burgerweeshuis": {
-"good": 53
+"good": 54
 },
 "cacao": {
-"good": 33
+"good": 32
 },
 "capsloc": {
 "good": 16
@@ -66,22 +66,22 @@
 "good": 28
 },
 "dbs": {
-"good": 54
+"good": 55
 },
 "depot": {
 "good": 100
 },
 "doornroosje": {
-"good": 197
+"good": 200
 },
 "dynamo": {
 "good": 45
 },
 "effenaar": {
-"good": 111
+"good": 113
 },
 "ekko": {
-"good": 70
+"good": 72
 },
 "engel": {
 "good": 106
@@ -96,6 +96,9 @@
 "good": 1
 },
 "fest_bospop": {
+"good": 1
+},
+"fest_cb": {
 "good": 1
 },
 "fest_dour": {
@@ -189,7 +192,7 @@
 "good": 82
 },
 "hedon": {
-"good": 124
+"good": 126
 },
 "helling": {
 "good": 62
@@ -210,10 +213,10 @@
 "good": 14
 },
 "kroepoek": {
-"good": 28
+"good": 30
 },
 "lantaren": {
-"good": 71
+"good": 70
 },
 "lockkeepers": {
 "good": 11
@@ -222,7 +225,7 @@
 "good": 17
 },
 "luxor": {
-"good": 126
+"good": 128
 },
 "maassilo": {
 "good": 3
@@ -238,7 +241,7 @@
 "since": "2026-10-29"
 },
 "metropool": {
-"good": 145
+"good": 147
 },
 "mezz": {
 "good": 142
@@ -253,14 +256,14 @@
 "good": 18
 },
 "neushoorn": {
-"good": 95
+"good": 96
 },
 "nobel": {
-"good": 102
+"good": 105
 },
 "nor": {},
 "o13": {
-"good": 146
+"good": 147
 },
 "occii": {
 "good": 23
@@ -269,13 +272,14 @@
 "good": 1
 },
 "p3": {
-"good": 63
+"good": 63,
+"since": "2026-10-30"
 },
 "paard": {
-"good": 158
+"good": 161
 },
 "paradiso": {
-"good": 439
+"good": 443
 },
 "patronaat": {
 "good": 165
@@ -287,16 +291,16 @@
 "good": 36
 },
 "reflektor": {
-"good": 75
+"good": 76
 },
 "roma": {
 "good": 21
 },
 "rotown": {
-"good": 131
+"good": 135
 },
 "simplon": {
-"good": 50
+"good": 52
 },
 "sounddog": {
 "good": 19
@@ -305,10 +309,10 @@
 "good": 25
 },
 "spot": {
-"good": 196
+"good": 197
 },
 "ticketmaster": {
-"good": 736
+"good": 739
 },
 "tivoli": {
 "good": 324
@@ -317,13 +321,13 @@
 "good": 17
 },
 "trix": {
-"good": 125
+"good": 126
 },
 "v11": {
 "good": 20
 },
 "vanpolanen": {
-"good": 9
+"good": 10
 },
 "vera": {
 "good": 50
@@ -341,7 +345,7 @@
 "good": 70
 },
 "vorstin": {
-"good": 57
+"good": 56
 },
 "w2": {
 "good": 20

@@ -615,15 +615,18 @@ function pass(c, noDate) {
   if (!noDate && st.f.weekend) { var w = weekend(); if (c.d < w[0] || c.d > w[1]) return false; }
   if (st.f.near) { var t = travel(v.city); if (t === null || t > 90) return false; }
   if (st.f.mine && mine.length && mine.indexOf(c.v) < 0) return false;
-  if (st.f.fest && !v.fest) return false;
+  if (st.f.fest && !isFestEv(c)) return false;
   if (st.f["new"] && !(c.first && c.first !== "base" && c.first >= WEEK_AGO)) return false;
   if (st.f.since && !(c.first && c.first !== "base" && c.first > st.since)) return false;
   return true;
 }
+/* festivals die in een gewone zaal zijn (Eindhoven Metal Meeting in de Effenaar, Helldorado in het Klokgebouw): ook 'festival' */
+var FESTEV = /^(eindhoven metal meeting|helldorado|into the void)/i;
+function isFestEv(c) { return !!venue(c).fest || FESTEV.test(c.n); }
 function anyFilter() { return !!(st.q.trim() || st.venue || st.cc || st.city || st.month || st.from || Object.keys(st.f).some(function (k) { return st.f[k]; })); }
 function badges(c) {
   return (has(c.id, "t") ? '<span class="bd tk">✓ kaartje</span>' : "") + (c.s ? '<span class="bd so">uitverkocht</span>' : "") +
-    (c.c && c.v === "rotown" ? '<span class="bd cl">clubcard</span>' : "") + (venue(c).fest ? '<span class="bd fe">festival</span>' : "") +
+    (c.c && c.v === "rotown" ? '<span class="bd cl">clubcard</span>' : "") + (isFestEv(c) ? '<span class="bd fe">festival</span>' : "") +
     (c.first && c.first !== "base" && c.first >= WEEK_AGO ? '<span class="bd nw">nieuw</span>' : "") +
     (c.seen ? '<span class="bd sn">' + c.seen.n + "× gezien</span>" : "") + (c.ls ? '<span class="bd sn">★ ' + c.ls + (c.ls === 1 ? " band" : " bands") + " die je zag</span>" : "") + (c.o ? '<span class="bd ot">geen concert</span>' : "");
 }

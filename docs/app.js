@@ -107,6 +107,8 @@ var VENUES = {
   fest_itgwo:{label:"Into The Great Wide Open",home:"https://www.intothegreatwideopen.nl/",city:"Vlieland",fest:true},
   fest_roadburn:{label:"Roadburn",home:"https://roadburn.com/",city:"Tilburg",fest:true},
   fest_jera:{label:"Jera On Air",home:"https://www.jeraonair.nl/",city:"Ysselsteyn",fest:true},
+  fest_soh:{label:"South of Heaven",home:"https://southofheaven.nl/",city:"Maastricht",fest:true},
+  fest_pitfest:{label:"Pitfest",home:"https://pitfest.nl/",city:"Emmen",fest:true},
   fest_waterpop:{label:"Waterpop",home:"https://www.waterpop.nl/",city:"Wateringen",fest:true},
   fest_groezrock:{label:"Groezrock",home:"https://www.groezrock.be/",city:"Meerhout",cc:"BE",fest:true},
   fest_pukkelpop:{label:"Pukkelpop",home:"https://www.pukkelpop.be/",city:"Hasselt",cc:"BE",fest:true},

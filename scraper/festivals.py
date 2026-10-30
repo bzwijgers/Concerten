@@ -27,6 +27,8 @@ FEST = {
     "fest_itgwo": ("Into The Great Wide Open", "Vlieland", "NL", "https://www.intothegreatwideopen.nl/"),
     "fest_roadburn": ("Roadburn", "Tilburg", "NL", "https://roadburn.com/"),
     "fest_jera": ("Jera On Air", "Ysselsteyn", "NL", "https://www.jeraonair.nl/"),
+    "fest_soh": ("South of Heaven", "Maastricht", "NL", "https://southofheaven.nl/"),
+    "fest_pitfest": ("Pitfest", "Emmen", "NL", "https://pitfest.nl/"),
     "fest_waterpop": ("Waterpop", "Wateringen", "NL", "https://www.waterpop.nl/"),
     "fest_groezrock": ("Groezrock", "Meerhout", "BE", "https://www.groezrock.be/"),
     "fest_pukkelpop": ("Pukkelpop", "Hasselt", "BE", "https://www.pukkelpop.be/"),

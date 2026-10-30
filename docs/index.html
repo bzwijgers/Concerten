@@ -640,13 +640,14 @@ function row(c) {
   return '<div class="ev' + (has(c.id, "i") ? " star" : "") + '" data-id="' + esc(c.id) + '">' + lg(c) +
     '<div class="b"><div class="n">' + esc(nice(c.n)) + '</div><div class="s">' + badges(c) + where(c) + " · " + esc(v.city) + "</div>" +
     (st.tab === "mine" && (marks[c.id] || {}).note ? '<div class="s" style="font-style:italic">✎ ' + esc(marks[c.id].note) + "</div>" : "") + "</div>" +
-    (t ? '<div class="tm">' + esc(t) + (/deuren/.test(c.t || "") ? "<small>deur</small>" : "") + "</div>" : '<div class="tm none">–</div>') + "</div>";
+    (v.fest && c.e && c.e > c.d ? '<div class="tm">' + (Math.round((parse(c.e) - parse(c.d)) / 864e5) + 1) + "<small>dagen</small></div>" :   /* festival: hoe lang het duurt */
+      t ? '<div class="tm">' + esc(t) + (/deuren/.test(c.t || "") ? "<small>deur</small>" : "") + "</div>" : '<div class="tm none">–</div>') + "</div>";
 }
 function chips() {
   $("chips").innerHTML = (st.f.since ? '<button class="chip city" data-since-x>Nieuw sinds vorig bezoek ✕</button>' : "") + (st.venue ? '<button class="chip city" data-venue-x>' + esc((VENUES[st.venue] || {}).label || st.venue) + " ✕</button>" : "") +
     (st.city ? '<button class="chip city" data-city-x>' + esc(st.city) + " ✕</button>" : "") +
     (st.month ? '<button class="chip city" data-month-x>' + MONL[+st.month.slice(5) - 1] + " ✕</button>" : "") +
-    '<button class="chip" data-clear aria-pressed="' + !anyFilter() + '">Agenda</button>' +
+    '<button class="chip" data-clear aria-pressed="' + !anyFilter() + '">' + (st.tab === "ov" ? "Alles" : "Agenda") + "</button>" +   /* op Overzicht: de filters gelden voor de kaart */
     CHIPS.map(function (c) {
       if (c[0] === "date") return '<button class="chip" data-date aria-pressed="' + !!st.from + '">' + (st.from ? fmtD(st.from) + (st.to && st.to !== st.from ? " – " + fmtD(st.to) : st.to ? "" : " →") + " ✕" : "Datum ▾") + "</button>";
       return '<button class="chip" data-f="' + c[0] + '" aria-pressed="' + !!st.f[c[0]] + '">' + c[1] + "</button>"; }).join("");

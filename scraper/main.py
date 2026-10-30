@@ -232,9 +232,25 @@ def main():
                        r"indie\s*disco|silent\s*disco|kinderdisco|discozwemmen|feestfabriek|dutchtuber|dikkie\s*dik|"
                        r"ernst,?\s*bobbie|de\s*betovering|backstage\s*&\s*blik|open\s*mic|markt|bingo(?!\s+players)|subsidie\w*)\b"
                        r"|^opening:|\(\d{1,2}\+\)|pub\s*quiz|\bcomedy(?!\s+of\s+errors)\w*|\bfilmclub|science\s*&\s*cocktails", _re.I)
+    # de datum van het concert hoort niet in de titel ('Kodaline - do 26 nov '26', 'Diggeth ✦ do 5 nov ✦ Luxor Live',
+    # '14 nov 2026: Original – ...', 'Ha Concerts - Heather Nova 05-02-27'); alleen weghalen als het echt dezelfde dag is
+    _mon = r"(?:jan|feb|mrt|maa|apr|mei|jun|jul|aug|sep|okt|oct|nov|dec)[a-z]*\.?"
+    _dt = (r"(?:(?:ma|di|wo|do|vr|za|zo|maandag|dinsdag|woensdag|donderdag|vrijdag|zaterdag|zondag)\.?\s+)?"
+           r"(?P<day>\d{1,2})(?:\s+" + _mon + r"(?:\s+(?:'\d{2}|20\d\d))?|[-/.]\d{1,2}[-/.](?:20)?\d\d)")
+    _tail = _re.compile(r"\s*(?:[-–—·•✦|:]\s*)?" + _dt + r"(?:\s*[•✦|]\s*.*)?\s*$", _re.I)
+    _head = _re.compile(r"^\s*" + _dt + r"\s*[:–—-]\s*", _re.I)
+    _junk = _re.compile(r"\s*\|\s*(?:concerten|muziekclub)\b.*$|^ha concerts\s*[-–]\s*", _re.I)
+
+    def undate(n, d):
+        n = _junk.sub("", n)
+        for rx in (_tail, _head):
+            m = rx.search(n)
+            if m and int(m.group("day")) == int(d[8:10]) and len(n) - len(m.group(0)) >= 2:
+                n = n[:m.start()] + n[m.end():]
+        return n.strip(" -–—·•✦|:")
     for key in fresh:
         for e in fresh[key]:
-            e["n"] = _re.sub(r"\s+", " ", e["n"]).strip()
+            e["n"] = undate(_re.sub(r"\s+", " ", e["n"]).strip(), e["d"])
             if ":" in (e.get("r") or ""): e["r"] = ""      # een label ('doors:') is geen zaalnaam
         drop = [e["n"] for e in fresh[key] if nonc.search(e["n"])]
         if drop:

@@ -339,12 +339,15 @@ function isOther(c) { return OTHER.test(c.n) && !KEEP.test(c.n); }
 /* eerder gezien: artiesten uit je archief (en concerten met kaartje uit de app) */
 var SEEN = {};
 function normA(n) { return nice(String(n || "")).toLowerCase().replace(/\s*\((?:[a-z]{2,3}|[a-z]{2}\/[a-z]{2})\)\s*/g, " ").replace(/^the\s+|,?\s+the$/g, "").replace(/&/g, " and ").replace(/[^a-z0-9à-ÿ]+/g, " ").trim(); }
+/* 'voorprogramma van Bruce Springsteen' (de hoofdact(s) van die avond) */
+function supportOf(acts) { var h = acts.filter(function (x) { return x[1] !== "V" && x[1] !== "F"; }).map(function (x) { return nice(x[0]); });
+  return h.length ? "voorprogramma van " + h.join(" & ") : "voorprogramma"; }
 function buildSeen() {
   SEEN = {};
   var add = function (n, d, w) { var k = normA(n); if (k.length < 2) return; var o = SEEN[k] = SEEN[k] || { n: 0, last: "", x: [] }; o.n++; o.x.push([d, w]); if (d > o.last) o.last = d; };
-  ((HIST && HIST.ev) || []).forEach(function (e) { e.acts.forEach(function (a) { add(a[0], e.d, (e.fn ? e.fn + " · " : "") + e.loc + " · " + e.city + (a[1] === "V" ? " (voorprogramma)" : "")); }); });
+  ((HIST && HIST.ev) || []).forEach(function (e) { e.acts.forEach(function (a) { add(a[0], e.d, (e.fn ? e.fn + " · " : "") + e.loc + " · " + e.city + (a[1] === "V" ? " (" + supportOf(e.acts) + ")" : "")); }); });
   Object.keys(marks).forEach(function (id) { var m = marks[id]; if (m.t && m.s && m.s.d < TODAY) { var v = VENUES[m.s.v] || { label: m.s.v, city: "" };
-    seenActs(m).forEach(function (a) { add(a[0], m.s.d, v.label + (v.city ? " · " + v.city : "") + (a[1] === "V" ? " (voorprogramma)" : "")); }); } });
+    var sa = seenActs(m); sa.forEach(function (a) { add(a[0], m.s.d, v.label + (v.city ? " · " + v.city : "") + (a[1] === "V" ? " (" + supportOf(sa) + ")" : "")); }); } });
   ALL.forEach(function (c) { c.seen = seenOf(c); c.ls = c.la ? c.la.filter(function (n) { return SEEN[normA(n)]; }).length : 0; });
 }
 /* line-up van een festival (van de eigen site): eerst wie je eerder zag, dan de rest; lange lijsten ingeklapt */
@@ -1085,7 +1088,7 @@ function renderHist(yseg) {
 function artView(list, srt) {
   var A = {};
   list.forEach(function (e) { e.acts.forEach(function (a) { var k = nice(a[0]), o = A[k.toLowerCase()] = A[k.toLowerCase()] || { n: k, x: [] };
-    o.x.push({ d: e.d, loc: e.loc, city: e.city, cc: e.cc, r: a[1], fn: e.fn }); }); });
+    o.x.push({ d: e.d, loc: e.loc, city: e.city, cc: e.cc, r: a[1], fn: e.fn, h: a[1] === "V" ? supportOf(e.acts) : "" }); }); });
   var arr = Object.keys(A).map(function (k) { var o = A[k]; o.x.sort(function (a, b) { return a.d < b.d ? 1 : -1; }); return o; });
   var q = st.q.trim().toLowerCase();   /* zoek je op een naam, dan alleen die artiest(en), niet iedereen die die avond speelde */
   if (q) { var byName = arr.filter(function (o) { return o.n.toLowerCase().indexOf(q) >= 0; }); if (byName.length) arr = byName; }
@@ -1095,7 +1098,7 @@ function artView(list, srt) {
   if (st.hrev) arr.reverse();
   var seg = '<div class="seg" style="margin-top:8px">' + [["d", "Datum"], ["n", "Artiest"], ["c", "Vaakst"]].map(function (o) { return '<button data-hsort="' + o[0] + '" aria-pressed="' + (srt === o[0]) + '">' + o[1] + (srt === o[0] ? (st.hrev ? " ↑" : " ↓") : "") + "</button>"; }).join("") + "</div>";
   var dl = function (x) { var d = parse(x.d); return d.getDate() + " " + MON[d.getMonth()] + " " + d.getFullYear(); };
-  var where = function (x) { var fl = x.r === "F" || x.fn ? festLabel(x) : ""; return (fl ? esc(fl) + " · " : "") + esc(x.loc) + " · " + esc(x.city) + flag(x.cc) + (x.r === "V" ? " · voorprogramma" : ""); };
+  var where = function (x) { var fl = x.r === "F" || x.fn ? festLabel(x) : ""; return (fl ? esc(fl) + " · " : "") + esc(x.loc) + " · " + esc(x.city) + flag(x.cc) + (x.r === "V" ? " · " + esc(x.h || "voorprogramma") : ""); };
   if (srt === "d") {   /* op datum: elk optreden een eigen regel */
     var flat = []; arr.forEach(function (o) { o.x.forEach(function (x) { flat.push({ n: o.n, x: x, k: o.x.length }); }); });
     flat.sort(function (a, b) { return a.x.d < b.x.d ? 1 : a.x.d > b.x.d ? -1 : a.n.localeCompare(b.n, "nl"); });

@@ -54,6 +54,19 @@ jobs:
               GIT_EDITOR=true git rebase --continue || { git rebase --abort; sleep 5; }
             fi
           done
+          # lukt bovenop zetten niet: samenvoegen (merge); ook dan winnen de gegevens van deze run en blijven pc-lijsten in data/inbox staan
+          for i in 1 2 3; do
+            git fetch -q origin main
+            if ! git merge -q -X ours --no-edit origin/main; then
+              git diff --name-only --diff-filter=U | while read -r f; do
+                if [[ "$f" == data/inbox/* ]] && git cat-file -e "origin/main:$f" 2>/dev/null; then git checkout origin/main -- "$f"
+                elif [ -e "$f" ]; then git checkout --ours -- "$f" 2>/dev/null; git add "$f"; else git rm -q --cached "$f" 2>/dev/null || true; fi
+              done || true
+              git commit -q --no-edit || { git merge --abort; sleep 10; continue; }
+            fi
+            git push -q && exit 0
+            sleep 10
+          done
           exit 1
       - name: Melding bij problemen met zalen
         continue-on-error: true

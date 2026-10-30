@@ -135,7 +135,8 @@ nav [data-tab].dot{position:relative}nav [data-tab].dot::after{content:"";positi
 .map .reach{fill:#fff;fill-opacity:.04;stroke:#fff;stroke-opacity:.35;stroke-dasharray:4 3;stroke-width:1.2;vector-effect:non-scaling-stroke}
 .map .reach.on{fill-opacity:.14}
 .map .home{fill:var(--fg)}
-.map .ml{fill:var(--muted);font-family:var(--f-b);font-weight:600;pointer-events:none}
+.map .ml{fill:var(--muted);font-family:var(--f-b);font-weight:600;pointer-events:none;paint-order:stroke;stroke:var(--bg);stroke-width:3px;stroke-linejoin:round}
+.map .ml.big{fill:var(--fg)}
 .map .cl{fill:var(--faint);font-family:var(--f-d);font-weight:800;letter-spacing:.08em;pointer-events:none}
 .map circle[data-city]{cursor:pointer}
 .zoom{position:absolute;left:10px;bottom:10px;display:flex;flex-direction:column;gap:6px}
@@ -1307,16 +1308,19 @@ function mapSvg(per, opt) {
     svg += '<circle ' + attr + '="' + esc(ct) + '" cx="' + ovX(COORD[ct][1]).toFixed(2) + '" cy="' + ovY(COORD[ct][0]).toFixed(2) + '" r="' + r.toFixed(2) + '" fill="#8e9bc4" fill-opacity="' + (on ? ".95" : ".4") + '" stroke="' + (on ? "#ece6d8" : "#8e9bc4") + '" stroke-width="' + (on ? 2.5 : 1) * k + '"/>';
   });
   var boxes = [[x0, y0 + h - 130 * k, x0 + 50 * k, y0 + h]], dots = cities.map(function (ct) { return [ovX(COORD[ct][1]), ovY(COORD[ct][0]), ct, Math.max(4, Math.sqrt(per[ct] / max) * 22) * rk]; });
-  cities.forEach(function (ct) {
+  /* uitgezoomd alleen de grootste steden een naam (rustig); inzoomen = meer namen */
+  var nlab = z < 1.3 ? 16 : z < 2 ? 30 : 999;
+  cities.forEach(function (ct, ci) {
+    if (ci >= nlab && ct !== sel) return;
     var r = Math.max(4, Math.sqrt(per[ct] / max) * 22) * rk, cx = ovX(COORD[ct][1]), cy = ovY(COORD[ct][0]), tw = ct.length * 6.2 * k, g = 3 * k;
     if (cx < x0 || cx > x0 + w || cy < y0 || cy > y0 + h) return;
     var opts = [[cx + r + g, cy - 7 * k, cx + r + g + tw, cy + 5 * k, "start", cx + r + g, cy + 3.5 * k], [cx - r - g - tw, cy - 7 * k, cx - r - g, cy + 5 * k, "end", cx - r - g, cy + 3.5 * k],
       [cx - tw / 2, cy + r + g, cx + tw / 2, cy + r + g + 11 * k, "middle", cx, cy + r + g + 8.5 * k]];
     if (cx > x0 + w * 0.62) opts = [opts[1], opts[0], opts[2]];
     var pick = opts.filter(function (b) { return b[0] > x0 && b[2] < x0 + w && b[1] > y0 && b[3] < y0 + h && !boxes.some(function (o) { return !(b[2] < o[0] || b[0] > o[2] || b[3] < o[1] || b[1] > o[3]); }) &&
-      !dots.some(function (d) { return d[2] !== ct && d[0] > b[0] - d[3] * .5 && d[0] < b[2] + d[3] * .5 && d[1] > b[1] - d[3] * .5 && d[1] < b[3] + d[3] * .5; }); })[0];
+      !dots.some(function (d) { var f = ci < 10 ? .3 : .8; return d[2] !== ct && d[0] > b[0] - d[3] * f && d[0] < b[2] + d[3] * f && d[1] > b[1] - d[3] * f && d[1] < b[3] + d[3] * f; }); })[0];
     if (!pick) return; boxes.push(pick);
-    svg += '<text class="ml" style="font-size:' + (10 * k).toFixed(2) + 'px" x="' + pick[5].toFixed(2) + '" y="' + pick[6].toFixed(2) + '" text-anchor="' + pick[4] + '">' + esc(ct) + "</text>";
+    svg += '<text class="ml' + (ci < 5 ? " big" : "") + '" style="font-size:' + (10 * k).toFixed(2) + 'px" x="' + pick[5].toFixed(2) + '" y="' + pick[6].toFixed(2) + '" text-anchor="' + pick[4] + '">' + esc(ct) + "</text>";
   });
   if (z < 2) svg += '<text class="cl" style="font-size:' + 11 * k + 'px" x="' + ovX(3.2) + '" y="' + ovY(53.3) + '">NEDERLAND</text><text class="cl" style="font-size:' + 11 * k + 'px" x="' + ovX(4.5) + '" y="' + ovY(49.85) + '">BELGIË</text>';
   svg += "</svg>";

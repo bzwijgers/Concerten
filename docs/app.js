@@ -103,6 +103,7 @@ var VENUES = {
   fest_esns:{label:"Eurosonic Noorderslag",home:"https://esns.nl/",city:"Groningen",fest:true},
   fest_motel:{label:"Motel Mozaïque",home:"https://www.motelmozaique.nl/",city:"Rotterdam",fest:true},
   fest_lgw:{label:"Le Guess Who?",home:"https://leguesswho.nl/",city:"Utrecht",fest:true},
+  fest_cb:{label:"Crossing Border",home:"https://crossingborder.nl/",city:"Den Haag",fest:true},
   fest_itgwo:{label:"Into The Great Wide Open",home:"https://www.intothegreatwideopen.nl/",city:"Vlieland",fest:true},
   fest_roadburn:{label:"Roadburn",home:"https://roadburn.com/",city:"Tilburg",fest:true},
   fest_jera:{label:"Jera On Air",home:"https://www.jeraonair.nl/",city:"Ysselsteyn",fest:true},

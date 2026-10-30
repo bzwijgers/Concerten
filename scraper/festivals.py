@@ -23,6 +23,7 @@ FEST = {
     "fest_esns": ("Eurosonic Noorderslag", "Groningen", "NL", "https://esns.nl/"),
     "fest_motel": ("Motel Mozaïque", "Rotterdam", "NL", "https://www.motelmozaique.nl/"),
     "fest_lgw": ("Le Guess Who?", "Utrecht", "NL", "https://leguesswho.nl/"),
+    "fest_cb": ("Crossing Border", "Den Haag", "NL", "https://crossingborder.nl/"),
     "fest_itgwo": ("Into The Great Wide Open", "Vlieland", "NL", "https://www.intothegreatwideopen.nl/"),
     "fest_roadburn": ("Roadburn", "Tilburg", "NL", "https://roadburn.com/"),
     "fest_jera": ("Jera On Air", "Ysselsteyn", "NL", "https://www.jeraonair.nl/"),

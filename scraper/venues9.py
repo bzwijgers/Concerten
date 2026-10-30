@@ -167,3 +167,32 @@ BASES["lantaren"] = "https://www.lantarenvenster.nl"
 
 def lantaren():
     return [e for e in _site("lantaren", limit=200) if not re.search(r"/feed/?$|yoga|cinekid|boekpresentatie|filmprogramma|muziekfilms|salsa-aan-de-haven", e["u"])]
+
+
+def studiogonz():
+    """StudioGonz (Gouda): de agendapagina met per concert dag, maand en titel; het jaar staat er niet bij.
+    Geen quiz, karaoke, comedy, yoga of besloten feest (dat filtert main.py grotendeels ook)."""
+    from datetime import date
+    mons = {"jan": 1, "feb": 2, "mrt": 3, "mar": 3, "apr": 4, "mei": 5, "jun": 6, "jul": 7, "aug": 8, "sep": 9, "okt": 10, "nov": 11, "dec": 12}
+    page, out, today = fetch("https://www.studiogonz.nl/agenda"), [], date.today()
+    for m in re.finditer(r'<a href="(/agenda/\d+/[^"]+)"><span class="date"><small>\w+</small><b>(\d{1,2})</b><small>([a-z]{3})[a-z]*\.?</small></span>.*?'
+                         r'<span class="title">(.*?)<span class="subtitle">(.*?)</span>', page, re.S):
+        u, dd, mm = "https://www.studiogonz.nl" + m.group(1), int(m.group(2)), mons.get(m.group(3).lower())
+        title = html.unescape(re.sub(r"<[^>]+>|\s+", " ", m.group(4))).strip()
+        if not mm or re.search(r"besloten|pubquiz|karaoke|stand-?up|comedy|yoga|speciaalbierbar", title, re.I): continue
+        y = today.year if (mm, dd) >= (today.month, today.day) else today.year + 1
+        sub = html.unescape(re.sub(r"<[^>]+>|\s+", " ", m.group(5))).strip()
+        if re.search(r"metal night", title, re.I) and sub: title = sub.replace("|", " +")   # 'StudioGonz Metal Night' -> de bands
+        out.append(ev("studiogonz", date(y, mm, dd).isoformat(), title, u))
+    return out
+
+
+def acu():
+    """ACU (Utrecht): de volledige agenda; alleen wat het ACU zelf als bands, loud, noise of folkpunk aanmerkt."""
+    page, out = fetch("https://www.acu.nl/agenda/"), []
+    for m in re.finditer(r'<li class="AgendaEntry ([^"]*)">\s*<a href="(https://acu\.nl/events/(\d{4})(\d\d)(\d\d)/[^"]+)".*?'
+                         r'<p class="overflowing pseudo-h2">(.*?)</p>(.*?)</li>\s*</ul>', page, re.S):
+        if not re.search(r"\b(bands|loud|noise|folkpunk)\b", m.group(1)): continue
+        t = re.search(r"Start:</span><span class=\"AgendaDetail\">(\d\d:\d\d)", m.group(7))
+        out.append(ev("acu", f"{m.group(3)}-{m.group(4)}-{m.group(5)}", html.unescape(m.group(6)).strip().rstrip("."), m.group(2), t.group(1) if t else ""))
+    return out

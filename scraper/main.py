@@ -45,7 +45,7 @@ def merge_pc_inbox(venue):
     if b and b.get("events"):
         os.makedirs(os.path.join(DATA, "manual"), exist_ok=True)
         json.dump({"venue": venue, "format": 2, "checked": (b.get("fetched") or "")[:10], "events": b["events"],
-                   "note": "Reservelijst van de eigen pc (de site toont GitHub soms een bot-controle)."},
+                   "note": "Reservelijst van de eigen pc of de ochtendcontrole (de site weigert GitHub soms)."},
                   open(os.path.join(DATA, "manual", venue + ".json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
         print(f"{venue} inbox verwerkt: {len(b['events'])} concerten")
     os.remove(ib)
@@ -140,7 +140,7 @@ def main():
     # Niet voor zalen met een reservelijst van de pc of een feed (die blokkeren GitHub, dat lost zoeken niet op).
     import heal
     for key, fn in failed:
-        if key in fresh or key in ("tivoli", "dbs", "o13", "bolwerk", "bibelot", "nor", "kade"): continue
+        if key in fresh or key in ("tivoli", "dbs", "o13", "bolwerk", "bibelot", "nor", "kade", "melkweg"): continue
         try:
             got = [e for e in heal.discover(key) if today <= e["d"] <= (date.today() + timedelta(days=600)).isoformat()]
             if len(got) >= max(3, MIN_EVENTS.get(key, 3)):
@@ -148,7 +148,7 @@ def main():
                 status[key] = {"ok": True, "count": len(got), "at": now, "healed": True}
         except Exception as ex:
             print(f"{key}: zelfherstel mislukt", ex)
-    for _k in ("o13", "bolwerk", "bibelot", "nor", "kade"): merge_pc_inbox(_k)
+    for _k in ("o13", "bolwerk", "bibelot", "nor", "kade", "melkweg"): merge_pc_inbox(_k)
     merge_tivoli_inbox()
     # Tivoli komt van de eigen pc (data/manual/tivoli.json); is die lijst ouder dan 3 dagen, dan de oude feed
     tv = load(os.path.join(DATA, "manual", "tivoli.json"), {}) or {}

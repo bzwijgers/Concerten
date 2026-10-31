@@ -111,7 +111,8 @@ header.sc{border-bottom-color:var(--line)}
 #pview .xclose{position:absolute;top:calc(env(safe-area-inset-top, 0px) + 10px);right:12px;float:none;margin:0}
 .since{display:flex;align-items:stretch;gap:6px;margin:12px 0 2px}.since [data-since]{flex:1;text-align:left;border:1px solid rgba(142,155,196,.35);background:rgba(142,155,196,.12);color:var(--fg);border-radius:14px;padding:10px 12px;cursor:pointer;font:500 13px var(--f-b)}
 .since [data-since] b{display:block;font:700 14.5px var(--f-d)}.since [data-since] span{color:var(--muted)}.since .x{border:0;background:none;color:var(--faint);font-size:16px;cursor:pointer;padding:0 6px}
-.lu{color:var(--muted);font-size:14px;line-height:1.6;margin:4px 0 8px}.lu.seen{display:flex;flex-direction:column;gap:2px;color:var(--fg)}.lu.seen b{color:var(--gold)}
+.lu{color:var(--muted);font-size:14px;line-height:1.7;margin:4px 0 8px}.lu.seen{display:flex;flex-direction:column;gap:2px;color:var(--fg)}.lu.seen b{color:var(--gold)}
+.band{background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer;text-align:left}.band:hover{color:var(--fg);text-decoration:underline}
 .newhead{margin:14px 0 2px}.newhead b{display:block;font:700 17px var(--f-d)}.newhead span{color:var(--muted);font-size:13px}
 .ev .tm.dt{min-width:54px;color:var(--gold, #e8b84a)}
 .warn{margin:12px 0 4px;border:1px solid rgba(255,107,107,.35);background:rgba(255,107,107,.07);border-radius:14px;padding:6px 10px}.warn .hl{margin:6px 0 2px;color:var(--red)}
@@ -350,16 +351,35 @@ function buildSeen() {
     var sa = seenActs(m); sa.forEach(function (a) { add(a[0], m.s.d, v.label + (v.city ? " · " + v.city : "") + (a[1] === "V" ? " (" + supportOf(sa) + ")" : "")); }); } });
   ALL.forEach(function (c) { c.seen = seenOf(c); c.ls = c.la ? c.la.filter(function (n) { return SEEN[normA(n)]; }).length : 0; });
 }
-/* line-up van een festival (van de eigen site): eerst wie je eerder zag, dan de rest; lange lijsten ingeklapt */
+/* line-up van een festival (van de eigen site): eerst wie je eerder zag, dan de rest; elke naam aantikbaar (overzicht van die band) */
 function lineupHtml(c) {
   if (!c.la || !c.la.length) return "";
   var seen = c.la.filter(function (n) { return SEEN[normA(n)]; }).sort(function (a, b) { return SEEN[normA(b)].n - SEEN[normA(a)].n; }),
-    rest = c.la.filter(function (n) { return !SEEN[normA(n)]; }), many = rest.length > 40 && !st.more["la" + c.id];
-  return '<div class="hl" style="margin-top:16px">Line-up · ' + c.la.length + " namen tot nu toe</div>" +
-    (seen.length ? '<div class="lu seen">' + seen.map(function (n) { return "<span><b>★ " + esc(n) + "</b> " + SEEN[normA(n)].n + "× gezien</span>"; }).join("") + "</div>" : "") +
-    '<div class="lu">' + (many ? rest.slice(0, 40) : rest).map(esc).join(" · ") + "</div>" +
-    (many ? '<button class="others" data-lumore="' + esc(c.id) + '">alle ' + c.la.length + " namen tonen</button>" : "") +
+    rest = c.la.filter(function (n) { return !SEEN[normA(n)]; });
+  var b = function (n) { return '<button class="band" data-band="' + esc(n) + '">' + esc(n) + "</button>"; };
+  return '<div class="hl" style="margin-top:16px">Line-up · ' + c.la.length + " namen tot nu toe" + (seen.length ? " · ★ " + seen.length + " die je zag" : "") + "</div>" +
+    (seen.length ? '<div class="lu seen">' + seen.map(function (n) { return '<button class="band" data-band="' + esc(n) + '"><b>★ ' + esc(n) + "</b> " + SEEN[normA(n)].n + "× gezien</button>"; }).join("") + "</div>" : "") +
+    '<div class="lu">' + rest.map(b).join(" · ") + "</div>" +
+    '<div class="pstat">Tik op een naam: wanneer je ze zag en hun andere concerten.</div>' +
     (c.lu ? '<a class="lnk" href="' + esc(c.lu) + '" target="_blank" rel="noopener">Line-up op de site van het festival ↗</a>' : "");
+}
+/* namen in een titel ('A + B & C - Tour'), genormaliseerd: om concerten van één band te vinden */
+function actKeys(c) {
+  var t = String(c.n), head = t.split(/\s+[-–—]\s+/)[0];
+  return [t, head].concat(head.split(/\s+(?:\+|&|w\/|with|met|x|support:?|feat\.?|ft\.?)\s+|\s*[,/|:]\s+/i)).map(normA).filter(function (k) { return k && !SEEN_STOP.test(k); });
+}
+/* overzicht van één band: wanneer je ze zag en al hun komende concerten (ook festivals waar ze op de line-up staan) */
+function openBand(name) {
+  var k = normA(name), o = SEEN[k];
+  var up = ALL.filter(function (c) { return c.d >= TODAY && (actKeys(c).indexOf(k) >= 0 || (c.la && c.la.some(function (n) { return normA(n) === k; }))); });
+  var dl = function (d0) { var d = parse(d0); return d.getDate() + " " + MON[d.getMonth()] + " " + d.getFullYear(); };
+  $("panel").innerHTML = '<div class="pb" style="margin-top:0;padding-top:22px"><h2>' + esc(name) + "</h2>" +
+    (o ? '<div class="seenbox"><b>Je zag ' + esc(name) + " al " + o.n + "×</b>" + o.x.slice().sort(function (a, b) { return a[0] < b[0] ? 1 : -1; }).map(function (x) { return "<div>" + dl(x[0]) + " · " + esc(x[1]) + "</div>"; }).join("") + "</div>"
+       : '<p style="color:var(--muted)">Nog niet gezien.</p>') +
+    '<div class="hl" style="margin-top:16px">In de agenda · ' + up.length + "</div>" +
+    (up.length ? up.map(function (c) { var d = parse(c.d); return row(c).replace('<div class="tm', '<div class="tm dt">' + d.getDate() + " " + MON[d.getMonth()] + "<small>" + DOW[d.getDay()] + (c.d.slice(0, 4) !== TODAY.slice(0, 4) ? " '" + c.d.slice(2, 4) : "") + '</small></div><div hidden class="tm'); }).join("") : '<p style="color:var(--muted)">Geen komende concerten gevonden.</p>') +
+    '<button class="others" data-bandsearch="' + esc(name) + '" style="margin-top:12px">Zoek "' + esc(name) + '" in de agenda</button></div>';
+  showSheet(); $("panel").scrollTop = 0;
 }
 /* artiesten in een titel: alleen het deel vóór ' - ' of ':' (daarna staat meestal de tour of 'live with band'),
    gesplitst op +, &, ',', w/, with, met; losse woorden als 'live' of 'band' tellen niet */
@@ -1587,7 +1607,9 @@ function pasteButton() {
 $("panel").addEventListener("click", function (e) {
   var pv = e.target.closest("[data-pv]"); if (pv) { openPoster(+pv.getAttribute("data-pv")); return; }
   if (e.target.closest("[data-fpaste]")) { pasteButton(); return; }
-  var lm = e.target.closest("[data-lumore]"); if (lm) { st.more["la" + lm.getAttribute("data-lumore")] = true; var sy = $("panel").scrollTop; openSheet(st.open); $("panel").scrollTop = sy; return; }
+  var bd = e.target.closest("[data-band]"); if (bd) { openBand(bd.getAttribute("data-band")); return; }
+  var bs = e.target.closest("[data-bandsearch]"); if (bs) { var q_ = bs.getAttribute("data-bandsearch"); closeSheet(); st.q = q_; $("q").value = q_; $("sb").setAttribute("aria-pressed", "true"); st.tab = "agenda"; setNav(); render(); window.scrollTo(0, 0); return; }
+  var pe = e.target.closest("#panel .ev[data-id]"); if (pe && !e.target.closest("[data-pv],.pst,.arow")) { openSheet(pe.getAttribute("data-id")); return; }
   if (e.target.closest("[data-psite]")) { var m = marks[st.open]; if (!m) return; var a = ((AUTO || {}).marks || {})[st.open] || {};
     var u = prompt("Website van de artiest (bijv. https://www.artiest.com). Leeg laten = zelf laten zoeken.", m.asite || a.site || ""); if (u === null) return;
     u = u.trim(); if (u && !/^https?:\/\//i.test(u)) u = "https://" + u; if (u) m.asite = u; else delete m.asite; save("ca-marks", marks);

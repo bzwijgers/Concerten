@@ -1,7 +1,5 @@
 {
-"_last": [
-"melkweg"
-],
+"_last": [],
 "ab": {
 "good": 244
 },
@@ -246,8 +244,7 @@
 "good": 19
 },
 "melkweg": {
-"good": 273,
-"since": "2026-10-29"
+"good": 273
 },
 "metropool": {
 "good": 143
@@ -320,10 +317,10 @@
 "good": 194
 },
 "studiogonz": {
-"good": 17
+"good": 19
 },
 "ticketmaster": {
-"good": 739
+"good": 734
 },
 "tivoli": {
 "good": 324

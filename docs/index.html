@@ -112,7 +112,7 @@ header.sc{border-bottom-color:var(--line)}
 .since{display:flex;align-items:stretch;gap:6px;margin:12px 0 2px}.since [data-since]{flex:1;text-align:left;border:1px solid rgba(142,155,196,.35);background:rgba(142,155,196,.12);color:var(--fg);border-radius:14px;padding:10px 12px;cursor:pointer;font:500 13px var(--f-b)}
 .since [data-since] b{display:block;font:700 14.5px var(--f-d)}.since [data-since] span{color:var(--muted)}.since .x{border:0;background:none;color:var(--faint);font-size:16px;cursor:pointer;padding:0 6px}
 .lu{color:var(--muted);font-size:14px;line-height:1.7;margin:4px 0 8px}.lu.seen{display:flex;flex-direction:column;gap:2px;color:var(--fg)}.lu.seen b{color:var(--gold)}
-.band{background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer;text-align:left}.band:hover{color:var(--fg);text-decoration:underline}
+.band{background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer;text-align:left}.bandrow{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 2px}.bandrow .chip{font-size:13px;padding:6px 12px}.band:hover{color:var(--fg);text-decoration:underline}
 .newhead{margin:14px 0 2px}.newhead b{display:block;font:700 17px var(--f-d)}.newhead span{color:var(--muted);font-size:13px}
 .ev .tm.dt{min-width:54px;color:var(--gold, #e8b84a)}
 .warn{margin:12px 0 4px;border:1px solid rgba(255,107,107,.35);background:rgba(255,107,107,.07);border-radius:14px;padding:6px 10px}.warn .hl{margin:6px 0 2px;color:var(--red)}
@@ -366,7 +366,13 @@ function lineupHtml(c) {
 /* namen in een titel ('A + B & C - Tour'), genormaliseerd: om concerten van één band te vinden */
 function actKeys(c) {
   var t = String(c.n), head = t.split(/\s+[-–—]\s+/)[0];
-  return [t, head].concat(head.split(/\s+(?:\+|&|w\/|with|met|x|support:?|feat\.?|ft\.?)\s+|\s*[,/|:]\s+/i)).map(normA).filter(function (k) { return k && !SEEN_STOP.test(k); });
+  return [t, head].concat(head.split(/\s+(?:\+|&|w\/|with|met|x|support:?|feat\.?|ft\.?)\s+|\s*[,/|:]\s+/i), bandsOf(c)).map(normA).filter(function (k) { return k && !SEEN_STOP.test(k); });
+}
+/* de bands van een concert om op te tikken: 'Brian Fallon & The Painkillers + Chris Farren' -> twee namen (& blijft heel) */
+function bandsOf(c) {
+  var head = nice(String(c.n)).split(/\s+[-–—]\s+|:\s+/)[0];
+  return head.split(/\s+(?:\+|w\/|with|met|x|support:?|feat\.?|ft\.?)\s+|\s*[,/|]\s+/i).map(function (x) { return x.replace(/\s*\((?:[A-Z]{2,3}|[a-z]{2})\)\s*$/, "").trim(); })
+    .filter(function (x) { return x.length > 1 && !SEEN_STOP.test(normA(x)); });
 }
 /* overzicht van één band: wanneer je ze zag en al hun komende concerten (ook festivals waar ze op de line-up staan) */
 function openBand(name) {
@@ -1528,7 +1534,8 @@ function openSheet(id) {
   st.open = id;
   var v = venue(c), d = parse(c.d), tt = travel(v.city), tk = has(id, "t"), it = has(id, "i"), big = c.th ? "" + c.th : "";
   $("panel").innerHTML = '<div class="ph" style="' + (big ? "background-image:url(" + esc(big) + ")" : "") + '"><span class="grab"></span></div><div class="pb">' + lg(c) + "<h2>" + esc(nice(c.n)) + "</h2><div>" + badges(c) + "</div>" +
-    (c.seen ? '<div class="seenbox"><b>Je zag ' + esc(nice(c.seen.a)) + " al " + c.seen.n + "×</b>" + c.seen.x.slice().sort(function (a, b) { return a[0] < b[0] ? 1 : -1; }).slice(0, 12).map(function (x) { var dd = parse(x[0]); return "<div>" + dd.getDate() + " " + MON[dd.getMonth()] + " " + dd.getFullYear() + " · " + esc(x[1]) + "</div>"; }).join("") + (c.seen.x.length > 12 ? "<div>… en nog " + (c.seen.x.length - 12) + " keer</div>" : "") + "</div>" : "") +
+    (!c.la && bandsOf(c).length ? '<div class="bandrow">' + bandsOf(c).map(function (n) { return '<button class="chip" data-band="' + esc(n) + '">' + esc(n) + " ›</button>"; }).join("") + "</div>" : "") +
+    (c.seen ? '<div class="seenbox"><b>Je zag <button class="band" data-band="' + esc(nice(c.seen.a)) + '"><u>' + esc(nice(c.seen.a)) + "</u></button> al " + c.seen.n + "×</b>" + c.seen.x.slice().sort(function (a, b) { return a[0] < b[0] ? 1 : -1; }).slice(0, 12).map(function (x) { var dd = parse(x[0]); return "<div>" + dd.getDate() + " " + MON[dd.getMonth()] + " " + dd.getFullYear() + " · " + esc(x[1]) + "</div>"; }).join("") + (c.seen.x.length > 12 ? "<div>… en nog " + (c.seen.x.length - 12) + " keer</div>" : "") + "</div>" : "") +
     '<div class="facts"><div class="fact"><span>Wanneer</span><b>' + DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()] + (c.t ? " · " + esc(c.t.replace("deuren ", "")) + (/deuren/.test(c.t) ? " deur" : "") : " · tijd volgt") + "</b></div>" +
     '<div class="fact"><span>Waar</span><b>' + where(c) + "</b><br><span>" + esc(v.city) + "</span></div>" +
     '<div class="fact"><span>Reistijd</span><b>' + (tt !== null ? "± " + fmtT(tt) : "–") + "</b></div>" +

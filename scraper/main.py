@@ -27,7 +27,7 @@ VENUES = [  # key, label, fn
     ("vierad", venues8.vierad), ("ab", venues8.ab), ("botanique", venues8.botanique), ("trix", venues8.trix), ("roma", venues8.roma), ("depot", venues8.depot),
     ("ha", venues8.ha), ("kreun", venues8.kreun), ("n9", venues8.n9), ("casino", venues8.casino), ("reflektor", venues8.reflektor), ("bos", venues8.bos),
     ("afasdome", venues8.afasdome), ("lottoarena", venues8.lottoarena), ("vorst", venues8.vorst), ("olt", venues8.olt),
-    ("bitterzoet", venues9.bitterzoet), ("sowhat", venues9.sowhat), ("corneel", venues9.corneel), ("kroepoek", venues9.kroepoek), ("cacao", venues9.cacao), ("worm", venues9.worm), ("maassilo", venues9.maassilo), ("lockkeepers", venues9.lockkeepers), ("v11", venues9.v11), ("manifesto", venues9.manifesto), ("concertgebouw", concertgebouw.concertgebouw), ("capsloc", venues9.capsloc), ("lantaren", venues9.lantaren), ("studiogonz", venues9.studiogonz), ("acu", venues9.acu),
+    ("bitterzoet", venues9.bitterzoet), ("sowhat", venues9.sowhat), ("corneel", venues9.corneel), ("kroepoek", venues9.kroepoek), ("cacao", venues9.cacao), ("worm", venues9.worm), ("maassilo", venues9.maassilo), ("lockkeepers", venues9.lockkeepers), ("v11", venues9.v11), ("manifesto", venues9.manifesto), ("concertgebouw", concertgebouw.concertgebouw), ("capsloc", venues9.capsloc), ("lantaren", venues9.lantaren), ("studiogonz", venues9.studiogonz), ("acu", venues9.acu), ("littledevil", venues9.littledevil), ("tbeest", venues9.tbeest), ("gashouder", venues9.gashouder),
 ] + [(k, festivals.make(k)) for k in festivals.FEST] + [
 ]
 

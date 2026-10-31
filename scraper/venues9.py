@@ -196,3 +196,49 @@ def acu():
         t = re.search(r"Start:</span><span class=\"AgendaDetail\">(\d\d:\d\d)", m.group(7))
         out.append(ev("acu", f"{m.group(3)}-{m.group(4)}-{m.group(5)}", html.unescape(m.group(6)).strip().rstrip("."), m.group(2), t.group(1) if t else ""))
     return out
+
+
+def littledevil():
+    """Little Devil (Tilburg): programmalijst met datum (d-m-jjjj), titel en '20u | genre | prijs'. Geen dansavond, sport, quiz of jamsessie."""
+    page, out = fetch("https://www.littledevil.nl/"), []
+    for m in re.finditer(r'<a href="([^"]+\.html)" class="programma-rij-link">.*?<time class="rij-datum" datetime="(\d{1,2})-(\d{1,2})-(\d{4})">.*?'
+                         r'<h2 class="rij-titel">(.*?)</h2>\s*<div class="rij-info">(.*?)</div>', page, re.S):
+        title, info = html.unescape(m.group(5)).strip(), html.unescape(m.group(6))
+        if re.search(r"sports|formula|quiz|jamsessie|halloween party|bat ?cave|dansavond|goth los", title + " " + info, re.I): continue
+        t = re.search(r"\b(\d{1,2})(?:[:.](\d\d))?\s*u\b|\b(\d{1,2})[:.](\d\d)\b", info)
+        tm = (f"{int(t.group(1)):02d}:{t.group(2) or '00'}" if t.group(1) else f"{int(t.group(3)):02d}:{t.group(4)}") if t else ""
+        out.append(ev("littledevil", f"{m.group(4)}-{int(m.group(3)):02d}-{int(m.group(2)):02d}", title, "https://www.littledevil.nl/" + m.group(1).lstrip("/"), tm))
+    return out
+
+
+def tbeest():
+    """'t Beest (Goes): de categorie 'concert' van hun agenda (WordPress Theatre: 'za 31 oktober' en '21:00'; jaar staat er niet bij)."""
+    from datetime import date
+    mons = {"januari": 1, "februari": 2, "maart": 3, "april": 4, "mei": 5, "juni": 6, "juli": 7, "augustus": 8, "september": 9, "oktober": 10, "november": 11, "december": 12}
+    page, out, today = fetch("https://tbeest.nl/?category=concert"), [], date.today()
+    for m in re.finditer(r'wpt_production_category_concert">.*?wp_theatre_event_startdate">\w+ (\d{1,2}) (\w+)</div>.*?wp_theatre_event_starttime">(\d\d:\d\d)</div>.*?'
+                         r'<div class=wp_theatre_event_title><a href=(https://tbeest\.nl/productie/[^\s>]+)\s*>(.*?)</a>', page, re.S):
+        mm = mons.get(m.group(2).lower())
+        if not mm: continue
+        dd = int(m.group(1)); y = today.year if (mm, dd) >= (today.month, today.day) else today.year + 1
+        out.append(ev("tbeest", date(y, mm, dd).isoformat(), html.unescape(m.group(5)).strip(), m.group(4), m.group(3)))
+    return out
+
+
+def gashouder():
+    """Gashouder (Amsterdam, Westergas): alleen wat de Gashouder zelf als 'live' aanmerkt (geen dance, kunst of performance).
+    Programma op de voorpagina: 'DO 5 NOV', '19:00', soort en naam; meerdaagse ('ZA 31 OKT - ZO 1 NOV') op de eerste dag."""
+    from datetime import date
+    mons = {"jan": 1, "feb": 2, "mrt": 3, "apr": 4, "mei": 5, "jun": 6, "jul": 7, "aug": 8, "sep": 9, "okt": 10, "nov": 11, "dec": 12}
+    page, out, seen, today = fetch("https://www.gashouder.com/"), [], set(), date.today()
+    for blk in re.findall(r'<a href="/programma/.*?</a>', page, re.S):   # per concert eerst het eigen blok, dan de onderdelen
+        u = re.match(r'<a href="(/programma/[^"]+)"', blk).group(1)
+        d = re.search(r'data-original="\w+ (\d{1,2}) (\w{3})', blk); k = re.search(r'<span class="label-small text-neutral-500">(\w+)</span>', blk)
+        h = re.search(r'<h3 data-original="([^"]+)"', blk); t = re.search(r'data-original="(\d\d:\d\d)"', blk)
+        if not (d and k and h) or k.group(1) != "live" or u in seen: continue
+        mm = mons.get(d.group(2).lower()); dd = int(d.group(1))
+        if not mm: continue
+        seen.add(u)
+        y = today.year if (mm, dd) >= (today.month, today.day) else today.year + 1
+        out.append(ev("gashouder", date(y, mm, dd).isoformat(), html.unescape(h.group(1)).strip(), "https://www.gashouder.com" + u, t.group(1) if t and t.group(1) >= "12:00" else ""))
+    return out

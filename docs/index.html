@@ -1377,6 +1377,7 @@ function renderArchive() {
   });
   if (!L.length) html = '<div class="empty">' + (srt === "r" ? "Nog geen concerten met een cijfer. Open een concert uit de app en geef het sterren." : "Niets gevonden.") + "</div>";
   /* lijst: 'Periode', aantal en sortering achter de jaren (scheelt regels) */
+  if (yb && srt !== "r") sortSel = sortSel.replace(/<span>[^<]*<\/span>/, "");   /* aantal staat al in de samenvatting */
   return tabs + (ychips ? ychips.replace('class="chips ychips"', 'class="chips ychips wrap"').replace("</div>", dbtn + sortSel + "</div>") : dchip.replace(/<\/div>$/, sortSel + "</div>")) + yb + html + (L.length > shown.length ? '<button class="others" data-hmore>nog ' + (L.length - shown.length) + " tonen</button>" : "") + foot;
 }
 /* overzicht: kaart met het gebied binnen 1,5 uur, en de maanden */

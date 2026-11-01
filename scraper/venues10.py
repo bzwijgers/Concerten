@@ -22,7 +22,7 @@ def _ld(key, url, skip=None):
 
 
 def turbinenhalle():   # programma met schema.org per avond; geen feesten en kermis
-    return _ld("turbinenhalle", "https://turbinenhalle.de/programm/", r"\bparty\b|\bkirmes\b|\bflohmarkt\b|\bmesse\b|\bü\s?30\b|\bclubnacht\b")
+    return _ld("turbinenhalle", "https://turbinenhalle.de/programm/", r"\bparty\b|\bkirmes\b|\bflohmarkt\b|\bmesse\b|\bü\s?30\b|\bclubnacht\b|\bwxw\b|wrestling")
 
 
 def altenberg():   # alleen de categorie 'Konzerte'; poetry slam en kabarett staan in een andere categorie
@@ -74,3 +74,18 @@ def druckluft():
         slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")[:40]
         out.append(ev("druckluft", f"{m.group(3)}-{mm:02d}-{m.group(1)}", title, f"https://drucklufthaus.de/veranstaltungen/#{m.group(1)}{mm:02d}-{slug}", m.group(4) or ""))
     return out
+
+
+# Barry vindt Schlager niet interessant: bij alle zalen in Oberhausen eruit (genre in de titel of bekende Schlager-artiesten)
+SCHLAGER = re.compile(r"schlager|mallorca|ballermann|apr[eè]s.?ski|roland kaiser|andrea berg|j[öo]rg bausch|mia julia|michael wendler|helene fischer|beatrice egli|"
+                      r"vanessa mai|ben zucker|matthias reim|dj [öo]tzi|howard carpendale|semino rossi|kerstin ott|maite kelly|silbereisen|dieter bohlen|thomas anders|"
+                      r"inselfieber|wolfgang petry|^wahnsinn$|nino de angelo|bernhard brink|ross antony|giovanni zarrella|marianne rosenberg|g\.?\s?g\.? anderson|^heino$|f[äa]aschtb[äa]nkler", re.I)
+
+
+def _zonder_schlager(fn):
+    def run(): return [e for e in fn() if not SCHLAGER.search(e["n"])]
+    run.__name__ = fn.__name__
+    return run
+
+
+turbinenhalle, kulttempel, rwa, altenberg, druckluft, helvete = map(_zonder_schlager, (turbinenhalle, kulttempel, rwa, altenberg, druckluft, helvete))

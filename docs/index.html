@@ -103,6 +103,7 @@ header.sc{border-bottom-color:var(--line)}
 .yhead{position:sticky;top:var(--hh,150px);z-index:4;background:var(--bg);display:flex;align-items:baseline;gap:8px;padding:14px 0 4px}.yhead b{font:800 18px var(--f-d)}.yhead span{color:var(--faint);font-size:12px}
 .posters{display:flex;gap:10px;overflow-x:auto;margin:6px 0 6px;padding-bottom:4px}.pst{flex:none;position:relative;padding:0;border:0;background:none;cursor:pointer}.pst img{height:220px;max-width:70vw;border-radius:12px;object-fit:contain;background:var(--card2);display:block}
 .ptag{position:absolute;left:6px;bottom:6px;font-size:11px;padding:2px 7px;border-radius:9px;background:rgba(0,0,0,.6);color:#fff}
+.afiles .pst img{height:130px}.afiles .padd{width:104px;height:130px;font-size:12px}.afile span{word-break:break-all;padding:0 6px;max-height:3.2em;overflow:hidden}.afile .fdel{position:absolute;right:4px;top:2px;font-size:13px;color:var(--faint);padding:4px;font-style:normal}
 .padd{width:130px;height:220px;border:1.5px dashed var(--line);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--faint);font-size:13px;text-align:center}.padd b{font-size:30px;font-weight:400}
 .pstat{font-size:12.5px;color:var(--faint);margin:2px 0 4px}.pstat a{color:inherit}.pstat .lnk{font-size:12.5px;padding:0;margin:0}
 #pview{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.94);display:flex;flex-direction:column}#pview[hidden]{display:none}
@@ -1189,18 +1190,80 @@ function appRow(a, xacts, xloc, xtitle) { if (!xacts && !xloc && isFestMark(mark
         (fa.length ? '<div class="s">' + fa.length + (fa.length === 1 ? " band" : " bands") + " gezien</div>" : "") +
         (vs.length ? '<div class="s">met: ' + esc(vs.map(function (x) { return x[0]; }).join(", ")) + "</div>" : "") +
         (a.rv.txt && !open ? '<div class="s" style="white-space:normal;font-style:italic">“' + esc(a.rv.txt) + "”</div>" : "") + '</div><div class="tm" style="color:var(--gold)">' + (typeof r === "number" ? "★ " + String(r).replace(".", ",") : "–") + "</div></div>" +
-        (open ? '<div class="aedit"><div class="rate">' + stars + '<button class="rz' + (r === 0 ? " on" : "") + '" data-rate="0">0</button></div>' +
+        (open ? '<div class="aedit"><div class="rate">' + stars + '<button class="rz' + (r === 0 ? " on" : "") + '" data-rate="0">0</button></div>' + prevSeenHtml(sa0.map(function (x) { return x[0]; }), a.s.d) +
           (xacts ? '<p style="color:var(--faint);font-size:12.5px;margin:8px 0 0">Artiesten komen uit je eigen lijst.</p>' : '<div class="hl" style="margin:12px 0 4px">Wie zag je?</div>' + al.map(function (x, i) {
             return '<div class="actrow"><input type="checkbox" data-acts="' + i + '"' + (x[2] ? " checked" : "") + ' aria-label="gezien"><input type="text" data-actn="' + i + '" value="' + esc(x[0]) + '" placeholder="Naam">' +
               '<select data-actr="' + i + '"><option value="H"' + (x[1] !== "V" && x[1] !== "F" ? " selected" : "") + '>hoofdact</option><option value="V"' + (x[1] === "V" ? " selected" : "") + '>voorprogramma</option><option value="F"' + (x[1] === "F" ? " selected" : "") + '>festival</option></select><button data-actdel="' + i + '" aria-label="Weghalen">✕</button></div>'; }).join("") +
           '<button class="lnk" data-actadd>+ artiest toevoegen</button>') +
-          '<textarea data-rv placeholder="Korte review (optioneel)" style="margin-top:10px">' + esc(a.rv.txt || "") + "</textarea>" +
+          '<textarea data-rv placeholder="Korte review (optioneel)" style="margin-top:10px">' + esc(a.rv.txt || "") + "</textarea>" + afilesHtml(a.id) +
           (xacts || a.id.indexOf("hist|") === 0 ? "" : st.aconfirm === a.id ? '<div class="conf">Uit je archief verwijderen? Je cijfer en review gaan ook weg.<div class="acts" style="margin-top:8px"><button class="btn" data-adel style="color:var(--red)">Ja, verwijderen</button><button class="btn" data-anodel>Annuleren</button></div></div>'
                                 : '<button class="lnk" data-aask>Verwijderen uit archief</button>') + "</div>" : "") + "</div>"; }
 function starsHtml(r) { var stars = "";
   for (var i = 1; i <= 10; i++) { var f = typeof r === "number" ? (r >= i ? "full" : r >= i - 0.5 ? "half" : "") : "";
     stars += '<button class="rs ' + f + '" data-rate="' + i + '" aria-label="' + i + ' van 10"><svg viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/></svg></button>'; }
   return '<div class="rate">' + stars + '<button class="rz' + (r === 0 ? " on" : "") + '" data-rate="0">0</button></div>'; }
+/* gezien-concert in Historie: de andere keren dat je deze artiesten zag */
+function prevSeenHtml(names, d0) {
+  var had = {}, out = names.map(function (n) { var k = normA(n), o = SEEN[k]; if (!o || had[k]) return ""; had[k] = 1;
+    var x = o.x.filter(function (y) { return y[0] !== d0; }).sort(function (a, b) { return a[0] < b[0] ? 1 : -1; }); if (!x.length) return "";
+    return '<div class="seenbox"><b><button class="band" data-band="' + esc(nice(n)) + '"><u>' + esc(nice(n)) + "</u></button> zag je ook nog " + x.length + "×</b>" +
+      x.slice(0, 8).map(function (y) { var dd = parse(y[0]); return "<div>" + dd.getDate() + " " + MON[dd.getMonth()] + " " + dd.getFullYear() + " · " + esc(y[1]) + "</div>"; }).join("") +
+      (x.length > 8 ? "<div>… en nog " + (x.length - 8) + " keer</div>" : "") + "</div>"; }).join("");
+  return out ? '<div class="hl" style="margin:12px 0 4px">Andere keren gezien</div>' + out : "";
+}
+/* foto's en bestanden bij een gezien-concert: in je privé sync-opslag (posters/fotos/ en bestanden/) */
+function afilesHtml(aid) { return '<div class="hl" style="margin:12px 0 4px">Foto\'s en bestanden</div><div class="posters afiles" data-afiles="' + esc(aid) + '"></div><div class="pstat" data-afstat></div>'; }
+function loadAFiles(aid) {
+  var box = document.querySelector("[data-afiles]"); if (!box || box.getAttribute("data-afiles") !== aid) return;
+  var m = marks[aid] || {}, fot = m.fot || [], fil = m.fil || [], ok = SYNC && SYNC.token;
+  PV = fot.map(function (p) { return { k: "Foto", p: p, aid: aid }; });
+  box.innerHTML = fot.map(function (p, i) { return '<button class="pst" data-pv="' + i + '"><img data-pp="' + esc(p) + '" alt="Foto"></button>'; }).join("") +
+    fil.map(function (f, i) { return '<button class="pst padd afile" data-afile="' + i + '"><b>📄</b><span>' + esc(f.n) + '</span><i class="fdel" data-afdel="' + i + '" aria-label="Weghalen">✕</i></button>'; }).join("") +
+    '<label class="pst padd"><input type="file" accept="image/*" multiple data-aup hidden><b>＋</b><span>Foto\'s</span></label>' +
+    '<label class="pst padd"><input type="file" multiple data-aupf hidden><b>📎</b><span>Bestand<br>(pdf, kaartje …)</span></label>' +
+    (navigator.clipboard && navigator.clipboard.read ? '<button class="pst padd" data-apaste><b>📋</b><span>Foto plakken</span></button>' : "");
+  var say = document.querySelector("[data-afstat]"); if (say && !ok) say.textContent = "Zet synchroniseren aan (menu → Synchroniseren) om foto's en bestanden te bewaren.";
+  if (!ok) return;
+  [].forEach.call(box.querySelectorAll("img[data-pp]"), function (im) { ghRaw(im.getAttribute("data-pp")).then(function (o) { im.src = o.url; }).catch(function () { im.alt = "niet gevonden"; }); });
+  fil.forEach(function (f) { ghRaw(f.p).catch(function () {}); });   /* alvast laden: openen moet direct op de tik gebeuren (iPad) */
+}
+function readB64(file) { return new Promise(function (ok, no) { var fr = new FileReader(); fr.onload = function () { ok(String(fr.result).split(",")[1]); }; fr.onerror = no; fr.readAsDataURL(file); }); }
+function addAFiles(aid, files, photo) {
+  if (!SYNC || !SYNC.token) { alert("Zet eerst synchroniseren aan (menu → Synchroniseren). Je foto's en bestanden worden in je eigen privé-opslag bewaard, zodat je ze op al je apparaten hebt."); return; }
+  ensureHistMark(aid); if (!marks[aid]) return;
+  files = [].slice.call(files, 0, 30); if (!files.length) return;
+  var say = function (t) { var s_ = document.querySelector("[data-afstat]"); if (s_) s_.textContent = t; }, done = 0;
+  files.reduce(function (pr, file, i) {
+    return pr.then(function () {
+      if (!photo && file.size > 25e6) throw new Error((file.name || "bestand") + " is groter dan 25 MB");
+      say((photo ? "Foto's" : "Bestanden") + " opslaan… " + (done + 1) + " van " + files.length);
+      return (photo ? shrink(file) : readB64(file)).then(function (b64) {
+        var ext = photo ? "jpg" : ((String(file.name).match(/\.([a-z0-9]{1,6})$/i) || [0, "bin"])[1].toLowerCase());
+        var path = (photo ? "posters/fotos/" : "bestanden/") + Date.now().toString(36) + i + "." + ext;
+        return ghApi("/contents/" + path, { method: "PUT", body: JSON.stringify({ message: photo ? "foto" : "bestand", content: b64 }) }).then(function (r) {
+          if (!r.ok) throw new Error("fout " + r.status);
+          var m = marks[aid]; if (!m) return;
+          if (photo) m.fot = (m.fot || []).concat([path]); else m.fil = (m.fil || []).concat([{ p: path, n: file.name || "bestand." + ext }]);
+          save("ca-marks", marks); done++;
+        });
+      });
+    });
+  }, Promise.resolve()).then(function () { render(); syncSoon(); }, function (er) { save("ca-marks", marks); render(); say("Opslaan mislukt: " + (er && er.message || er)); });
+}
+var AMIME = { pdf: "application/pdf", jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", gif: "image/gif", webp: "image/webp", heic: "image/heic", txt: "text/plain", mp4: "video/mp4", mov: "video/quicktime", mp3: "audio/mpeg", doc: "application/msword", docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" };
+function openAFile(aid, i) {
+  var f = ((marks[aid] || {}).fil || [])[i]; if (!f) return;
+  var o = PBLOB[f.p], say = function (t) { var s_ = document.querySelector("[data-afstat]"); if (s_) s_.textContent = t; };
+  if (!o) { say("Nog aan het laden… tik zo nog eens."); ghRaw(f.p).then(function () { say(""); }).catch(function () { say("Dit bestand is niet (meer) te vinden."); }); return; }
+  var type = AMIME[(f.p.split(".").pop() || "").toLowerCase()] || "application/octet-stream", b = new Blob([o.blob], { type: type });
+  if (window.AndroidApp && AndroidApp.shareImage) { var fr = new FileReader(); fr.onload = function () { AndroidApp.shareImage(String(fr.result).split(",")[1], type, f.n); }; fr.readAsDataURL(b); return; }
+  var a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = f.n; a.target = "_blank"; document.body.appendChild(a); a.click(); a.remove();
+}
+function delAFile(aid, i) {
+  var m = marks[aid], f = m && (m.fil || [])[i]; if (!f || !confirm('"' + f.n + '" weghalen?')) return;
+  m.fil.splice(i, 1); if (!m.fil.length) delete m.fil; save("ca-marks", marks); render(); syncSoon();
+  ghApi("/contents/" + f.p).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { if (j && j.sha) ghApi("/contents/" + f.p, { method: "DELETE", body: JSON.stringify({ message: "bestand weg", sha: j.sha }) }); }).catch(function () {});
+}
 function festRow(a) {   /* festival uit de app: één regel; open = bands per dag en zaal invullen */
   var m = marks[a.id] || { s: a.s }, v = VENUES[a.s.v] || { label: a.s.v, city: "" }, r = a.rv.r, open = st.aopen === a.id, days = festDays(m), al = actsOf(m);
   var seen = al.filter(function (x) { return x[2] && x[0]; }), d0 = parse(days[0]), d1 = parse(days[days.length - 1]);
@@ -1221,7 +1284,7 @@ function festRow(a) {   /* festival uit de app: één regel; open = bands per da
     '<div class="s">' + (seen.length ? seen.length + (seen.length === 1 ? " band" : " bands") + " · " : "") + (open ? "▴" : "tik om je bands in te vullen ▾") + "</div>" +
     (a.rv.txt && !open ? '<div class="s" style="white-space:normal;font-style:italic">“' + esc(a.rv.txt) + "”</div>" : "") + '</div><div class="tm" style="color:var(--gold)">' + (typeof r === "number" ? "★ " + String(r).replace(".", ",") : "–") + "</div></div>" +
     (open ? '<div class="aedit">' + starsHtml(r) + '<datalist id="zl-' + esc(a.id) + '">' + zalen.map(function (z) { return '<option value="' + esc(z) + '">'; }).join("") + "</datalist>" + rows +
-      '<textarea data-rv placeholder="Korte review van het festival (optioneel)" style="margin-top:12px">' + esc(a.rv.txt || "") + "</textarea>" +
+      '<textarea data-rv placeholder="Korte review van het festival (optioneel)" style="margin-top:12px">' + esc(a.rv.txt || "") + "</textarea>" + afilesHtml(a.id) + prevSeenHtml(seen.map(function (x) { return x[0]; }), a.s.d) +
       (st.aconfirm === a.id ? '<div class="conf">Uit je archief verwijderen? Je cijfer, review en bands gaan ook weg.<div class="acts" style="margin-top:8px"><button class="btn" data-adel style="color:var(--red)">Ja, verwijderen</button><button class="btn" data-anodel>Annuleren</button></div></div>'
         : '<button class="lnk" data-aask>Verwijderen uit archief</button>') + "</div>" : "") + "</div>";
 }
@@ -1293,7 +1356,8 @@ function renderArchive() {
   if (srt === "n") L.sort(function (a, b) { return name0(a).localeCompare(name0(b), "nl"); });
   if (srt === "r") L = L.filter(function (e) { return typeof e.r === "number"; }).sort(function (a, b) { return b.r - a.r || (a.d < b.d ? 1 : -1); });
   var sortSel = '<div class="sortbar"><span>' + L.length + (L.length === 1 ? " avond" : " avonden") + (srt === "r" ? " met een cijfer" : "") + '</span><select data-hsortsel aria-label="Sorteren">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + (srt === o[0] ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") + "</select></div>";
-  var yb = st.hyear && !isRange && !st.q.trim() ? '<div class="hl">Jouw ' + st.hyear + "</div>" + yearSummary(list, st.hyear, all) : "";
+  /* samenvatting van een jaar, of van een blok jaren (2025–2010, 2009–1984; schuift elk jaar vanzelf mee) */
+  var yp = (st.hyear || "").split("-"), yb = st.hyear && !st.q.trim() ? '<div class="hl">Jouw ' + (isRange ? (yp[0] === yp[1] ? yp[0] : yp[1] + "–" + yp[0]) : st.hyear) + "</div>" + yearSummary(list, yp[0], all) : "";
   var shown = L.slice(0, st.hlimit || 300), lastY = "", html = "";
   shown.forEach(function (e) {
     if ((srt === "d" || srt === "o") && (!st.hyear || isRange) && e.d.slice(0, 4) !== lastY) { lastY = e.d.slice(0, 4); html += '<div class="yhead"><b>' + lastY + "</b><span>" + years[lastY] + "</span></div>"; }
@@ -1396,6 +1460,7 @@ function render() {
   try { $("main").innerHTML = st.tab === "mine" ? renderMine() : st.tab === "a" ? renderArchive() : st.tab === "ov" ? renderOv() : renderAgenda(); }
   catch (e) { $("main").innerHTML = '<div class="empty">Er ging iets mis bij dit scherm: ' + esc(String(e && e.message || e)) + "</div>"; setTimeout(function () { throw e; }); }
   document.documentElement.style.setProperty("--hh", $("hdr").offsetHeight + "px");
+  if (st.tab === "a" && st.aopen) loadAFiles(st.aopen);
 }
 function gcal(c) {   /* opent Google Agenda met het concert al ingevuld */
   var v = venue(c), t = ((c.t || "").match(/\d\d:\d\d/) || ["20:00"])[0], s = c.d.replace(/-/g, "") + "T" + t.replace(":", "") + "00";
@@ -1450,7 +1515,7 @@ function loadPosters(c) {
     var np = items.length, fot = (m.fot || []).slice(0, 4);
     fot.forEach(function (p) { items.push({ k: "Foto", p: p }); });
     PV = items;
-    var tile = function (it, i) { return '<button class="pst" data-pv="' + i + '"><img ' + (it.u ? 'src="' + esc(it.u) + '"' : 'data-pp="' + esc(it.p) + '"') + ' alt="' + it.k + '" loading="lazy" onerror="this.parentNode.remove()"><span class="ptag">' + it.k + "</span></button>"; };
+    var tile = function (it, i) { return '<button class="pst" data-pv="' + i + '"><img ' + (it.u ? 'src="' + esc(it.u) + '"' : 'data-pp="' + esc(it.p) + '"') + ' alt="' + it.k + '" loading="lazy" onerror="this.parentNode&&this.parentNode.remove()"><span class="ptag">' + it.k + "</span></button>"; };
     $("posters").innerHTML = items.slice(0, np).map(tile).join("") +
       '<label class="pst padd"><input type="file" accept="image/*" data-pup hidden><b>＋</b><span>Poster toevoegen</span></label>';
     $("fotos").innerHTML = items.slice(np).map(function (it, i) { return tile(it, np + i); }).join("") +
@@ -1522,10 +1587,11 @@ function sharePoster() {
   else window.open(u, "_blank");
 }
 function delPoster() {
-  var it = PV[PVI], id = st.open, m = marks[id], k = it && it.k === "Foto" ? "fot" : "pst"; if (!it || (it.k !== "Eigen" && it.k !== "Foto") || !m) return;
+  var it = PV[PVI], id = it && it.aid || st.open, m = marks[id], k = it && it.k === "Foto" ? "fot" : "pst"; if (!it || (it.k !== "Eigen" && it.k !== "Foto") || !m) return;
   if (!confirm(k === "fot" ? "Deze foto weghalen?" : "Deze poster weghalen?")) return;
   m[k] = (m[k] || []).filter(function (p) { return p !== it.p; }); if (!m[k].length) delete m[k]; save("ca-marks", marks);
   ghApi("/contents/" + it.p).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { if (j && j.sha) ghApi("/contents/" + it.p, { method: "DELETE", body: JSON.stringify({ message: "poster weg", sha: j.sha }) }); }).catch(function () {});
+  if (it.aid) { closePoster(); render(); syncSoon(); return; }
   closePoster(); openSheet(id);
   if (k === "fot") setTimeout(function () { posterRequest(id); }, 8000);   /* gemaakte poster opnieuw, met de volgende foto of zonder */
 }
@@ -1599,7 +1665,10 @@ $("panel").addEventListener("change", function (e) { var f = e.target.closest("[
 /* foto plakken: Ctrl+V op de pc, of de knop 'Foto plakken' (gekopieerd uit WhatsApp, Foto's, een website ...) */
 function pasteFiles(list) { return [].filter.call(list || [], function (f) { return /^image\//.test(f.type); }); }
 document.addEventListener("paste", function (e) {
-  if (!$("fotos") || !st.open || /^(INPUT|TEXTAREA)$/.test((e.target || {}).tagName || "")) return;
+  if (/^(INPUT|TEXTAREA)$/.test((e.target || {}).tagName || "")) return;
+  var afb = !$("sheet").classList.contains("on") && document.querySelector("[data-afiles]");
+  if (afb) { var fs0 = pasteFiles(e.clipboardData && e.clipboardData.files); if (fs0.length) { e.preventDefault(); addAFiles(afb.getAttribute("data-afiles"), fs0, true); } return; }
+  if (!$("fotos") || !st.open) return;
   var fs = pasteFiles(e.clipboardData && e.clipboardData.files); if (!fs.length) return;
   e.preventDefault(); addPoster(fs, true);
 });
@@ -1664,6 +1733,18 @@ $("main").addEventListener("click", function (e) {
   if (t.closest("[data-ayear]")) { st.ayear = t.closest("[data-ayear]").getAttribute("data-ayear"); st.aopen = null; render(); return; }
   if (t.closest("[data-aview]")) { st.aview = t.closest("[data-aview]").getAttribute("data-aview"); OV = { z: 1, cx: 160, cy: 220, cc: st.cc }; render(); return; }
   if (t.closest("[data-acity]") && !OV.dragged) { openArchCity(t.closest("[data-acity]").getAttribute("data-acity")); return; }
+  var afr = t.closest("[data-afiles]");
+  if (afr) { var faid = afr.getAttribute("data-afiles"), fd_ = t.closest("[data-afdel]"), fo_ = t.closest("[data-afile]"), pv_ = t.closest("[data-pv]");
+    if (fd_) { delAFile(faid, +fd_.getAttribute("data-afdel")); return; }
+    if (fo_) { openAFile(faid, +fo_.getAttribute("data-afile")); return; }
+    if (pv_) { openPoster(+pv_.getAttribute("data-pv")); return; }
+    if (t.closest("[data-apaste]")) { navigator.clipboard.read().then(function (items) {
+        var it = items.filter(function (x) { return x.types.some(function (y) { return /^image\//.test(y); }); })[0]; if (!it) throw 0;
+        var ty = it.types.filter(function (y) { return /^image\//.test(y); })[0];
+        return it.getType(ty).then(function (b) { addAFiles(faid, [new File([b], "geplakt." + ty.split("/")[1], { type: ty })], true); });
+      }).catch(function () { var s_ = document.querySelector("[data-afstat]"); if (s_) s_.textContent = "Geen foto gevonden om te plakken. Kopieer eerst een foto en tik dan op 'Foto plakken'."; }); return; }
+    return; }
+  var bdm = t.closest("[data-band]"); if (bdm) { openBand(bdm.getAttribute("data-band")); return; }
   var ar = t.closest("[data-aid]");
   if (ar) {   /* archief: openen, cijfer, verwijderen */
     var aid = ar.getAttribute("data-aid"), rb = t.closest("[data-rate]"); ensureHistMark(aid);
@@ -1760,6 +1841,7 @@ function actEdit(e, render_) {   /* wijziging in 'Wie zag je?' bewaren */
 }
 $("main").addEventListener("change", function (e) { if (actEdit(e, true)) return;
   var ss = e.target.closest("[data-hsortsel]"); if (ss) { st.hsort = ss.value; st.hrev = false; render(); } });
+$("main").addEventListener("change", function (e) { var f = e.target.closest("[data-aup],[data-aupf]"); if (f && f.files && f.files.length) { var fl = [].slice.call(f.files); addAFiles(f.closest("[data-afiles]").getAttribute("data-afiles"), fl, f.hasAttribute("data-aup")); f.value = ""; } });
 $("main").addEventListener("change", function (e) { var f = e.target.closest("[data-himport]"); if (f && f.files && f.files[0]) importHist(f.files[0]); });
 $("panel").addEventListener("input", function (e) {   /* notitie bij een kaartje bewaren tijdens het typen */
   var ta = e.target.closest("[data-note]"); if (!ta || !st.open) return;
@@ -1847,6 +1929,7 @@ $("sb").addEventListener("click", function () {
   var on = !$("sbar").classList.contains("on"); $("sbar").classList.toggle("on", on); $("sb").setAttribute("aria-pressed", String(on));
   if (on) { render(); $("q").focus(); } else { $("q").value = ""; st.q = ""; render(); }
   document.documentElement.style.setProperty("--hh", $("hdr").offsetHeight + "px");
+  if (st.tab === "a" && st.aopen) loadAFiles(st.aopen);
 });
 var qt; $("q").addEventListener("input", function () { $("qx").style.display = $("q").value ? "block" : "none"; clearTimeout(qt); qt = setTimeout(function () { st.q = $("q").value; render(); }, 150); });
 $("qx").addEventListener("click", function (e) { e.preventDefault(); $("q").value = ""; st.q = ""; $("qx").style.display = "none"; render(); });

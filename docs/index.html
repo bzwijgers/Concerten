@@ -100,7 +100,7 @@ header.sc{border-bottom-color:var(--line)}
 .ychips{margin-top:8px}.ychips.sub{margin-top:6px}.ychips.sub .chip{padding:4px 10px;font-size:12.5px}.ychips .chip{padding:6px 12px;font-size:13px}
 .seg.small button{font-size:12.5px;padding:7px 4px}
 .sortbar{display:flex;align-items:center;justify-content:space-between;margin:12px 0 4px;color:var(--faint);font:700 11px var(--f-b);text-transform:uppercase;letter-spacing:.08em}
-.ychips.wrap{flex-wrap:wrap;row-gap:6px}.sortbar.inrow{margin:0 0 0 auto;flex:none;gap:8px;padding-left:4px}.sortbar.inrow>span{font-size:13px;color:var(--muted)}
+.ychips.wrap{flex-wrap:wrap;row-gap:6px}.sortbar.inrow{margin:0 0 0 auto;flex:none;gap:6px;padding-left:2px}.sortbar.inrow select{padding:5px 6px;font-size:13px}.sortbar.inrow>span{font-size:13px;color:var(--muted)}
 .sortbar select{background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:6px 8px;font:600 13px var(--f-b);text-transform:none;letter-spacing:0}
 .yhead{position:sticky;top:var(--hh,150px);z-index:4;background:var(--bg);display:flex;align-items:baseline;gap:8px;padding:14px 0 4px}.yhead b{font:800 18px var(--f-d)}.yhead span{color:var(--faint);font-size:12px}
 .posters{display:flex;gap:10px;overflow-x:auto;margin:6px 0 6px;padding-bottom:4px}.pst{flex:none;position:relative;padding:0;border:0;background:none;cursor:pointer}.pst img{height:220px;max-width:70vw;border-radius:12px;object-fit:contain;background:var(--card2);display:block}
@@ -1353,7 +1353,7 @@ function renderArchive() {
   if (st.aview === "art") return head + artView(list, srt) + foot;
   if (st.aview === "fest") return head + festView(list, srt) + foot;
   /* lijst */
-  var opts = [["d", "Nieuwste eerst"], ["o", "Oudste eerst"], ["n", "Artiest A–Z"], ["r", "Hoogste cijfer"]];
+  var opts = [["d", "Nieuwste"], ["o", "Oudste"], ["n", "A–Z"], ["r", "Cijfer"]];   /* kort: past op de regel van de jaren, ook op een telefoon */
   if (["d", "o", "n", "r"].indexOf(srt) < 0) srt = "d";
   var name0 = function (e) { return nice(e.fn || (e.acts[0] || [e.loc])[0]); };
   var L = list.slice();

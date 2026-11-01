@@ -1289,7 +1289,7 @@ function festRow(a) {   /* festival uit de app: één regel; open = bands per da
         : '<button class="lnk" data-aask>Verwijderen uit archief</button>') + "</div>" : "") + "</div>";
 }
 /* Historie: één lijst (je eigen archief + concerten uit de app), per jaar te bekijken */
-function yearSummary(list, y, all) {
+function yearSummary(list, y, all, range) {   /* range: blok van jaren, dan zonder "Voor het eerst" */
   var zv = {}, zc = {}, ar = {}, before = {}, newv = [];
   all.forEach(function (e) { if (e.d.slice(0, 4) < y) before[e.loc.toLowerCase().replace(/^(de|het|the)\s+/, "")] = 1; });
   list.forEach(function (e) { zv[e.loc] = (zv[e.loc] || 0) + 1; zc[e.city] = 1; e.acts.forEach(function (x) { ar[x[0]] = (ar[x[0]] || 0) + 1; });
@@ -1300,7 +1300,7 @@ function yearSummary(list, y, all) {
   return '<div class="ys"><div><b>' + (list.length - fd) + "</b><span>concerten</span></div><div><b>" + Object.keys(zv).length + "</b><span>zalen</span></div><div><b>" + (fd || Object.keys(zc).length) + "</b><span>" + (fd ? "festivaldagen" : "steden") + "</span></div></div>" +
     '<div class="yl">' + (tz ? "Meest bezocht: <b>" + esc(tz[0]) + "</b> (" + tz[1] + "×)<br>" : "") + (ta && ta[1] > 1 ? "Vaakst gezien: <b>" + esc(ta[0]) + "</b> (" + ta[1] + "×)<br>" : "") +
     (best ? "Hoogste cijfer: <b>" + esc(best.acts.filter(function (x) { return x[1] !== "V"; }).map(function (x) { return x[0]; }).join(" & ") || best.loc) + "</b> (★ " + String(best.r).replace(".", ",") + ")<br>" : "") +
-    (newv.length ? "Voor het eerst: <b>" + newv.slice(0, 6).map(esc).join(", ") + "</b>" + (newv.length > 6 ? " en nog " + (newv.length - 6) : "") : "") + "</div>";
+    (newv.length && !range ? "Voor het eerst: <b>" + newv.slice(0, 6).map(esc).join(", ") + "</b>" + (newv.length > 6 ? " en nog " + (newv.length - 6) : "") : "") + "</div>";
 }
 function renderArchive() {
   var all = histEvenings(); if (!st.hyear) st.hyear = "";
@@ -1357,7 +1357,7 @@ function renderArchive() {
   if (srt === "r") L = L.filter(function (e) { return typeof e.r === "number"; }).sort(function (a, b) { return b.r - a.r || (a.d < b.d ? 1 : -1); });
   var sortSel = '<div class="sortbar"><span>' + L.length + (L.length === 1 ? " avond" : " avonden") + (srt === "r" ? " met een cijfer" : "") + '</span><select data-hsortsel aria-label="Sorteren">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + (srt === o[0] ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") + "</select></div>";
   /* samenvatting van een jaar, of van een blok jaren (2025–2010, 2009–1984; schuift elk jaar vanzelf mee) */
-  var yp = (st.hyear || "").split("-"), yb = st.hyear && !st.q.trim() ? '<div class="hl">Jouw ' + (isRange ? (yp[0] === yp[1] ? yp[0] : yp[1] + "–" + yp[0]) : st.hyear) + "</div>" + yearSummary(list, yp[0], all) : "";
+  var yp = (st.hyear || "").split("-"), yb = st.hyear && !st.q.trim() ? '<div class="hl">Jouw ' + (isRange ? (yp[0] === yp[1] ? yp[0] : yp[1] + "–" + yp[0]) : st.hyear) + "</div>" + yearSummary(list, yp[0], all, isRange) : "";
   var shown = L.slice(0, st.hlimit || 300), lastY = "", html = "";
   shown.forEach(function (e) {
     if ((srt === "d" || srt === "o") && (!st.hyear || isRange) && e.d.slice(0, 4) !== lastY) { lastY = e.d.slice(0, 4); html += '<div class="yhead"><b>' + lastY + "</b><span>" + years[lastY] + "</span></div>"; }

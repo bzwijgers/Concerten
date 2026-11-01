@@ -1300,7 +1300,8 @@ function yearSummary(list, y, all, range) {   /* range: blok van jaren, dan zond
   var topk = function (o) { var k = Object.keys(o).sort(function (a, b) { return o[b] - o[a]; })[0]; return k ? [k, o[k]] : null; };
   var tz = topk(zv), ta = topk(ar), best = list.filter(function (e) { return typeof e.r === "number"; }).sort(function (a, b) { return b.r - a.r; })[0];
   var fd = list.filter(function (e) { return e.fn || e.acts.some(function (x) { return x[1] === "F"; }); }).length;
-  return '<div class="ys"><div><b>' + (list.length - fd) + "</b><span>concerten</span></div><div><b>" + Object.keys(zv).length + "</b><span>zalen</span></div><div><b>" + (fd || Object.keys(zc).length) + "</b><span>" + (fd ? "festivaldagen" : "steden") + "</span></div></div>" +
+  /* een festivaldag telt als één concert: 54 concerten, waarvan 2 festivaldagen */
+  return '<div class="ys"><div><b>' + list.length + "</b><span>concerten</span></div><div><b>" + Object.keys(zv).length + "</b><span>zalen</span></div><div><b>" + (fd || Object.keys(zc).length) + "</b><span>" + (fd ? "waarvan festival" + (fd === 1 ? "dag" : "dagen") : "steden") + "</span></div></div>" +
     '<div class="yl">' + (tz ? "Meest bezocht: <b>" + esc(tz[0]) + "</b> (" + tz[1] + "×)<br>" : "") + (ta && ta[1] > 1 ? "Vaakst gezien: <b>" + esc(ta[0]) + "</b> (" + ta[1] + "×)<br>" : "") +
     (best ? "Hoogste cijfer: <b>" + esc(best.acts.filter(function (x) { return x[1] !== "V"; }).map(function (x) { return x[0]; }).join(" & ") || best.loc) + "</b> (★ " + String(best.r).replace(".", ",") + ")<br>" : "") +
     (newv.length && !range ? "Voor het eerst: <b>" + (st.yfirst ? newv : newv.slice(0, 6)).map(esc).join(", ") + "</b>" + (newv.length > 6 && !st.yfirst ? ' <button class="lnk" data-yfirst style="display:inline">en nog ' + (newv.length - 6) + " ›</button>" : "") : "") + "</div>";

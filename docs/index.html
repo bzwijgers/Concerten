@@ -1314,97 +1314,146 @@ function yearSummary(list, y, all, range) {   /* range: blok van jaren, dan zond
     var lk = e.loc.toLowerCase().replace(/^(de|het|the)\s+/, ""); if (!before[lk] && newv.indexOf(e.loc) < 0) newv.push(e.loc); });
   var topk = function (o) { var k = Object.keys(o).sort(function (a, b) { return o[b] - o[a]; })[0]; return k ? [k, o[k]] : null; };
   var tz = topk(zv), ta = topk(ar), best = list.filter(function (e) { return typeof e.r === "number"; }).sort(function (a, b) { return b.r - a.r; })[0];
-  var fd = list.filter(function (e) { return e.fn || e.acts.some(function (x) { return x[1] === "F"; }); }).length;
+  var fset = {}; list.forEach(function (e) { if (e.fn || e.acts.some(function (x) { return x[1] === "F"; })) fset[(festLabel(e) || e.fn || e.loc + " " + e.d.slice(0, 4)).toLowerCase()] = 1; });
+  var fd = Object.keys(fset).length;   /* aantal festivals (een festival van drie dagen telt één keer) */
   /* een festivaldag telt als één concert: 54 concerten (daarvan 2 festivaldagen); compact, op één regel */
-  return '<div class="ys"><div><b>' + list.length + "</b><span>concerten</span></div><div><b>" + Object.keys(zv).length + "</b><span>zalen</span></div><div><b>" + (fd || Object.keys(zc).length) + "</b><span>" + (fd ? "festival" + (fd === 1 ? "dag" : "dagen") : "steden") + "</span></div></div>" +
+  return '<div class="ys"><div><b>' + list.length + "</b><span>concerten</span></div><div><b>" + Object.keys(zv).length + "</b><span>zalen</span></div><div><b>" + (fd || Object.keys(zc).length) + "</b><span>" + (fd ? (fd === 1 ? "festival" : "festivals") : "steden") + "</span></div></div>" +
     '<div class="yl">' + (tz ? "Meest bezocht: <b>" + esc(tz[0]) + "</b> (" + tz[1] + "×)<br>" : "") + (ta && ta[1] > 1 ? "Vaakst gezien: <b>" + esc(ta[0]) + "</b> (" + ta[1] + "×)<br>" : "") +
     (best ? "Hoogste cijfer: <b>" + esc(best.acts.filter(function (x) { return x[1] !== "V"; }).map(function (x) { return x[0]; }).join(" & ") || best.loc) + "</b> (★ " + String(best.r).replace(".", ",") + ")<br>" : "") +
     (newv.length && !range ? "Voor het eerst: <b>" + (st.yfirst ? newv : newv.slice(0, 6)).map(esc).join(", ") + "</b>" + (newv.length > 6 && !st.yfirst ? ' <button class="lnk" data-yfirst style="display:inline">en nog ' + (newv.length - 6) + " ›</button>" : "") : "") + "</div>";
 }
 /* jaarposter: één deelbaar beeld van een jaar, blok of periode uit Historie; wordt op het apparaat getekend (je archief gaat nergens heen) */
 var YPL = null;
-function yearPoster(list, label) {
+function yearPoster(list, label, full) {
   var W = 1080, H = 1350, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
   var g = cv.getContext("2d"), FD = '"Bricolage Grotesque", system-ui, sans-serif', FB = '"Instrument Sans", system-ui, sans-serif';
-  var GOLD = "#f2b84b", FG = "#f3efe6", MUT = "#a49db3", BG = "#0d0c12";
-  /* cijfers, zoals in de samenvatting */
-  var zv = {}, st_ = {}, ld = {}, art = {}, fd = 0, best = null;
+  var FG = "#f3efe6", MUT = "#a49db3", BG = "#0d0c12";
+  /* kleur per jaar: elk jaar een eigen sfeer */
+  var PAL = [["#f2b84b", "242,184,75", "180,90,60"], ["#ff7a59", "255,122,89", "150,40,90"], ["#7fd1c7", "127,209,199", "40,90,150"], ["#c9a0ff", "201,160,255", "90,40,150"],
+    ["#ffd25e", "255,210,94", "200,70,40"], ["#8fb2ff", "143,178,255", "40,60,150"], ["#ff8fb1", "255,143,177", "120,40,110"]];
+  var yr = parseInt(label, 10) || 0, P = PAL[yr % PAL.length], GOLD = P[0];
+  var isFest = function (e) { return !!e.fn || e.acts.some(function (x) { return x[1] === "F"; }); };
+  /* 'grote naam': iemand die je ergens in je hele geschiedenis als hoofdact zag (geen voorprogramma, geen festival) */
+  var headl = {}; (full || list).forEach(function (e) { if (isFest(e)) return; e.acts.forEach(function (x) { if (x[1] !== "V") headl[normA(x[0])] = 1; }); });
+  /* cijfers */
+  var zv = {}, st_ = {}, ld = {}, art = {}, fests = {}, rated = [];
   list.forEach(function (e) {
     var lc = String(e.loc || "").trim(); if (lc) zv[lc] = (zv[lc] || 0) + 1; if (e.city) st_[e.city] = 1; ld[e.cc || "NL"] = 1;
-    if (e.fn || e.acts.some(function (x) { return x[1] === "F"; })) fd++;
-    if (typeof e.r === "number" && (!best || e.r > best.r)) best = e;
+    var fe = isFest(e); if (fe) fests[(festLabel(e) || e.fn || e.loc + " " + e.d.slice(0, 4)).toLowerCase()] = 1;
+    var heads = e.acts.filter(function (x) { return x[1] !== "V"; });
+    if (typeof e.r === "number") rated.push({ r: e.r, n: fe ? (festLabel(e) || e.fn || e.loc) : heads.map(function (x) { return nice(x[0]); }).join(" & ") || e.loc, w: e.loc, d: e.d });
     var had = {}; e.acts.forEach(function (x) { var n = String(x[0] || "").trim(), k = normA(n); if (!n || !k || had[k]) return; had[k] = 1;
-      var o = art[k] = art[k] || { n: nice(n), c: 0, h: false, r: 0 }; o.c++; if (x[1] !== "V") o.h = true; if (typeof e.r === "number" && e.r > o.r) o.r = e.r; });
+      var o = art[k] = art[k] || { n: nice(n), c: 0, h: false, big: !!headl[k], r: 0 }; o.c++;
+      if (x[1] !== "V" && !fe) { o.h = true; if (typeof e.r === "number" && e.r > o.r) o.r = e.r; } });
   });
   var top = function (o) { var k = Object.keys(o).sort(function (a, b) { return o[b] - o[a]; })[0]; return k ? [k, o[k]] : null; };
   var tz = top(zv), ac = {}; Object.keys(art).forEach(function (k) { ac[k] = art[k].c; }); var ta = top(ac);
-  var names = Object.keys(art).map(function (k) { var o = art[k]; o.sc = o.c * 3 + (o.h ? 2 : 0) + (o.r >= 8 ? 3 : o.r >= 7 ? 1 : 0); return o; })
-    .sort(function (a, b) { return b.sc - a.sc || a.n.localeCompare(b.n, "nl"); });
-  /* achtergrond: donker podium met warm licht van boven en een paar lichtbundels */
+  rated.sort(function (a, b) { return b.r - a.r || (a.d < b.d ? -1 : 1); });
+  /* line-up: groot alleen hoofdacts en grote namen, op cijfer; voorprogramma's en festivalbands klein */
+  var names = Object.keys(art).map(function (k) { return art[k]; });
+  var bigs = names.filter(function (o) { return o.h || o.big; }).sort(function (a, b) { return b.r - a.r || b.c - a.c || a.n.localeCompare(b.n, "nl"); });
+  var smalls = names.filter(function (o) { return !(o.h || o.big); }).sort(function (a, b) { return b.c - a.c || a.n.localeCompare(b.n, "nl"); });
+  /* achtergrond */
   g.fillStyle = BG; g.fillRect(0, 0, W, H);
-  var rg = g.createRadialGradient(W / 2, -120, 40, W / 2, -120, 1100); rg.addColorStop(0, "rgba(242,184,75,.38)"); rg.addColorStop(.45, "rgba(180,90,60,.12)"); rg.addColorStop(1, "rgba(13,12,18,0)");
+  var rg = g.createRadialGradient(W / 2, -140, 40, W / 2, -140, 1150); rg.addColorStop(0, "rgba(" + P[1] + ",.42)"); rg.addColorStop(.5, "rgba(" + P[2] + ",.14)"); rg.addColorStop(1, "rgba(13,12,18,0)");
   g.fillStyle = rg; g.fillRect(0, 0, W, H);
   g.save(); g.globalCompositeOperation = "lighter";
-  [[-.5, .05], [-.2, .07], [.15, .06], [.45, .05]].forEach(function (b) { g.save(); g.translate(W / 2, -60); g.rotate(b[0]);
-    var lg_ = g.createLinearGradient(0, 0, 0, 1000); lg_.addColorStop(0, "rgba(255,226,170," + b[1] + ")"); lg_.addColorStop(1, "rgba(255,226,170,0)");
-    g.fillStyle = lg_; g.beginPath(); g.moveTo(-18, 0); g.lineTo(18, 0); g.lineTo(150, 1000); g.lineTo(-150, 1000); g.closePath(); g.fill(); g.restore(); });
+  [[-.62, .05, 0], [-.3, .08, 1], [-.08, .05, 0], [.12, .07, 1], [.36, .06, 0], [.6, .05, 1]].forEach(function (b) { g.save(); g.translate(b[2] ? W * .22 : W * .78, -40); g.rotate(b[0]);
+    var lg_ = g.createLinearGradient(0, 0, 0, 1300); lg_.addColorStop(0, "rgba(" + P[1] + "," + b[1] * 1.6 + ")"); lg_.addColorStop(1, "rgba(" + P[1] + ",0)");
+    g.fillStyle = lg_; g.beginPath(); g.moveTo(-14, 0); g.lineTo(14, 0); g.lineTo(190, 1300); g.lineTo(-190, 1300); g.closePath(); g.fill(); g.restore(); });
   g.restore();
-  for (var i = 0; i < 2600; i++) { g.fillStyle = "rgba(255,255,255," + (Math.random() * .045) + ")"; g.fillRect(Math.random() * W, Math.random() * H, 1.6, 1.6); }   /* korrel */
+  for (var i = 0; i < 3200; i++) { g.fillStyle = "rgba(255,255,255," + (Math.random() * .05) + ")"; g.fillRect(Math.random() * W, Math.random() * H, 1.6, 1.6); }
+  /* publiek met handen in de lucht, onderaan */
+  var crowd = function () { var base = H - 14; g.fillStyle = "#06050a";
+    for (var x = -30; x < W + 40; x += 30 + Math.random() * 16) { var hgt = 18 + Math.random() * 30, r = 15 + Math.random() * 5;
+      g.beginPath(); g.arc(x, base - hgt, r, 0, 7); g.fill(); g.fillRect(x - r * 1.25, base - hgt + r * .6, r * 2.5, hgt + 40);
+      if (Math.random() < .32) { var s = Math.random() < .5 ? -1 : 1, ax = x + s * (r + 6), top_ = base - hgt - 46 - Math.random() * 40; g.lineWidth = 11; g.lineCap = "round"; g.strokeStyle = "#06050a";
+        g.beginPath(); g.moveTo(x + s * r * .8, base - hgt + r); g.lineTo(ax + s * 14, top_); g.stroke(); g.beginPath(); g.arc(ax + s * 14, top_ - 6, 9, 0, 7); g.fill();
+        if (Math.random() < .3) { g.lineWidth = 5; g.beginPath(); g.moveTo(ax + s * 14 - 8, top_ - 18); g.lineTo(ax + s * 14 - 8, top_ + 2); g.moveTo(ax + s * 14 + 8, top_ - 18); g.lineTo(ax + s * 14 + 8, top_ + 2); g.stroke(); } } }
+    var fade = g.createLinearGradient(0, H - 150, 0, H); fade.addColorStop(0, "rgba(6,5,10,0)"); fade.addColorStop(1, "rgba(6,5,10,.85)"); g.fillStyle = fade; g.fillRect(0, H - 150, W, 150); };
   g.textAlign = "center"; g.textBaseline = "alphabetic";
-  var fit = function (txt, font, size, maxW) { do { g.font = font.replace("#", size); if (g.measureText(txt).width <= maxW) break; size -= 4; } while (size > 20); return size; };
+  var fit = function (txt, font, size, maxW) { do { g.font = font.replace("#", size); if (g.measureText(txt).width <= maxW) break; size -= 3; } while (size > 16); return size; };
   var spaced = function (txt, x, y, sp) { var w = 0, ch = txt.split(""); ch.forEach(function (c) { w += g.measureText(c).width + sp; }); w -= sp;
     var cx = x - w / 2; g.textAlign = "left"; ch.forEach(function (c) { g.fillText(c, cx, y); cx += g.measureText(c).width + sp; }); g.textAlign = "center"; };
+  var box = function (x, y, w, h, r) { g.beginPath(); if (g.roundRect) g.roundRect(x, y, w, h, r); else g.rect(x, y, w, h); };
+  /* vlaggetjes (getekend; emoji als het land niet in de lijst staat) */
+  var FL = { NL: ["h", "#AE1C28", "#fff", "#21468B"], BE: ["v", "#000", "#FDDA24", "#EF3340"], DE: ["h", "#000", "#DD0000", "#FFCE00"], FR: ["v", "#0055A4", "#fff", "#EF4135"],
+    IT: ["v", "#009246", "#fff", "#CE2B37"], LU: ["h", "#ED2939", "#fff", "#00A1DE"], AT: ["h", "#ED2939", "#fff", "#ED2939"], IE: ["v", "#169B62", "#fff", "#FF883E"],
+    ES: ["h", "#AA151B", "#F1BF00", "#AA151B"], HU: ["h", "#CE2939", "#fff", "#477050"], RU: ["h", "#fff", "#0039A6", "#D52B1E"], EE: ["h", "#0072CE", "#000", "#fff"] };
+  var flag = function (cc, x, y, w, h) { var f = FL[cc];
+    if (f) { for (var j = 0; j < 3; j++) { g.fillStyle = f[j + 1]; if (f[0] === "h") g.fillRect(x, y + j * h / 3, w, h / 3 + .5); else g.fillRect(x + j * w / 3, y, w / 3 + .5, h); } }
+    else { g.fillStyle = "#2a2733"; g.fillRect(x, y, w, h); g.fillStyle = FG; g.font = "700 " + Math.round(h * .55) + "px " + FB; g.fillText(cc, x + w / 2, y + h * .72); }
+    g.strokeStyle = "rgba(255,255,255,.35)"; g.lineWidth = 1.5; g.strokeRect(x, y, w, h); };
   /* kop */
-  g.fillStyle = GOLD; g.font = "700 30px " + FB; spaced("BARRY'S CONCERTJAAR", W / 2, 96, 7);
-  var big = fit(label, "800 #px " + FD, label.length > 5 ? 190 : 300, W - 120);
-  g.fillStyle = FG; g.font = "800 " + big + "px " + FD; g.fillText(label, W / 2, 96 + big * .92);
-  var y = 96 + big * .92 + 40;
-  /* cijfers in vier vakken */
-  var tiles = [[list.length, list.length === 1 ? "concert" : "concerten", fd ? "waarvan " + fd + " festivaldag" + (fd === 1 ? "" : "en") : ""],
-    [Object.keys(zv).length, "zalen", ""], [Object.keys(st_).length, Object.keys(st_).length === 1 ? "stad" : "steden", ""], [Object.keys(ld).length, Object.keys(ld).length === 1 ? "land" : "landen", ""]];
-  var tw = (W - 120 - 3 * 18) / 4;
+  g.fillStyle = GOLD; g.font = "700 30px " + FB; spaced("BARRY'S CONCERTJAAR", W / 2, 92, 7);
+  var big = fit(label, "800 #px " + FD, label.length > 5 ? 190 : 290, W - 120);
+  g.save(); g.shadowColor = "rgba(" + P[1] + ",.55)"; g.shadowBlur = 40; g.fillStyle = FG; g.font = "800 " + big + "px " + FD; g.fillText(label, W / 2, 92 + big * .9); g.restore();
+  var y = 92 + big * .9 + 36;
+  /* vier vakken; bij landen de vlaggen */
+  var nF = Object.keys(fests).length, cc = Object.keys(ld).sort(function (a, b) { return a === "NL" ? -1 : b === "NL" ? 1 : a < b ? -1 : 1; });
+  var tiles = [[list.length, list.length === 1 ? "concert" : "concerten", nF ? "waarvan " + nF + " festival" + (nF === 1 ? "" : "s") : ""],
+    [Object.keys(zv).length, "zalen", ""], [Object.keys(st_).length, Object.keys(st_).length === 1 ? "stad" : "steden", ""], [cc.length, cc.length === 1 ? "land" : "landen", "F"]];
+  var tw = (W - 120 - 3 * 18) / 4, th = 160;
   tiles.forEach(function (t, i) { var x = 60 + i * (tw + 18);
-    g.fillStyle = "rgba(255,255,255,.06)"; g.strokeStyle = "rgba(255,255,255,.12)"; g.lineWidth = 2; g.beginPath(); g.roundRect ? g.roundRect(x, y, tw, 150, 20) : g.rect(x, y, tw, 150); g.fill(); g.stroke();
-    g.fillStyle = FG; g.font = "800 66px " + FD; g.fillText(String(t[0]), x + tw / 2, y + 76);
-    g.fillStyle = MUT; g.font = "500 24px " + FB; g.fillText(t[1], x + tw / 2, y + 112);
-    if (t[2]) { g.fillStyle = GOLD; g.font = "500 18px " + FB; g.fillText(t[2], x + tw / 2, y + 137); } });
-  y += 150 + 52;
-  /* hoogtepunten */
-  var hl = []; if (tz && tz[1] > 1) hl.push(["MEEST BEZOCHT", tz[0], tz[1] + "×"]); if (ta && ta[1] > 1) hl.push(["VAAKST GEZIEN", art[ta[0]].n, ta[1] + "×"]);
-  if (best) hl.push(["HOOGSTE CIJFER", (best.acts.filter(function (x) { return x[1] !== "V"; }).map(function (x) { return nice(x[0]); }).join(" & ") || best.loc), "★ " + String(best.r).replace(".", ",")]);
-  hl.forEach(function (h) {
-    g.textAlign = "left"; g.fillStyle = GOLD; g.font = "700 22px " + FB; g.fillText(h[0], 90, y);
-    g.textAlign = "right"; g.fillStyle = GOLD; g.font = "800 34px " + FD; g.fillText(h[2], W - 90, y + 4); var rw = g.measureText(h[2]).width;
-    g.textAlign = "left"; g.fillStyle = FG; var fs = fit(h[1], "700 #px " + FD, 40, W - 90 - 330 - rw - 30); g.font = "700 " + fs + "px " + FD; g.fillText(h[1], 330, y + 4);
-    y += 62; });
-  g.textAlign = "center";
-  /* line-up zoals op een festivalposter: wie je vaak zag of hoog waardeerde staat groot */
-  y += 18; g.strokeStyle = "rgba(242,184,75,.5)"; g.lineWidth = 2; g.beginPath(); g.moveTo(90, y); g.lineTo(W - 90, y); g.stroke();
-  g.fillStyle = GOLD; g.font = "700 24px " + FB; g.fillStyle = BG; g.fillRect(W / 2 - 110, y - 16, 220, 32); g.fillStyle = GOLD; spaced("LINE-UP", W / 2, y + 9, 8);
-  var top0 = y + 50, bottom = H - 90, tierOf = function (i) { return i < 3 ? 0 : i < 12 ? 1 : i < 36 ? 2 : 3; }, sizes = [62, 44, 31, 23];
-  var layout = function (k) {   /* regels vullen met namen, gescheiden door een puntje; geeft de regels en de totale hoogte */
-    var rows = [], cur = null, maxW = W - 150;
-    names.forEach(function (o, i) { var t = tierOf(i), fs = Math.round(sizes[t] * k), font = (t < 2 ? "800 " : t < 3 ? "700 " : "600 ") + fs + "px " + FD;
-      g.font = font; var w = g.measureText(o.n.toUpperCase()).width, sep = fs * .9;
+    g.fillStyle = "rgba(255,255,255,.07)"; g.strokeStyle = "rgba(" + P[1] + ",.35)"; g.lineWidth = 2; box(x, y, tw, th, 20); g.fill(); g.stroke();
+    g.fillStyle = FG; g.font = "800 66px " + FD; g.fillText(String(t[0]), x + tw / 2, y + 74);
+    g.fillStyle = MUT; g.font = "500 24px " + FB; g.fillText(t[1], x + tw / 2, y + 108);
+    if (t[2] === "F") { var fw = 34, fh = 23, gap = 7, n = Math.min(cc.length, 5), tot = n * fw + (n - 1) * gap, fx = x + tw / 2 - tot / 2;
+      cc.slice(0, 5).forEach(function (c, j) { flag(c, fx + j * (fw + gap), y + 122, fw, fh); }); }
+    else if (t[2]) { g.fillStyle = GOLD; g.font = "600 19px " + FB; g.fillText(t[2], x + tw / 2, y + 138); } });
+  y += th + 34;
+  /* meest bezocht en vaakst gezien: één regel */
+  var facts = []; if (tz && tz[1] > 1) facts.push(["MEEST BEZOCHT", tz[0] + " · " + tz[1] + "×"]); if (ta && ta[1] > 1) facts.push(["VAAKST GEZIEN", art[ta[0]].n + " · " + ta[1] + "×"]);
+  facts.forEach(function (f, i) { var cx = facts.length === 1 ? W / 2 : i ? W * .74 : W * .26;
+    g.fillStyle = GOLD; g.font = "700 19px " + FB; spaced(f[0], cx, y, 4); var fs = fit(f[1], "700 #px " + FD, 34, facts.length === 1 ? W - 160 : W / 2 - 60);
+    g.fillStyle = FG; g.font = "700 " + fs + "px " + FD; g.fillText(f[1], cx, y + 40); });
+  if (facts.length) y += 76;
+  /* top 5 op cijfer, als kaartjes */
+  var t5 = rated.slice(0, 5);
+  if (t5.length) { y += 10;
+    g.fillStyle = GOLD; g.font = "700 22px " + FB; spaced("HOOGSTE CIJFERS", W / 2, y, 7); y += 22;
+    t5.forEach(function (o, i) { var hh = i ? 42 : 58, x0 = 90, w0 = W - 180;
+      g.fillStyle = i ? "rgba(255,255,255,.05)" : "rgba(" + P[1] + ",.16)"; box(x0, y, w0, hh, 14); g.fill();
+      g.setLineDash([6, 6]); g.strokeStyle = "rgba(" + P[1] + ",.4)"; g.lineWidth = 1.5; g.beginPath(); g.moveTo(x0 + 120, y + 8); g.lineTo(x0 + 120, y + hh - 8); g.stroke(); g.setLineDash([]);
+      g.textAlign = "center"; g.fillStyle = GOLD; g.font = "800 " + (i ? 25 : 33) + "px " + FD; g.fillText("★ " + String(o.r).replace(".", ","), x0 + 60, y + hh / 2 + (i ? 9 : 12));
+      g.textAlign = "left"; var nm = o.n, fs = fit(nm, "800 #px " + FD, i ? 27 : 37, w0 - 150 - 230); g.fillStyle = FG; g.font = "800 " + fs + "px " + FD; g.fillText(nm, x0 + 145, y + hh / 2 + fs * .35);
+      g.textAlign = "right"; g.fillStyle = MUT; var wl = o.w; g.font = "500 " + fit(wl, "500 #px " + FB, 21, 210) + "px " + FB; g.fillText(wl, x0 + w0 - 22, y + hh / 2 + 7);
+      y += hh + 7; });
+    g.textAlign = "center"; y += 6; }
+  /* line-up */
+  y += 20; g.strokeStyle = "rgba(" + P[1] + ",.5)"; g.lineWidth = 2; g.beginPath(); g.moveTo(90, y); g.lineTo(W - 90, y); g.stroke();
+  g.fillStyle = BG; g.fillRect(W / 2 - 100, y - 16, 200, 32); g.fillStyle = GOLD; g.font = "700 24px " + FB; spaced("LINE-UP", W / 2, y + 9, 8);
+  var top0 = y + 30, bottom = H - 128;
+  var rowsOf = function (k, nb, ns) {
+    var list_ = bigs.slice(0, nb).map(function (o, i) { return { o: o, t: i < 3 ? 0 : i < 10 ? 1 : 2 }; }).concat(smalls.slice(0, ns).map(function (o) { return { o: o, t: 3 }; }));
+    var sizes = [56, 40, 30, 22], rows = [], cur = null, maxW = W - 150;
+    list_.forEach(function (it) { var t = it.t, fs = Math.round(sizes[t] * k), font = (t < 2 ? "800 " : t < 3 ? "700 " : "600 ") + fs + "px " + FD;
+      g.font = font; var nm = it.o.n.toUpperCase(), w = g.measureText(nm).width, sep = fs * .9;
       if (!cur || cur.t !== t || cur.w + sep + w > maxW) { cur = { t: t, fs: fs, font: font, items: [], w: 0 }; rows.push(cur); } else cur.w += sep;
-      cur.items.push({ n: o.n.toUpperCase(), w: w }); cur.w += w; });
-    var h = rows.reduce(function (a, r) { return a + r.fs * 1.32; }, 0); return { rows: rows, h: h };
+      cur.items.push({ n: nm, w: w }); cur.w += w; });
+    return { rows: rows, h: rows.reduce(function (a, r) { return a + r.fs * 1.32; }, 0) };
   };
-  var k = 1, L = layout(k); while (L.h > bottom - top0 && k > .3) { k *= .93; L = layout(k); }
-  var shown = names.length; if (L.h > bottom - top0) { while (L.h > bottom - top0 && names.length > 10) { names.pop(); L = layout(k); } }
-  var yy = top0 + Math.max(0, (bottom - top0 - L.h) / 2);
+  var k = 1, nb = bigs.length, ns = smalls.length, L = rowsOf(k, nb, ns), room = bottom - top0;
+  while (L.h > room && k > .55) { k *= .94; L = rowsOf(k, nb, ns); }
+  while (L.h > room && ns > 0) { ns = Math.max(0, ns - 4); L = rowsOf(k, nb, ns); }
+  while (L.h > room && nb > 6) { nb--; L = rowsOf(k, nb, ns); }
+  var yy = top0 + Math.max(0, (room - L.h) / 2);
   L.rows.forEach(function (r) { yy += r.fs * 1.1; var x = W / 2 - r.w / 2, sep = r.fs * .9; g.font = r.font; g.textAlign = "left";
-    r.items.forEach(function (it, j) { if (j) { g.fillStyle = "rgba(242,184,75,.75)"; g.beginPath(); g.arc(x + sep / 2, yy - r.fs * .32, Math.max(2.5, r.fs * .08), 0, 7); g.fill(); x += sep; }
-      g.fillStyle = r.t === 0 ? FG : r.t === 1 ? "#ece6d8" : r.t === 2 ? "#cfc8dc" : MUT; g.fillText(it.n, x, yy); x += it.w; });
+    r.items.forEach(function (it, j) { if (j) { g.fillStyle = "rgba(" + P[1] + ",.8)"; g.beginPath(); g.arc(x + sep / 2, yy - r.fs * .32, Math.max(2.5, r.fs * .08), 0, 7); g.fill(); x += sep; }
+      g.fillStyle = r.t === 0 ? FG : r.t === 1 ? "#ece6d8" : r.t === 2 ? "#d5cfe0" : MUT; g.fillText(it.n, x, yy); x += it.w; });
     yy += r.fs * .22; });
+  var left = (bigs.length - nb) + (smalls.length - ns);
+  crowd();
   g.textAlign = "center";
-  if (names.length < shown) { g.fillStyle = MUT; g.font = "500 20px " + FB; g.fillText("en nog " + (shown - names.length) + " artiesten", W / 2, bottom + 6); }
-  g.fillStyle = "rgba(164,157,179,.7)"; g.font = "500 19px " + FB; g.fillText("Barry's concerten", W / 2, H - 40);
+  if (left > 0) { g.fillStyle = FG; g.font = "500 20px " + FB; g.fillText("en nog " + left + " artiesten", W / 2, H - 70); }
+  g.fillStyle = "rgba(" + P[1] + ",.9)"; g.font = "600 19px " + FB; g.fillText("Barry's concerten", W / 2, H - 38);
   return new Promise(function (ok) { cv.toBlob(function (b) { ok(b); }, "image/jpeg", .92); });
 }
 function openYearPoster() {
   if (!YPL) return; var y0 = YPL;
-  var go = function () { yearPoster(y0.list, y0.label).then(function (b) { if (!b) return; PV = [{ k: "Jaarposter", u: URL.createObjectURL(b), name: "jaarposter-" + y0.label.replace(/[^0-9a-z–-]+/gi, "-") }]; openPoster(0); }); };
+  /* hele geschiedenis (zonder periode of zoekterm): wie ooit hoofdact was, telt als grote naam */
+  var keep = [st.hfrom, st.hto, st.q], full; st.hfrom = st.hto = ""; st.q = ""; try { full = histEvenings(); } catch (e) { full = y0.list; } st.hfrom = keep[0]; st.hto = keep[1]; st.q = keep[2];
+  var go = function () { yearPoster(y0.list, y0.label, full).then(function (b) { if (!b) return; PV = [{ k: "Jaarposter", u: URL.createObjectURL(b), name: "jaarposter-" + y0.label.replace(/[^0-9a-z–-]+/gi, "-") }]; openPoster(0); }); };
   try { Promise.all([document.fonts.load('800 100px "Bricolage Grotesque"'), document.fonts.load('700 30px "Instrument Sans"'), document.fonts.load('500 24px "Instrument Sans"')]).then(go, go); } catch (e) { go(); }
 }
 function renderArchive() {

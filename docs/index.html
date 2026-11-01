@@ -1324,7 +1324,7 @@ function yearSummary(list, y, all, range) {   /* range: blok van jaren, dan zond
 }
 /* jaarposter: één deelbaar beeld van een jaar, blok of periode uit Historie; wordt op het apparaat getekend (je archief gaat nergens heen) */
 var YPL = null;
-function yearPoster(list, label, full) {
+function yearPoster(list, label) {
   var W = 1080, H = 1350, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
   var g = cv.getContext("2d"), FD = '"Bricolage Grotesque", system-ui, sans-serif', FB = '"Instrument Sans", system-ui, sans-serif';
   var FG = "#f3efe6", MUT = "#a49db3", BG = "#0d0c12";
@@ -1333,26 +1333,12 @@ function yearPoster(list, label, full) {
     ["#ffd25e", "255,210,94", "200,70,40"], ["#8fb2ff", "143,178,255", "40,60,150"], ["#ff8fb1", "255,143,177", "120,40,110"]];
   var yr = parseInt(label, 10) || 0, P = PAL[yr % PAL.length], GOLD = P[0];
   var isFest = function (e) { return !!e.fn || e.acts.some(function (x) { return x[1] === "F"; }); };
-  /* 'grote naam': iemand die je ergens in je hele geschiedenis als hoofdact zag (geen voorprogramma, geen festival) */
-  var headl = {}; (full || list).forEach(function (e) { if (isFest(e)) return; e.acts.forEach(function (x) { if (x[1] !== "V") headl[normA(x[0])] = 1; }); });
   /* cijfers */
-  var zv = {}, st_ = {}, ld = {}, art = {}, fests = {}, rated = [];
+  var zv = {}, st_ = {}, ld = {}, fests = {};
   list.forEach(function (e) {
-    var lc = String(e.loc || "").trim(); if (lc) zv[lc] = (zv[lc] || 0) + 1; if (e.city) st_[e.city] = 1; ld[e.cc || "NL"] = 1;
-    var fe = isFest(e); if (fe) fests[(festLabel(e) || e.fn || e.loc + " " + e.d.slice(0, 4)).toLowerCase()] = 1;
-    var heads = e.acts.filter(function (x) { return x[1] !== "V"; });
-    if (typeof e.r === "number") rated.push({ r: e.r, n: fe ? (festLabel(e) || e.fn || e.loc) : heads.map(function (x) { return nice(x[0]); }).join(" & ") || e.loc, w: e.loc, d: e.d });
-    var had = {}; e.acts.forEach(function (x) { var n = String(x[0] || "").trim(), k = normA(n); if (!n || !k || had[k]) return; had[k] = 1;
-      var o = art[k] = art[k] || { n: nice(n), c: 0, h: false, big: !!headl[k], r: 0 }; o.c++;
-      if (x[1] !== "V" && !fe) { o.h = true; if (typeof e.r === "number" && e.r > o.r) o.r = e.r; } });
+    var lc = String(e.loc || "").trim(); if (lc) zv[lc] = 1; if (e.city) st_[e.city] = 1; ld[e.cc || "NL"] = 1;
+    if (isFest(e)) fests[(festLabel(e) || e.fn || e.loc + " " + e.d.slice(0, 4)).toLowerCase()] = 1;
   });
-  var top = function (o) { var k = Object.keys(o).sort(function (a, b) { return o[b] - o[a]; })[0]; return k ? [k, o[k]] : null; };
-  var tz = top(zv), ac = {}; Object.keys(art).forEach(function (k) { ac[k] = art[k].c; }); var ta = top(ac);
-  rated.sort(function (a, b) { return b.r - a.r || (a.d < b.d ? -1 : 1); });
-  /* line-up: groot alleen hoofdacts en grote namen, op cijfer; voorprogramma's en festivalbands klein */
-  var names = Object.keys(art).map(function (k) { return art[k]; });
-  var bigs = names.filter(function (o) { return o.h || o.big; }).sort(function (a, b) { return b.r - a.r || b.c - a.c || a.n.localeCompare(b.n, "nl"); });
-  var smalls = names.filter(function (o) { return !(o.h || o.big); }).sort(function (a, b) { return b.c - a.c || a.n.localeCompare(b.n, "nl"); });
   /* achtergrond */
   g.fillStyle = BG; g.fillRect(0, 0, W, H);
   var rg = g.createRadialGradient(W / 2, -140, 40, W / 2, -140, 1150); rg.addColorStop(0, "rgba(" + P[1] + ",.42)"); rg.addColorStop(.5, "rgba(" + P[2] + ",.14)"); rg.addColorStop(1, "rgba(13,12,18,0)");
@@ -1364,13 +1350,16 @@ function yearPoster(list, label, full) {
   g.restore();
   for (var i = 0; i < 3200; i++) { g.fillStyle = "rgba(255,255,255," + (Math.random() * .05) + ")"; g.fillRect(Math.random() * W, Math.random() * H, 1.6, 1.6); }
   /* publiek met handen in de lucht, onderaan */
-  var crowd = function () { var base = H - 14; g.fillStyle = "#06050a";
-    for (var x = -30; x < W + 40; x += 30 + Math.random() * 16) { var hgt = 18 + Math.random() * 30, r = 15 + Math.random() * 5;
+  var crowd = function () {
+    var gl = g.createRadialGradient(W / 2, H - 120, 20, W / 2, H - 120, 700); gl.addColorStop(0, "rgba(" + P[1] + ",.55)"); gl.addColorStop(.5, "rgba(" + P[2] + ",.18)"); gl.addColorStop(1, "rgba(13,12,18,0)");
+    g.fillStyle = gl; g.fillRect(0, H - 700, W, 700);   /* podiumlicht achter het publiek */
+    var base = H - 10; g.fillStyle = "#06050a";
+    for (var x = -40; x < W + 50; x += 44 + Math.random() * 22) { var hgt = 50 + Math.random() * 70, r = 26 + Math.random() * 8;
       g.beginPath(); g.arc(x, base - hgt, r, 0, 7); g.fill(); g.fillRect(x - r * 1.25, base - hgt + r * .6, r * 2.5, hgt + 40);
-      if (Math.random() < .32) { var s = Math.random() < .5 ? -1 : 1, ax = x + s * (r + 6), top_ = base - hgt - 46 - Math.random() * 40; g.lineWidth = 11; g.lineCap = "round"; g.strokeStyle = "#06050a";
-        g.beginPath(); g.moveTo(x + s * r * .8, base - hgt + r); g.lineTo(ax + s * 14, top_); g.stroke(); g.beginPath(); g.arc(ax + s * 14, top_ - 6, 9, 0, 7); g.fill();
-        if (Math.random() < .3) { g.lineWidth = 5; g.beginPath(); g.moveTo(ax + s * 14 - 8, top_ - 18); g.lineTo(ax + s * 14 - 8, top_ + 2); g.moveTo(ax + s * 14 + 8, top_ - 18); g.lineTo(ax + s * 14 + 8, top_ + 2); g.stroke(); } } }
-    var fade = g.createLinearGradient(0, H - 150, 0, H); fade.addColorStop(0, "rgba(6,5,10,0)"); fade.addColorStop(1, "rgba(6,5,10,.85)"); g.fillStyle = fade; g.fillRect(0, H - 150, W, 150); };
+      if (Math.random() < .32) { var s = Math.random() < .5 ? -1 : 1, ax = x + s * (r + 6), top_ = base - hgt - 100 - Math.random() * 90; g.lineWidth = 16; g.lineCap = "round"; g.strokeStyle = "#06050a";
+        g.beginPath(); g.moveTo(x + s * r * .8, base - hgt + r); g.lineTo(ax + s * 14, top_); g.stroke(); g.beginPath(); g.arc(ax + s * 14, top_ - 8, 13, 0, 7); g.fill();
+        if (Math.random() < .3) { g.lineWidth = 7; g.beginPath(); g.moveTo(ax + s * 14 - 11, top_ - 28); g.lineTo(ax + s * 14 - 11, top_ + 2); g.moveTo(ax + s * 14 + 11, top_ - 28); g.lineTo(ax + s * 14 + 11, top_ + 2); g.stroke(); } } }
+    var fade = g.createLinearGradient(0, H - 260, 0, H); fade.addColorStop(0, "rgba(6,5,10,0)"); fade.addColorStop(1, "rgba(6,5,10,.9)"); g.fillStyle = fade; g.fillRect(0, H - 260, W, 260); };
   g.textAlign = "center"; g.textBaseline = "alphabetic";
   var fit = function (txt, font, size, maxW) { do { g.font = font.replace("#", size); if (g.measureText(txt).width <= maxW) break; size -= 3; } while (size > 16); return size; };
   var spaced = function (txt, x, y, sp) { var w = 0, ch = txt.split(""); ch.forEach(function (c) { w += g.measureText(c).width + sp; }); w -= sp;
@@ -1410,11 +1399,11 @@ function yearPoster(list, label, full) {
     else if (f) { for (var j = 0; j < 3; j++) { g.fillStyle = f[j + 1]; if (f[0] === "h") g.fillRect(x, y + j * h / 3, w, h / 3 + .5); else g.fillRect(x + j * w / 3, y, w / 3 + .5, h); } }
     else { g.fillStyle = "#2a2733"; g.fillRect(x, y, w, h); g.fillStyle = FG; g.font = "700 " + Math.round(h * .55) + "px " + FB; g.fillText(cc, x + w / 2, y + h * .72); }
     g.strokeStyle = "rgba(255,255,255,.35)"; g.lineWidth = 1.5; g.strokeRect(x, y, w, h); };
-  /* kop */
-  g.fillStyle = GOLD; g.font = "700 30px " + FB; spaced("BARRY'S CONCERTJAAR", W / 2, 92, 7);
-  var big = fit(label, "800 #px " + FD, label.length > 5 ? 190 : 290, W - 120);
-  g.save(); g.shadowColor = "rgba(" + P[1] + ",.55)"; g.shadowBlur = 40; g.fillStyle = FG; g.font = "800 " + big + "px " + FD; g.fillText(label, W / 2, 92 + big * .9); g.restore();
-  var y = 92 + big * .9 + 36;
+  /* kop en groot jaartal */
+  var big = fit(label, "800 #px " + FD, label.length > 5 ? 200 : 340, W - 110), y0 = 240;
+  g.fillStyle = GOLD; g.font = "700 32px " + FB; spaced("BARRY'S CONCERTJAAR", W / 2, y0, 8);
+  g.save(); g.shadowColor = "rgba(" + P[1] + ",.6)"; g.shadowBlur = 50; g.fillStyle = FG; g.font = "800 " + big + "px " + FD; g.fillText(label, W / 2, y0 + 30 + big * .9); g.restore();
+  var y = y0 + 30 + big * .9 + 60;
   /* vier vakken; bij landen de vlaggen */
   var nF = Object.keys(fests).length, cc = Object.keys(ld).sort(function (a, b) { return a === "NL" ? -1 : b === "NL" ? 1 : a < b ? -1 : 1; });
   var tiles = [[list.length, list.length === 1 ? "concert" : "concerten", nF ? "waarvan " + nF + " festival" + (nF === 1 ? "" : "s") : ""],
@@ -1428,47 +1417,12 @@ function yearPoster(list, label, full) {
       cc.slice(0, n).forEach(function (c, j) { var row = Math.floor(j / per), inRow = row ? n - per : per, col = j % per, tot = inRow * fw + (inRow - 1) * gap;
         flag(c, x + tw / 2 - tot / 2 + col * (fw + gap), y + 120 + row * (fh + 5), fw, fh); }); }
     else if (t[2]) { g.fillStyle = GOLD; g.font = "600 19px " + FB; g.fillText(t[2], x + tw / 2, y + 138); } });
-  y += th + 34;
-  /* meest bezocht en vaakst gezien: één regel */
-  var facts = []; if (tz && tz[1] > 1) facts.push(["MEEST BEZOCHT", tz[0] + " · " + tz[1] + "×"]); if (ta && ta[1] > 1) facts.push(["VAAKST GEZIEN", art[ta[0]].n + " · " + ta[1] + "×"]);
-  facts.forEach(function (f, i) { var cx = facts.length === 1 ? W / 2 : i ? W * .74 : W * .26;
-    g.fillStyle = GOLD; g.font = "700 19px " + FB; spaced(f[0], cx, y, 4); var fs = fit(f[1], "700 #px " + FD, 34, facts.length === 1 ? W - 160 : W / 2 - 60);
-    g.fillStyle = FG; g.font = "700 " + fs + "px " + FD; g.fillText(f[1], cx, y + 40); });
-  if (facts.length) y += 76;
-  /* line-up */
-  y += 20; g.strokeStyle = "rgba(" + P[1] + ",.5)"; g.lineWidth = 2; g.beginPath(); g.moveTo(90, y); g.lineTo(W - 90, y); g.stroke();
-  g.fillStyle = BG; g.fillRect(W / 2 - 100, y - 16, 200, 32); g.fillStyle = GOLD; g.font = "700 24px " + FB; spaced("LINE-UP", W / 2, y + 9, 8);
-  var top0 = y + 30, bottom = H - 128;
-  var rowsOf = function (k, nb, ns) {
-    var list_ = bigs.slice(0, nb).map(function (o, i) { return { o: o, t: i < 3 ? 0 : i < 10 ? 1 : 2 }; }).concat(smalls.slice(0, ns).map(function (o) { return { o: o, t: 3 }; }));
-    var sizes = [56, 40, 30, 22], rows = [], cur = null, maxW = W - 150;
-    list_.forEach(function (it) { var t = it.t, fs = Math.round(sizes[t] * k), font = (t < 2 ? "800 " : t < 3 ? "700 " : "600 ") + fs + "px " + FD;
-      g.font = font; var nm = it.o.n.toUpperCase(), w = g.measureText(nm).width, sep = fs * .9;
-      if (!cur || cur.t !== t || cur.w + sep + w > maxW) { cur = { t: t, fs: fs, font: font, items: [], w: 0 }; rows.push(cur); } else cur.w += sep;
-      cur.items.push({ n: nm, w: w }); cur.w += w; });
-    return { rows: rows, h: rows.reduce(function (a, r) { return a + r.fs * 1.32; }, 0) };
-  };
-  var k = 1, nb = bigs.length, ns = smalls.length, L = rowsOf(k, nb, ns), room = bottom - top0;
-  while (L.h > room && k > .55) { k *= .94; L = rowsOf(k, nb, ns); }
-  while (L.h > room && ns > 0) { ns = Math.max(0, ns - 4); L = rowsOf(k, nb, ns); }
-  while (L.h > room && nb > 6) { nb--; L = rowsOf(k, nb, ns); }
-  var yy = top0 + Math.max(0, (room - L.h) / 2);
-  L.rows.forEach(function (r) { yy += r.fs * 1.1; var x = W / 2 - r.w / 2, sep = r.fs * .9; g.font = r.font; g.textAlign = "left";
-    r.items.forEach(function (it, j) { if (j) { g.fillStyle = "rgba(" + P[1] + ",.8)"; g.beginPath(); g.arc(x + sep / 2, yy - r.fs * .32, Math.max(2.5, r.fs * .08), 0, 7); g.fill(); x += sep; }
-      g.fillStyle = r.t === 0 ? FG : r.t === 1 ? "#ece6d8" : r.t === 2 ? "#d5cfe0" : MUT; g.fillText(it.n, x, yy); x += it.w; });
-    yy += r.fs * .22; });
-  var left = (bigs.length - nb) + (smalls.length - ns);
   crowd();
-  g.textAlign = "center";
-  if (left > 0) { g.fillStyle = FG; g.font = "500 20px " + FB; g.fillText("en nog " + left + " artiesten", W / 2, H - 70); }
-  g.fillStyle = "rgba(" + P[1] + ",.9)"; g.font = "600 19px " + FB; g.fillText("Barry's concerten", W / 2, H - 38);
   return new Promise(function (ok) { cv.toBlob(function (b) { ok(b); }, "image/jpeg", .92); });
 }
 function openYearPoster() {
   if (!YPL) return; var y0 = YPL;
-  /* hele geschiedenis (zonder periode of zoekterm): wie ooit hoofdact was, telt als grote naam */
-  var keep = [st.hfrom, st.hto, st.q], full; st.hfrom = st.hto = ""; st.q = ""; try { full = histEvenings(); } catch (e) { full = y0.list; } st.hfrom = keep[0]; st.hto = keep[1]; st.q = keep[2];
-  var go = function () { yearPoster(y0.list, y0.label, full).then(function (b) { if (!b) return; PV = [{ k: "Jaarposter", u: URL.createObjectURL(b), name: "jaarposter-" + y0.label.replace(/[^0-9a-z–-]+/gi, "-") }]; openPoster(0); }); };
+  var go = function () { yearPoster(y0.list, y0.label).then(function (b) { if (!b) return; PV = [{ k: "Jaarposter", u: URL.createObjectURL(b), name: "jaarposter-" + y0.label.replace(/[^0-9a-z–-]+/gi, "-") }]; openPoster(0); }); };
   try { Promise.all([document.fonts.load('800 100px "Bricolage Grotesque"'), document.fonts.load('700 30px "Instrument Sans"'), document.fonts.load('500 24px "Instrument Sans"')]).then(go, go); } catch (e) { go(); }
 }
 function renderArchive() {

@@ -621,7 +621,7 @@ function has(id, f) { return !!(marks[id] && marks[id][f]); }
 function venue(c) { return VENUES[c.v] || { label: c.v, city: "" }; }
 function logoSrc(c) { return LOGO[c.v] ? "" + LOGO[c.v] : c.th ? "" + c.th : ""; }
 function lg(c, cls) { var l = logoSrc(c), ch = esc((venue(c).label || nice(c.n)).replace(/^(de|het|the)\s+/i, "").replace(/^[^A-Za-z0-9]+/, "").charAt(0).toUpperCase() || "*");
-  return l ? '<span class="lgw ' + (cls || "") + '" data-ch="' + ch + '"><img class="lg ' + (LOGO[c.v] && LIGHT[c.v] ? "inv " : "") + '" src="' + esc(l) + '" alt="" loading="lazy" onload="this.parentNode.classList.add(\'ok\')" onerror="this.remove()"></span>' : '<span class="lt ' + (cls || "") + '">' + esc((nice(c.n).replace(/^[^A-Za-z0-9]+/, "").charAt(0) || "*").toUpperCase()) + "</span>"; }
+  return l ? '<span class="lgw ' + (cls || "") + '" data-ch="' + ch + '"><img class="lg ' + (LOGO[c.v] && LIGHT[c.v] ? "inv " : "") + '" src="' + esc(l) + '" alt="" loading="lazy" onload="this.parentNode&&this.parentNode.classList.add(\'ok\')" onerror="this.remove()"></span>' : '<span class="lt ' + (cls || "") + '">' + esc((nice(c.n).replace(/^[^A-Za-z0-9]+/, "").charAt(0) || "*").toUpperCase()) + "</span>"; }
 /* lichte logo's (lijst _light uit logos.json) worden omgekeerd, zodat de lijst één rustig donker geheel is */
 var LIGHT = {};
 function weekend() { var d = new Date(NOW), w = d.getDay(), f = new Date(d), s;

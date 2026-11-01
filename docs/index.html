@@ -1301,7 +1301,7 @@ function yearSummary(list, y, all, range) {   /* range: blok van jaren, dan zond
   return '<div class="ys"><div><b>' + (list.length - fd) + "</b><span>concerten</span></div><div><b>" + Object.keys(zv).length + "</b><span>zalen</span></div><div><b>" + (fd || Object.keys(zc).length) + "</b><span>" + (fd ? "festivaldagen" : "steden") + "</span></div></div>" +
     '<div class="yl">' + (tz ? "Meest bezocht: <b>" + esc(tz[0]) + "</b> (" + tz[1] + "×)<br>" : "") + (ta && ta[1] > 1 ? "Vaakst gezien: <b>" + esc(ta[0]) + "</b> (" + ta[1] + "×)<br>" : "") +
     (best ? "Hoogste cijfer: <b>" + esc(best.acts.filter(function (x) { return x[1] !== "V"; }).map(function (x) { return x[0]; }).join(" & ") || best.loc) + "</b> (★ " + String(best.r).replace(".", ",") + ")<br>" : "") +
-    (newv.length && !range ? "Voor het eerst: <b>" + newv.slice(0, 6).map(esc).join(", ") + "</b>" + (newv.length > 6 ? " en nog " + (newv.length - 6) : "") : "") + "</div>";
+    (newv.length && !range ? "Voor het eerst: <b>" + (st.yfirst ? newv : newv.slice(0, 6)).map(esc).join(", ") + "</b>" + (newv.length > 6 && !st.yfirst ? ' <button class="lnk" data-yfirst style="display:inline">en nog ' + (newv.length - 6) + " ›</button>" : "") : "") + "</div>";
 }
 function renderArchive() {
   var all = histEvenings(); if (!st.hyear) st.hyear = "";
@@ -1358,7 +1358,8 @@ function renderArchive() {
   if (srt === "r") L = L.filter(function (e) { return typeof e.r === "number"; }).sort(function (a, b) { return b.r - a.r || (a.d < b.d ? 1 : -1); });
   var sortSel = '<div class="sortbar"><span>' + L.length + (L.length === 1 ? " avond" : " avonden") + (srt === "r" ? " met een cijfer" : "") + '</span><select data-hsortsel aria-label="Sorteren">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + (srt === o[0] ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") + "</select></div>";
   /* samenvatting van een jaar, of van een blok jaren (2025–2010, 2009–1984; schuift elk jaar vanzelf mee) */
-  var yp = (st.hyear || "").split("-"), yb = st.hyear && !st.q.trim() ? '<div class="hl">Jouw ' + (isRange ? (yp[0] === yp[1] ? yp[0] : yp[1] + "–" + yp[0]) : st.hyear) + "</div>" + yearSummary(list, yp[0], all, isRange) : "";
+  var yp = (st.hyear || "").split("-"), yb = st.q.trim() ? "" : st.hyear ? '<div class="hl">Jouw ' + (isRange ? (yp[0] === yp[1] ? yp[0] : yp[1] + "–" + yp[0]) : st.hyear) + "</div>" + yearSummary(list, yp[0], all, isRange)
+    : st.hfrom || st.hto ? '<div class="hl">Jouw periode ' + (st.hfrom ? fmtDY(st.hfrom) : "…") + " – " + (st.hto ? fmtDY(st.hto) : "nu") + "</div>" + yearSummary(list, "", all, true) : "";
   var shown = L.slice(0, st.hlimit || 300), lastY = "", html = "";
   shown.forEach(function (e) {
     if ((srt === "d" || srt === "o") && (!st.hyear || isRange) && e.d.slice(0, 4) !== lastY) { lastY = e.d.slice(0, 4); html += '<div class="yhead"><b>' + lastY + "</b><span>" + years[lastY] + "</span></div>"; }
@@ -1726,8 +1727,9 @@ $("main").addEventListener("click", function (e) {
   if (t.closest("[data-ax]")) { var ax = t.closest("[data-ax]").getAttribute("data-ax"); st.ax = st.ax || {}; st.ax[ax] = !st.ax[ax]; var y1 = scrollY; render(); window.scrollTo(0, y1); return; }
   if (t.closest("[data-hx]")) { var hx = t.closest("[data-hx]").getAttribute("data-hx"); st.hx = st.hx || {}; st.hx[hx] = !st.hx[hx]; var y0 = scrollY; render(); window.scrollTo(0, y0); return; }
   if (t.closest("[data-hdate]")) { openHDate(); return; }
+  if (t.closest("[data-yfirst]")) { st.yfirst = true; var yy_ = scrollY; render(); window.scrollTo(0, yy_); return; }
   if (t.closest("[data-hdate-x]")) { st.hfrom = st.hto = ""; render(); return; }
-  if (t.closest("[data-hyear]")) { st.hfrom = st.hto = ""; st.hyear = t.closest("[data-hyear]").getAttribute("data-hyear"); st.hlimit = 300; render(); window.scrollTo(0, 0); return; }
+  if (t.closest("[data-hyear]")) { st.hfrom = st.hto = ""; st.yfirst = false; st.hyear = t.closest("[data-hyear]").getAttribute("data-hyear"); st.hlimit = 300; render(); window.scrollTo(0, 0); return; }
   if (t.closest("[data-hmore]")) { st.hlimit = (st.hlimit || 300) + 500; var yy = scrollY; render(); window.scrollTo(0, yy); return; }
   if (t.closest("[data-hclear]")) { if (confirm("Je ingelezen archief wissen" + (SYNC && SYNC.token ? " (op al je gekoppelde apparaten)" : " van dit apparaat") + "? Je Excel-bestand zelf blijft gewoon bestaan.")) { HIST = null; try { localStorage.removeItem("ca-hist"); localStorage.setItem("ca-histdel", String(Date.now())); } catch (x) {} syncSoon(); render(); } return; }
   if (t.closest("[data-hcity]") && !OV.dragged) { openHistCity(t.closest("[data-hcity]").getAttribute("data-hcity")); return; }

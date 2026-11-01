@@ -1292,7 +1292,8 @@ function festRow(a) {   /* festival uit de app: één regel; open = bands per da
 function yearSummary(list, y, all, range) {   /* range: blok van jaren, dan zonder "Voor het eerst" */
   var zv = {}, zc = {}, ar = {}, before = {}, newv = [];
   all.forEach(function (e) { if (e.d.slice(0, 4) < y) before[e.loc.toLowerCase().replace(/^(de|het|the)\s+/, "")] = 1; });
-  list.forEach(function (e) { zv[e.loc] = (zv[e.loc] || 0) + 1; zc[e.city] = 1; e.acts.forEach(function (x) { ar[x[0]] = (ar[x[0]] || 0) + 1; });
+  list.forEach(function (e) { var lc = String(e.loc || "").trim(); if (lc) zv[lc] = (zv[lc] || 0) + 1; zc[e.city] = 1;   /* lege zaal- of bandnamen tellen niet mee */
+    var had = {}; e.acts.forEach(function (x) { var an = String(x[0] || "").trim(), ak = normA(an); if (!an || !ak || had[ak]) return; had[ak] = 1; ar[an] = (ar[an] || 0) + 1; });
     var lk = e.loc.toLowerCase().replace(/^(de|het|the)\s+/, ""); if (!before[lk] && newv.indexOf(e.loc) < 0) newv.push(e.loc); });
   var topk = function (o) { var k = Object.keys(o).sort(function (a, b) { return o[b] - o[a]; })[0]; return k ? [k, o[k]] : null; };
   var tz = topk(zv), ta = topk(ar), best = list.filter(function (e) { return typeof e.r === "number"; }).sort(function (a, b) { return b.r - a.r; })[0];

@@ -90,6 +90,12 @@ var VENUES = {
   littledevil:{label:"Little Devil",home:"https://www.littledevil.nl/",city:"Tilburg"},
   tbeest:{label:"'t Beest",home:"https://tbeest.nl/?category=concert",city:"Goes"},
   gashouder:{label:"Gashouder",home:"https://www.gashouder.com/",city:"Amsterdam"},
+  turbinenhalle:{label:"Turbinenhalle",home:"https://turbinenhalle.de/programm/",city:"Oberhausen",cc:"DE"},
+  kulttempel:{label:"Kulttempel",home:"https://www.kulttempel.com/",city:"Oberhausen",cc:"DE"},
+  rwa:{label:"Rudolf Weber-Arena",home:"https://www.rudolf-weber-arena.de/events-tickets/events/",city:"Oberhausen",cc:"DE"},
+  altenberg:{label:"Zentrum Altenberg",home:"https://www.zentrumaltenberg.de/konzerte/",city:"Oberhausen",cc:"DE"},
+  druckluft:{label:"Druckluft",home:"https://drucklufthaus.de/veranstaltungen/",city:"Oberhausen",cc:"DE"},
+  helvete:{label:"Helvete",home:"https://helvete.de/events/",city:"Oberhausen",cc:"DE"},
   v11:{label:"V11",home:"https://www.vessel11.nl/nl/agenda/",city:"Rotterdam"},
   manifesto:{label:"Manifesto",home:"https://manifesto-hoorn.nl/",city:"Hoorn"},
   olt:{label:"OLT Rivierenhof",home:"https://www.oltrivierenhof.be/nl/programma",city:"Antwerpen",cc:"BE"},
@@ -173,7 +179,7 @@ var FLAG = {
   BE: '<svg class="flag" viewBox="0 0 9 6" aria-label="België"><rect width="3" height="6" fill="#000"/><rect x="3" width="3" height="6" fill="#FDDA24"/><rect x="6" width="3" height="6" fill="#EF3340"/></svg>' };
 function place(v) { return v.city ? " · " + esc(v.city) + (state.tab === "c" ? "" : " " + (FLAG[v.cc || "NL"] || "")) : ""; }   /* Rotown club: geen vlag */
 /* ligging van de steden (breedte, lengte) voor de kaart */
-var COORD = { "Goes": [51.50, 3.89], "Emmen": [52.78, 6.90], "Amsterdam": [52.37, 4.90], "Utrecht": [52.09, 5.12], "Groningen": [53.22, 6.57], "Den Haag": [52.08, 4.30], "Rotterdam": [51.92, 4.48],
+var COORD = { "Oberhausen": [51.47, 6.85], "Goes": [51.50, 3.89], "Emmen": [52.78, 6.90], "Amsterdam": [52.37, 4.90], "Utrecht": [52.09, 5.12], "Groningen": [53.22, 6.57], "Den Haag": [52.08, 4.30], "Rotterdam": [51.92, 4.48],
   "Eindhoven": [51.44, 5.47], "Tilburg": [51.56, 5.09], "Nijmegen": [51.84, 5.86], "Haarlem": [52.38, 4.64], "Breda": [51.59, 4.78], "Arnhem": [51.98, 5.91],
   "Hengelo": [52.27, 6.79], "Enschede": [52.22, 6.89], "Zwolle": [52.52, 6.09], "Leiden": [52.16, 4.49], "Maastricht": [50.85, 5.69], "Alkmaar": [52.63, 4.75],
   "Oss": [51.77, 5.52], "Heerlen": [50.89, 5.98], "Leeuwarden": [53.20, 5.80], "Zoetermeer": [52.06, 4.49], "Dordrecht": [51.81, 4.67], "Bergen op Zoom": [51.49, 4.29],

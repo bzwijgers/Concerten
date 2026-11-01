@@ -2,7 +2,7 @@ import json, os, sys, time, traceback, importlib
 from datetime import date, datetime, timedelta, timezone
 sys.path.insert(0, os.path.dirname(__file__))
 from common import *
-import venues1, venues2, venues3, venues4, venues5, venues6, venues7, venues8, venues9, concertgebouw, festivals, feedimport, ticketmaster, tsmap, times, images, health
+import venues1, venues2, venues3, venues4, venues5, venues6, venues7, venues8, venues9, venues10, concertgebouw, festivals, feedimport, ticketmaster, tsmap, times, images, health
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 DATA = os.path.join(ROOT, "data")
@@ -28,6 +28,7 @@ VENUES = [  # key, label, fn
     ("ha", venues8.ha), ("kreun", venues8.kreun), ("n9", venues8.n9), ("casino", venues8.casino), ("reflektor", venues8.reflektor), ("bos", venues8.bos),
     ("afasdome", venues8.afasdome), ("lottoarena", venues8.lottoarena), ("vorst", venues8.vorst), ("olt", venues8.olt),
     ("bitterzoet", venues9.bitterzoet), ("sowhat", venues9.sowhat), ("corneel", venues9.corneel), ("kroepoek", venues9.kroepoek), ("cacao", venues9.cacao), ("worm", venues9.worm), ("maassilo", venues9.maassilo), ("lockkeepers", venues9.lockkeepers), ("v11", venues9.v11), ("manifesto", venues9.manifesto), ("concertgebouw", concertgebouw.concertgebouw), ("capsloc", venues9.capsloc), ("lantaren", venues9.lantaren), ("studiogonz", venues9.studiogonz), ("acu", venues9.acu), ("littledevil", venues9.littledevil), ("tbeest", venues9.tbeest), ("gashouder", venues9.gashouder),
+    ("turbinenhalle", venues10.turbinenhalle), ("kulttempel", venues10.kulttempel), ("rwa", venues10.rwa), ("altenberg", venues10.altenberg), ("druckluft", venues10.druckluft), ("helvete", venues10.helvete),
 ] + [(k, festivals.make(k)) for k in festivals.FEST] + [
 ]
 

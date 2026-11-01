@@ -1398,11 +1398,11 @@ function renderArchive() {
 var OV = { z: 1, cx: 160, cy: 220 };
 function ovX(l) { return 10 + (l - 2.45) / (7.3 - 2.45) * 300; }
 function ovY(b) { return 10 + (53.6 - b) / (53.6 - 49.45) * 420; }
-function regionOf(v) { return v.fest ? "Festivals" : (v.cc === "BE" ? "België" : REGION_OF[v.city] || "Overig"); }
+function regionOf(v) { return v.fest ? "Festivals" : (v.cc === "BE" ? "België" : v.cc === "DE" ? "Duitsland" : REGION_OF[v.city] || "Overig"); }
 function ovVenues() {   /* overzicht per zaal: per regio, open te klappen */
   var per = {}; ALL.forEach(function (c) { if (c.d >= TODAY && pass(c)) per[c.v] = (per[c.v] || 0) + 1; });
   var groups = {}; Object.keys(per).forEach(function (k) { var r = regionOf(VENUES[k] || {}); (groups[r] = groups[r] || []).push(k); });
-  var order = REGION_ORDER.concat(["België", "Festivals", "Overig"]).filter(function (r, i, a) { return groups[r] && a.indexOf(r) === i; });
+  var order = REGION_ORDER.concat(["België", "Duitsland", "Festivals", "Overig"]).filter(function (r, i, a) { return groups[r] && a.indexOf(r) === i; });
   return '<div class="hl">Zalen per regio · tik om open te klappen</div>' + order.map(function (r) {
     var ks = groups[r].sort(function (a, b) { return per[b] - per[a]; }), tot = ks.reduce(function (t, k) { return t + per[k]; }, 0), open = !!st.ovreg[r];
     return '<button class="mrow regrow" data-reg="' + esc(r) + '"><span style="width:auto;flex:1">' + (open ? "▾ " : "▸ ") + esc(r) + '</span><em style="width:auto">' + ks.length + " zalen · " + tot + "</em></button>" +
@@ -1441,7 +1441,7 @@ function mapSvg(per, opt) {
     if (!pick) return; boxes.push(pick);
     svg += '<text class="ml' + (ci < 5 ? " big" : "") + '" style="font-size:' + (10 * k).toFixed(2) + 'px" x="' + pick[5].toFixed(2) + '" y="' + pick[6].toFixed(2) + '" text-anchor="' + pick[4] + '">' + esc(ct) + "</text>";
   });
-  if (z < 2) svg += '<text class="cl" style="font-size:' + 11 * k + 'px" x="' + ovX(3.2) + '" y="' + ovY(53.3) + '">NEDERLAND</text><text class="cl" style="font-size:' + 11 * k + 'px" x="' + ovX(4.5) + '" y="' + ovY(49.85) + '">BELGIË</text>';
+  if (z < 2) svg += '<text class="cl" style="font-size:' + 11 * k + 'px" x="' + ovX(3.2) + '" y="' + ovY(53.3) + '">NEDERLAND</text><text class="cl" style="font-size:' + 11 * k + 'px" x="' + ovX(4.5) + '" y="' + ovY(49.85) + '">BELGIË</text><text class="cl" style="font-size:' + 11 * k + 'px" text-anchor="end" x="' + ovX(7.25) + '" y="' + ovY(53.5) + '">DUITSLAND</text>';
   svg += "</svg>";
   return svg;
 }
@@ -1981,7 +1981,7 @@ Promise.all([fetch("app.js", { cache: "no-cache" }).then(function (r) { return r
   fetch("data/logos.json", { cache: "no-cache" }).then(function (r) { return r.json(); }).catch(function () { return {}; })]).then(function (x) {
   var js = x[0], data = x[1]; LOGO = x[2]; (LOGO._light || []).forEach(function (k) { LIGHT[k] = 1; });
   js.replace(/^\s*([a-z0-9_]+):\{label:"([^"]*)",home:"([^"]*)",city:"([^"]*)"([^}]*)\}/gm, function (m, k, l, h, c, rest) {
-    VENUES[k] = { label: l, home: h, city: c, fest: /fest:true/.test(rest), cc: /cc:"BE"/.test(rest) ? "BE" : "NL" }; return m; });
+    VENUES[k] = { label: l, home: h, city: c, fest: /fest:true/.test(rest), cc: (rest.match(/cc:"([A-Z]{2})"/) || [0, "NL"])[1] }; return m; });
   var rb = js.match(/var REGIONS = \[([\s\S]*?)\n\];/);
   if (rb) rb[1].replace(/\["([^"]+)", \[([^\]]*)\]\]/g, function (m, r, list) { REGION_ORDER.push(r); list.replace(/"([^"]+)"/g, function (x, c) { REGION_OF[c] = r; return x; }); return m; });
   js.replace(/"([^"]+)": \[(-?\d+\.\d+), (-?\d+\.\d+)\]/g, function (m, c, a, b) { COORD[c] = [+a, +b]; return m; });

@@ -1419,13 +1419,14 @@ function yearPoster(list, label, full) {
   var nF = Object.keys(fests).length, cc = Object.keys(ld).sort(function (a, b) { return a === "NL" ? -1 : b === "NL" ? 1 : a < b ? -1 : 1; });
   var tiles = [[list.length, list.length === 1 ? "concert" : "concerten", nF ? "waarvan " + nF + " festival" + (nF === 1 ? "" : "s") : ""],
     [Object.keys(zv).length, "zalen", ""], [Object.keys(st_).length, Object.keys(st_).length === 1 ? "stad" : "steden", ""], [cc.length, cc.length === 1 ? "land" : "landen", "F"]];
-  var tw = (W - 120 - 3 * 18) / 4, th = 160;
+  var tw = (W - 120 - 3 * 18) / 4, th = cc.length > 5 ? 178 : 160;   /* meer dan 5 landen: vlaggen op twee rijen */
   tiles.forEach(function (t, i) { var x = 60 + i * (tw + 18);
     g.fillStyle = "rgba(255,255,255,.07)"; g.strokeStyle = "rgba(" + P[1] + ",.35)"; g.lineWidth = 2; box(x, y, tw, th, 20); g.fill(); g.stroke();
     g.fillStyle = FG; g.font = "800 66px " + FD; g.fillText(String(t[0]), x + tw / 2, y + 74);
     g.fillStyle = MUT; g.font = "500 24px " + FB; g.fillText(t[1], x + tw / 2, y + 108);
-    if (t[2] === "F") { var n = Math.min(cc.length, 8), gap = n > 5 ? 4 : 7, fw = Math.min(34, (tw - 20 - (n - 1) * gap) / n), fh = fw * .68, tot = n * fw + (n - 1) * gap, fx = x + tw / 2 - tot / 2;
-      cc.slice(0, n).forEach(function (c, j) { flag(c, fx + j * (fw + gap), y + 122 + (23 - fh) / 2, fw, fh); }); }
+    if (t[2] === "F") { var n = Math.min(cc.length, 10), per = n > 5 ? Math.ceil(n / 2) : n, gap = 6, fw = Math.min(34, (tw - 20 - (per - 1) * gap) / per), fh = fw * .68;
+      cc.slice(0, n).forEach(function (c, j) { var row = Math.floor(j / per), inRow = row ? n - per : per, col = j % per, tot = inRow * fw + (inRow - 1) * gap;
+        flag(c, x + tw / 2 - tot / 2 + col * (fw + gap), y + 120 + row * (fh + 5), fw, fh); }); }
     else if (t[2]) { g.fillStyle = GOLD; g.font = "600 19px " + FB; g.fillText(t[2], x + tw / 2, y + 138); } });
   y += th + 34;
   /* meest bezocht en vaakst gezien: één regel */

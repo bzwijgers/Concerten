@@ -105,6 +105,7 @@ header.sc{border-bottom-color:var(--line)}
 .yhead{position:sticky;top:var(--hh,150px);z-index:4;background:var(--bg);display:flex;align-items:baseline;gap:8px;padding:14px 0 4px}.yhead b{font:800 18px var(--f-d)}.yhead span{color:var(--faint);font-size:12px}
 .posters{display:flex;gap:10px;overflow-x:auto;margin:6px 0 6px;padding-bottom:4px}.pst{flex:none;position:relative;padding:0;border:0;background:none;cursor:pointer}.pst img{height:220px;max-width:70vw;border-radius:12px;object-fit:contain;background:var(--card2);display:block}
 .ptag{position:absolute;left:6px;bottom:6px;font-size:11px;padding:2px 7px;border-radius:9px;background:rgba(0,0,0,.6);color:#fff}
+.acts.slinks{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}.slinks .btn{flex:none;width:auto;padding:6px 10px;font-size:12.5px}.slist{margin:6px 0 8px;padding-left:24px;line-height:1.55;font-size:14px;color:var(--fg)}
 .afiles .pst img{height:130px}.afiles .padd{width:104px;height:130px;font-size:12px}.afile span{word-break:break-all;padding:0 6px;max-height:3.2em;overflow:hidden}.afile .fdel{position:absolute;right:4px;top:2px;font-size:13px;color:var(--faint);padding:4px;font-style:normal}
 .padd{width:130px;height:220px;border:1.5px dashed var(--line);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--faint);font-size:13px;text-align:center}.padd b{font-size:30px;font-weight:400}
 .pstat{font-size:12.5px;color:var(--faint);margin:2px 0 4px}.pstat a{color:inherit}.pstat .lnk{font-size:12.5px;padding:0;margin:0}
@@ -1197,7 +1198,8 @@ function appRow(a, xacts, xloc, xtitle) { if (!xacts && !xloc && isFestMark(mark
             return '<div class="actrow"><input type="checkbox" data-acts="' + i + '"' + (x[2] ? " checked" : "") + ' aria-label="gezien"><input type="text" data-actn="' + i + '" value="' + esc(x[0]) + '" placeholder="Naam">' +
               '<select data-actr="' + i + '"><option value="H"' + (x[1] !== "V" && x[1] !== "F" ? " selected" : "") + '>hoofdact</option><option value="V"' + (x[1] === "V" ? " selected" : "") + '>voorprogramma</option><option value="F"' + (x[1] === "F" ? " selected" : "") + '>festival</option></select><button data-actdel="' + i + '" aria-label="Weghalen">✕</button></div>'; }).join("") +
           '<button class="lnk" data-actadd>+ artiest toevoegen</button>') +
-          '<textarea data-rv placeholder="Korte review (optioneel)" style="margin-top:10px">' + esc(a.rv.txt || "") + "</textarea>" + afilesHtml(a.id) +
+          '<textarea data-rv placeholder="Korte review (optioneel)" style="margin-top:10px">' + esc(a.rv.txt || "") + "</textarea>" +
+          setlistHtml(a.id, (hs[0] || vs[0] || [""])[0] || (fa.length ? "" : nice(a.s.n)), v.city || (a.id.indexOf("hist|") === 0 ? a.id.split("|")[3] : "")) + afilesHtml(a.id) +
           (xacts || a.id.indexOf("hist|") === 0 ? "" : st.aconfirm === a.id ? '<div class="conf">Uit je archief verwijderen? Je cijfer en review gaan ook weg.<div class="acts" style="margin-top:8px"><button class="btn" data-adel style="color:var(--red)">Ja, verwijderen</button><button class="btn" data-anodel>Annuleren</button></div></div>'
                                 : '<button class="lnk" data-aask>Verwijderen uit archief</button>') + "</div>" : "") + "</div>"; }
 function starsHtml(r) { var stars = "";
@@ -1212,6 +1214,18 @@ function prevSeenHtml(names, d0) {
       x.slice(0, 8).map(function (y) { var dd = parse(y[0]); return "<div>" + dd.getDate() + " " + MON[dd.getMonth()] + " " + dd.getFullYear() + " · " + esc(y[1]) + "</div>"; }).join("") +
       (x.length > 8 ? "<div>… en nog " + (x.length - 8) + " keer</div>" : "") + "</div>"; }).join("");
   return out ? '<div class="hl" style="margin:12px 0 4px">Andere keren gezien</div>' + out : "";
+}
+/* setlist bij een gezien-concert: zoeken op setlist.fm (artiest + stad werkt daar het best), Concert Archives of Setlisting; zelf plakken of typen */
+function setlistHtml(aid, artist, city) {
+  var m = marks[aid] || {}, sl = m.sl || "", url = (sl.match(/https?:\/\/\S+/) || [""])[0];
+  var lnk = function (u, t) { return '<a class="btn" href="' + esc(u) + '" target="_blank" rel="noopener">' + t + " ↗</a>"; };
+  var songs = sl.split("\n").map(function (x) { return x.trim(); }).filter(function (x) { return x && !/^https?:\/\//.test(x); });
+  return '<div class="hl" style="margin:12px 0 4px">Setlist</div>' +
+    (artist ? '<div class="acts slinks">' + lnk("https://www.setlist.fm/search?query=" + encodeURIComponent(artist + (city ? " " + city : "")), "setlist.fm") +
+      lnk("https://www.concertarchives.org/search?q=" + encodeURIComponent(artist), "Concert Archives") + lnk("https://www.setlisting.com/setlists", "Setlisting") + "</div>" : "") +
+    (url ? '<a class="lnk" href="' + esc(url) + '" target="_blank" rel="noopener">Open de setlist ↗</a>' : "") +
+    (songs.length ? '<ol class="slist">' + songs.map(function (x) { return "<li>" + esc(x.replace(/^\d+[.)]\s*/, "")) + "</li>"; }).join("") + "</ol>" : "") +
+    '<textarea data-sl rows="3" placeholder="Plak hier de setlist (één nummer per regel) of de link ernaar">' + esc(sl) + "</textarea>";
 }
 /* foto's en bestanden bij een gezien-concert: in je privé sync-opslag (posters/fotos/ en bestanden/) */
 function afilesHtml(aid) { return '<div class="hl" style="margin:12px 0 4px">Foto\'s en bestanden</div><div class="posters afiles" data-afiles="' + esc(aid) + '"></div><div class="pstat" data-afstat></div>'; }
@@ -1858,6 +1872,12 @@ $("panel").addEventListener("input", function (e) {   /* notitie bij een kaartje
   var m = marks[st.open]; if (!m) return;
   if (ta.value.trim()) m.note = ta.value; else delete m.note; save("ca-marks", marks);
 });
+$("main").addEventListener("input", function (e) {   /* setlist bewaren tijdens het typen */
+  var ta = e.target.closest("[data-sl]"); if (!ta) return;
+  var aid = ta.closest("[data-aid]").getAttribute("data-aid"); ensureHistMark(aid);
+  if (ta.value.trim()) marks[aid].sl = ta.value; else delete marks[aid].sl; save("ca-marks", marks);
+});
+$("main").addEventListener("change", function (e) { if (e.target.closest("[data-sl]")) { var y = scrollY; render(); window.scrollTo(0, y); } });   /* klaar met plakken: lijst tonen */
 $("main").addEventListener("input", function (e) {   /* review bewaren tijdens het typen */
   var ta = e.target.closest("[data-rv]"); if (!ta) return;
   var aid = ta.closest("[data-aid]").getAttribute("data-aid"); ensureHistMark(aid); marks[aid].rv = marks[aid].rv || {};

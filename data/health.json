@@ -40,7 +40,7 @@
 "good": 48
 },
 "bosuil": {
-"good": 62
+"good": 63
 },
 "botanique": {
 "good": 3
@@ -70,7 +70,7 @@
 "good": 26
 },
 "dbs": {
-"good": 50
+"good": 51
 },
 "depot": {
 "good": 97
@@ -85,10 +85,10 @@
 "good": 44
 },
 "effenaar": {
-"good": 108
+"good": 109
 },
 "ekko": {
-"good": 67
+"good": 68
 },
 "engel": {
 "good": 102
@@ -205,13 +205,13 @@
 "good": 49
 },
 "ha": {
-"good": 80
+"good": 79
 },
 "hedon": {
 "good": 121
 },
 "helling": {
-"good": 58
+"good": 59
 },
 "helvete": {
 "good": 9
@@ -241,7 +241,7 @@
 "good": 68
 },
 "littledevil": {
-"good": 19
+"good": 20
 },
 "lockkeepers": {
 "good": 11
@@ -281,7 +281,7 @@
 "good": 17
 },
 "neushoorn": {
-"good": 88
+"good": 89
 },
 "nobel": {
 "good": 100
@@ -303,7 +303,7 @@
 "good": 149
 },
 "paradiso": {
-"good": 432
+"good": 434
 },
 "patronaat": {
 "good": 159
@@ -321,10 +321,10 @@
 "good": 21
 },
 "rotown": {
-"good": 127
+"good": 128
 },
 "rwa": {
-"good": 20
+"good": 19
 },
 "simplon": {
 "good": 50
@@ -345,7 +345,7 @@
 "good": 22
 },
 "ticketmaster": {
-"good": 707
+"good": 709
 },
 "tivoli": {
 "good": 324
@@ -354,13 +354,13 @@
 "good": 15
 },
 "trix": {
-"good": 126
+"good": 127
 },
 "turbinenhalle": {
 "good": 52
 },
 "v11": {
-"good": 20
+"good": 22
 },
 "vanpolanen": {
 "good": 11
@@ -390,6 +390,6 @@
 "good": 43
 },
 "worm": {
-"good": 10
+"good": 11
 }
 }

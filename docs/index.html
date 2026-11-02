@@ -1432,7 +1432,7 @@ function yearPoster(list, label, full, ver) {
     q.fillStyle = INK2; q.beginPath(); q.moveTo(-30, -868); q.lineTo(-60, -925); q.quadraticCurveTo(-52, -976, 0, -976); q.quadraticCurveTo(52, -976, 60, -925); q.lineTo(30, -868); q.closePath(); q.fill();
     q.lineWidth = 4; q.strokeStyle = PAPER; q.stroke();
     q.fillStyle = PAPER; q.beginPath(); q.moveTo(-12, -880); q.lineTo(12, -880); q.lineTo(6, -950); q.lineTo(-6, -950); q.closePath(); q.fill();   /* afdekplaatje */
-    [-905, -948].forEach(function (ty) { [-1, 1].forEach(function (sg) { line(sg * 55, ty, sg * 82, ty, 7, PAPER); rr(sg > 0 ? 80 : -98, ty - 11, 18, 22, 5, PAPER); }); });
+    [-900, -948].forEach(function (ty) { [-1, 1].forEach(function (sg) { line(sg * 50, ty, sg * 92, ty, 12, PAPER); rr(sg > 0 ? 86 : -120, ty - 18, 34, 36, 8, PAPER); circ(sg * 40, ty, 9, PAPER); }); });
     var bbody = function () { q.beginPath(); q.moveTo(-40, -115);
       q.bezierCurveTo(-85, -150, -105, -265, -150, -245); q.bezierCurveTo(-205, -222, -170, -130, -186, -58);
       q.bezierCurveTo(-202, 22, -232, 122, -212, 242); q.bezierCurveTo(-192, 380, -62, 412, 0, 412);
@@ -1447,9 +1447,10 @@ function yearPoster(list, label, full, ver) {
     rr(-62, 255, 124, 22, 5, INK2); rr(-50, 300, 100, 30, 8, INK1);         /* brug en staartstuk */
     [[100, 245], [130, 280], [100, 315], [130, 350]].forEach(function (k_) { circ(k_[0], k_[1], 15, INK2); circ(k_[0], k_[1], 5, PAPER); });
     circ(-110, 120, 10, INK2); line(-110, 120, -125, 95, 5, INK2);         /* schakelaar */
-    q.strokeStyle = PAPER; q.lineWidth = 2.6; for (var bs = 0; bs < 4; bs++) { q.beginPath(); q.moveTo(-18 + bs * 12, 310); q.lineTo(-15 + bs * 10, -868); q.stroke(); }
-    q.strokeStyle = INK2; q.lineWidth = 2.6; for (var bs2 = 0; bs2 < 4; bs2++) { q.beginPath(); q.moveTo(-18 + bs2 * 12, 310); q.lineTo(-17 + bs2 * 11.5, -60); q.stroke(); }   /* snaren over de witte plaat */
-    place = [30, 205, .38, .66];
+    for (var bs = 0; bs < 4; bs++) { var nx = -15 + bs * 10, bx_ = -24 + bs * 16;   /* vier dikke snaren */
+      q.lineCap = "butt"; q.strokeStyle = PAPER; q.lineWidth = 9; q.beginPath(); q.moveTo(bx_, 312); q.lineTo(nx, -868); q.stroke();
+      q.strokeStyle = INK1; q.lineWidth = 5; q.beginPath(); q.moveTo(bx_, 312); q.lineTo(nx, -868); q.stroke(); }
+    place = [30, 205, .38, .66];   /* body onder de bandnamen, hals schuin omhoog */
   } else if (motif === "stage") {   /* podium met lichttruss, spots, band en publiek */
     var truss = function (x, y, w, h) { q.strokeStyle = INK2; q.lineWidth = 7; q.strokeRect(x, y, w, h); q.lineWidth = 4; q.beginPath();
       if (w > h) for (var tx = x; tx < x + w; tx += 30) { q.moveTo(tx, y); q.lineTo(tx + 15, y + h); q.lineTo(tx + 30, y); } else for (var ty = y; ty < y + h; ty += 30) { q.moveTo(x, ty); q.lineTo(x + w, ty + 15); q.lineTo(x, ty + 30); } q.stroke(); };
@@ -1471,7 +1472,7 @@ function yearPoster(list, label, full, ver) {
     rr(-380, 250, 760, 26, 4, INK2); rr(-380, 276, 760, 40, 0, INK1);
     for (var cx_ = -380; cx_ < 400; cx_ += 38 + (cx_ * 7 % 13)) { var hgt = 40 + (cx_ * 13 % 30); circ(cx_, 420 - hgt, 22, INK2); q.fillStyle = INK2; q.fillRect(cx_ - 30, 430 - hgt, 60, hgt);
       if ((cx_ * 11) % 5 === 0) { line(cx_ + 18, 400 - hgt, cx_ + 40, 300 - hgt, 12, INK2); circ(cx_ + 42, 292 - hgt, 10, INK2); } }
-    place = [0, 250, 0, .85];
+    place = [0, 190, 0, 1.15];   /* groot: de truss staat als lijst om de poster */
   } else {   /* zangmicrofoon op een standaard */
     stand(0, -330, 400, INK2);
     q.save(); q.translate(0, -330); q.rotate(-.35);

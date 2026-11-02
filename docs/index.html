@@ -113,6 +113,7 @@ header.sc{border-bottom-color:var(--line)}
 #pview img{flex:1;min-height:0;width:100%;object-fit:contain;padding:calc(env(safe-area-inset-top, 0px) + 54px) 10px 10px}
 #pview .pvbar{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding:10px 12px calc(env(safe-area-inset-bottom, 0px) + 16px)}#pview .pvbar .btn{min-width:110px}#pview .pvbar [hidden]{display:none}
 #pview .xclose{position:absolute;top:calc(env(safe-area-inset-top, 0px) + 10px);right:12px;float:none;margin:0}
+.since .bn{flex:1;text-align:left;border:1px solid rgba(242,184,75,.55);background:rgba(242,184,75,.12);color:var(--fg);border-radius:14px;padding:10px 12px;cursor:pointer;font:500 13px var(--f-b)}.since .bn b{display:block;font:700 14.5px var(--f-d)}.since .bn span{color:var(--muted)}.bnwhy{font-size:12px;color:var(--gold);margin:10px 0 -4px;font-weight:600}
 .since{display:flex;align-items:stretch;gap:6px;margin:12px 0 2px}.since [data-since]{flex:1;text-align:left;border:1px solid rgba(142,155,196,.35);background:rgba(142,155,196,.12);color:var(--fg);border-radius:14px;padding:10px 12px;cursor:pointer;font:500 13px var(--f-b)}
 .since [data-since] b{display:block;font:700 14.5px var(--f-d)}.since [data-since] span{color:var(--muted)}.since .x{border:0;background:none;color:var(--faint);font-size:16px;cursor:pointer;padding:0 6px}
 .lu{color:var(--muted);font-size:14px;line-height:1.7;margin:4px 0 8px}.lu.seen{display:flex;flex-direction:column;gap:2px;color:var(--fg)}.lu.seen b{color:var(--gold)}
@@ -735,6 +736,35 @@ function hero() {
 }
 function dayHead(d0, n) { var d = parse(d0);
   return '<div class="day"><b>' + (d0 === TODAY ? "Vandaag" : DOWL[d.getDay()].replace(/^./, function (x) { return x.toUpperCase(); }) + " " + d.getDate() + " " + MONL[d.getMonth()]) + "</b><span>" + n + " concerten</span></div>"; }
+/* nieuw van jouw bands: de laatste 14 dagen aangekondigd, van een band die je zag of waarvoor je interesse hebt (ook op een festival-line-up);
+   blijft staan tot je hem wegtikt. Op Android geeft de app hier ook een melding van (lijst van je bands via AndroidApp.setWatch) */
+var BNSEEN = load("ca-bandnews", {}), BNWATCH = "";
+function myBands() {
+  var k = {}; Object.keys(SEEN).forEach(function (x) { if (x.length >= 3) k[x] = "je zag ze " + SEEN[x].n + "×"; });
+  Object.keys(marks).forEach(function (id) { var m = marks[id]; if (m && (m.i || m.t) && m.s && m.s.n && m.s.d >= TODAY) bandsOf({ n: m.s.n }).forEach(function (n) { var kk = normA(n); if (kk && kk.length >= 3 && !k[kk]) k[kk] = m.t ? "je hebt een kaartje voor ze" : "interesse"; }); });
+  return k;
+}
+function bandNews() {
+  var keys = myBands(), d0 = new Date(); d0.setDate(d0.getDate() - 14);
+  var cut = d0.getFullYear() + "-" + pad(d0.getMonth() + 1) + "-" + pad(d0.getDate()), out = [];
+  ALL.forEach(function (c) {
+    if (c.d < TODAY || c.o || !c.first || c.first === "base" || c.first < cut || marks[c.id] || BNSEEN[c.id]) return;
+    var hit = null; bandsOf(c).concat(c.la || []).some(function (n) { var kk = normA(n); if (keys[kk]) { hit = { who: nice(n), why: keys[kk] }; return true; } return false; });
+    if (hit) out.push({ c: c, who: hit.who, why: hit.why });
+  });
+  out.sort(function (a, b) { return a.c.first > b.c.first ? -1 : a.c.first < b.c.first ? 1 : a.c.d < b.c.d ? -1 : 1; });
+  if (window.AndroidApp && AndroidApp.setWatch) { var w = JSON.stringify({ keys: Object.keys(keys).sort(), seen: Object.keys(BNSEEN) }); if (w !== BNWATCH) { BNWATCH = w; try { AndroidApp.setWatch(w); } catch (e) {} } }
+  return out;
+}
+function bandNewsSeen(list) { list.forEach(function (x) { BNSEEN[x.c.id] = TODAY; });
+  Object.keys(BNSEEN).forEach(function (id) { if (!findC(id)) delete BNSEEN[id]; }); save("ca-bandnews", BNSEEN); }
+function openBandNews() {
+  var bn = bandNews();
+  $("panel").innerHTML = '<div class="pb" style="margin-top:0;padding-top:22px"><h2>🔔 Nieuw van jouw bands</h2><p style="color:var(--muted);margin:4px 0 12px">De laatste twee weken aangekondigd, van bands die je eerder zag of waarvoor je interesse hebt.</p>' +
+    bn.map(function (x) { return '<div class="bnwhy">' + esc(x.who) + " · " + esc(x.why) + "</div>" + row(x.c); }).join("") +
+    '<button class="others" data-bnall style="margin-top:14px">Alles gezien</button></div>';
+  showSheet(); $("panel").scrollTop = 0;
+}
 function renderAgenda() {
   var list = ALL.filter(function (c) { return c.d >= TODAY && pass(c); });
   var html = "", days = {}, order = [];
@@ -742,6 +772,10 @@ function renderAgenda() {
   var shown = 0;
   if (newVer) html += '<div class="since"><button data-newver><b>↻ Nieuwe versie van de agenda</b><span>Tik om te verversen; je blijft op dezelfde plek.</span></button></div>';
   if (SYNC && SYNC.token && SYNC.err) html += '<div class="since"><button data-syncfix style="border-color:rgba(255,107,107,.45);background:rgba(255,107,107,.08)"><b style="color:var(--red)">⚠ Synchroniseren werkt niet meer</b><span>' + esc(SYNC.err) + " Tik om het te herstellen.</span></button></div>";
+  var bn = anyFilter() ? [] : bandNews();
+  if (bn.length) html += '<div class="since"><button data-bandnews class="bn"><b>🔔 ' + (bn.length === 1 ? "Nieuw van " + esc(bn[0].who) : bn.length + " nieuwe concerten van jouw bands") + "</b><span>" +
+    esc(bn.slice(0, 3).map(function (x) { var d = parse(x.c.d); return x.who + " (" + d.getDate() + " " + MON[d.getMonth()] + ", " + venue(x.c).label + ")"; }).join(" · ")) + (bn.length > 3 ? " …" : "") +
+    '</span></button><button class="x" data-bandnews-off aria-label="Gezien">✕</button></div>';
   var sl = st.sinceList || [];
   if (sl.length && !st.sinceOff && !anyFilter()) {
     var ns = sl.filter(function (c) { return c.seen; }).length;
@@ -1747,6 +1781,7 @@ function renderOv() {
 function render() {
   try { var _k = {}; KEEP_KEYS.forEach(function (k) { _k[k] = st[k]; }); sessionStorage.setItem("ca-view", JSON.stringify(_k)); } catch (e) {}
   try { var wn = ALL.length ? warnings().length : 0; document.querySelector('nav [data-tab="mine"]').classList.toggle("dot", wn > 0); } catch (e) {}
+  try { document.querySelector('nav [data-tab="agenda"]').classList.toggle("dot", ALL.length > 0 && bandNews().length > 0); } catch (e) {}
   var inA = st.tab === "a";
   $("sbar").classList.toggle("on", !!st.q || $("sb").getAttribute("aria-pressed") === "true");   /* een actieve zoekterm is altijd te zien */
   var sdOn = $("sbar").classList.contains("on") && st.tab !== "mine";
@@ -1986,6 +2021,7 @@ $("panel").addEventListener("click", function (e) {
   var pv = e.target.closest("[data-pv]"); if (pv) { openPoster(+pv.getAttribute("data-pv")); return; }
   if (e.target.closest("[data-fpaste]")) { pasteButton(); return; }
   var bd = e.target.closest("[data-band]"); if (bd) { openBand(bd.getAttribute("data-band")); return; }
+  if (e.target.closest("[data-bnall]")) { bandNewsSeen(bandNews()); closeSheet(); render(); return; }
   var bs = e.target.closest("[data-bandsearch]"); if (bs) { var q_ = bs.getAttribute("data-bandsearch"); closeSheet(); st.q = q_; $("q").value = q_; $("sb").setAttribute("aria-pressed", "true"); st.tab = "agenda"; setNav(); render(); window.scrollTo(0, 0); return; }
   var pe = e.target.closest("#panel .ev[data-id]"); if (pe && !e.target.closest("[data-pv],.pst,.arow")) { openSheet(pe.getAttribute("data-id")); return; }
   if (e.target.closest("[data-psite]")) { var m = marks[st.open]; if (!m) return; var a = ((AUTO || {}).marks || {})[st.open] || {};
@@ -2010,6 +2046,8 @@ $("main").addEventListener("click", function (e) {
   if (t.closest("[data-newver]")) { try { sessionStorage.setItem("ca-scroll", "0"); } catch (x) {} location.reload(); return; }
   if (t.closest("[data-syncfix]")) { localStorage.removeItem("ca-sync"); var o_ = SYNC; SYNC = { owner: o_.owner, repo: o_.repo }; openSync(); return; }
   if (t.closest("[data-since-off]")) { st.sinceOff = true; render(); return; }
+  if (t.closest("[data-bandnews-off]")) { bandNewsSeen(bandNews()); render(); return; }
+  if (t.closest("[data-bandnews]")) { openBandNews(); return; }
   if (t.closest("[data-newweek]")) { st.f["new"] = true; st.limit = 250; render(); window.scrollTo(0, 0); return; }
   if (t.closest("[data-since]")) { st.f.since = true; render(); window.scrollTo(0, 0); return; }
   if (t.closest("[data-wx]")) { var wm = marks[t.closest("[data-wx]").getAttribute("data-wx")]; if (wm) { wm.wk = t.closest("[data-wx]").getAttribute("data-wk"); save("ca-marks", marks); } render(); return; }

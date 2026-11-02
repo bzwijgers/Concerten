@@ -137,6 +137,7 @@ nav [data-tab].dot{position:relative}nav [data-tab].dot::after{content:"";positi
 .mapbox{position:relative;background:var(--bg2);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-top:6px}
 .map{display:block;width:100%;height:auto;touch-action:none;user-select:none}
 .map .land{fill:#1d1b26;stroke:#3a3548;stroke-width:1;vector-effect:non-scaling-stroke}
+.map .land.nl{fill:#2a2019;stroke:#7a5230}.map .land.be{fill:#2b1b20;stroke:#7a3a44}.map .land.de{fill:#2c2616;stroke:#8a7231}   /* gedempte landskleuren: oranje, rood, goud */
 .map .be{fill:#191722}
 .map .reach{fill:#fff;fill-opacity:.04;stroke:#fff;stroke-opacity:.35;stroke-dasharray:4 3;stroke-width:1.2;vector-effect:non-scaling-stroke}
 .map .reach.on{fill-opacity:.14}
@@ -1693,8 +1694,11 @@ function mapSvg(per, opt) {
   var poly = function (P) { return "M" + P.map(function (p) { return ovX(p[1]).toFixed(2) + " " + ovY(p[0]).toFixed(2); }).join(" L") + "Z"; };
   var km = ((90 - 8) / 60 * 100) / 1.2, ring = [];
   for (var deg = 0; deg < 360; deg += 6) { var t = deg * Math.PI / 180; ring.push([HOME[0] + km / 111.2 * Math.cos(t), HOME[1] + km / (111.2 * Math.cos(HOME[0] * Math.PI / 180)) * Math.sin(t)]); }
-  var svg = '<svg class="map" viewBox="' + [x0, y0, w, h].map(function (n) { return n.toFixed(2); }).join(" ") + '"><clipPath id="land"><path d="' + poly(NL) + '"/><path d="' + poly(BE) + '"/></clipPath>' +
-    '<path class="land" d="' + poly(NL) + '"/><path class="land be" d="' + poly(BE) + '"/>' + (opt.ring ? '<path class="reach' + (st.f.near ? " on" : "") + '" clip-path="url(#land)" d="' + poly(ring) + '"/>' : "") +
+  /* westen van Duitsland (grof; Nederland en België liggen eroverheen, dus de grens hoeft niet precies) */
+  var DE = [[53.6, 7.4], [53.6, 6.9], [53.2, 6.8], [52.9, 6.7], [52.6, 6.6], [52.3, 6.5], [52.0, 6.3], [51.8, 5.8], [51.5, 5.8], [51.2, 5.7],
+    [50.9, 5.7], [50.7, 5.9], [50.45, 6.1], [50.25, 6.2], [50.1, 6.15], [49.8, 6.5], [49.45, 6.4], [49.45, 7.4]];
+  var svg = '<svg class="map" viewBox="' + [x0, y0, w, h].map(function (n) { return n.toFixed(2); }).join(" ") + '"><clipPath id="land"><path d="' + poly(NL) + '"/><path d="' + poly(BE) + '"/><path d="' + poly(DE) + '"/></clipPath>' +
+    '<path class="land de" d="' + poly(DE) + '"/><path class="land nl" d="' + poly(NL) + '"/><path class="land be" d="' + poly(BE) + '"/>' + (opt.ring ? '<path class="reach' + (st.f.near ? " on" : "") + '" clip-path="url(#land)" d="' + poly(ring) + '"/>' : "") +
     '<circle class="home" cx="' + ovX(HOME[1]) + '" cy="' + ovY(HOME[0]) + '" r="' + 3 * k + '"/>';
   cities.slice().reverse().forEach(function (ct) {
     var r = Math.max(4, Math.sqrt(per[ct] / max) * 22) * rk, on = sel === ct;

@@ -1334,7 +1334,7 @@ function yearPoster(list, label, full, ver) {
   var seed = 7; label.split("").forEach(function (c) { seed = (seed * 31 + c.charCodeAt(0)) >>> 0; }); seed = (seed + (ver || 0) * 977) >>> 0;
   var rnd = function () { seed = (seed + 0x6D2B79F5) >>> 0; var t = seed; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; };
   var yr = parseInt(label, 10) || 0, P = PAL[(yr + (ver || 0)) % PAL.length], PAPER = P[0], INK1 = P[1], INK2 = P[2];
-  var BGS = ["rays", "rings", "stripes"], MOT = ["gibson", "stack", "drums", "piano", "stage", "mic"];
+  var BGS = ["rays", "rings", "stripes"], MOT = ["gibson", "stack", "drums", "bass", "stage", "mic"];
   var bg = BGS[(yr + (ver || 0)) % BGS.length], motif = MOT[(yr + (ver || 0)) % MOT.length], flip = rnd() < .5 ? -1 : 1;
   var isFest = function (e) { return !!e.fn || e.acts.some(function (x) { return x[1] === "F"; }); };
   /* cijfers */
@@ -1363,7 +1363,7 @@ function yearPoster(list, label, full, ver) {
     var off = (Math.round((hy - CY) / 16) % 2) * 8, t = Math.max(0, ((hx + off - CX) * -.5 + (hy - CY) * .9) / R);
     var dr = t * 7.2; if (dr > .6) { g.beginPath(); g.arc(hx + off, hy, dr, 0, 7); g.fill(); } }
   g.restore();
-  /* tekening (eigen, geen foto's): Les Paul-achtige gitaar, muur van speakerkasten, drumstel, vleugel, podium of microfoon */
+  /* tekening (eigen, geen foto's): Les Paul-achtige gitaar, muur van speakerkasten, drumstel, basgitaar, podium of microfoon */
   var gc = document.createElement("canvas"); gc.width = 760; gc.height = 1400; var q = gc.getContext("2d"), OY = 980;
   q.translate(380, OY);
   var circ = function (x, y, r, c) { q.fillStyle = c; q.beginPath(); q.arc(x, y, r, 0, 7); q.fill(); };
@@ -1425,17 +1425,31 @@ function yearPoster(list, label, full, ver) {
     for (var lu = 0; lu < 10; lu++) { var a_ = lu * Math.PI / 5; rr(Math.cos(a_) * 228 - 9, 150 + Math.sin(a_) * 228 - 9, 18, 18, 4, INK1); }
     line(-180, 330, -230, 400, 10, INK2); line(180, 330, 230, 400, 10, INK2);
     place = [0, 140, 0, .95];
-  } else if (motif === "piano") {   /* vleugel van opzij met open klep */
-    q.fillStyle = INK2; q.beginPath(); q.moveTo(-250, -2); q.lineTo(345, -2); q.quadraticCurveTo(372, -210, 255, -380); q.quadraticCurveTo(10, -270, -250, -2); q.closePath(); q.fill();   /* klep */
-    q.fillStyle = PAPER; q.globalAlpha = .18; q.beginPath(); q.moveTo(-150, -8); q.lineTo(320, -8); q.quadraticCurveTo(338, -190, 250, -330); q.quadraticCurveTo(40, -235, -150, -8); q.fill(); q.globalAlpha = 1;
-    line(205, -4, 228, -300, 8, INK1);                                   /* klepstok */
-    rr(-335, 0, 705, 100, 16, INK2); q.fillStyle = PAPER; q.fillRect(-320, 22, 675, 4);   /* kast */
-    rr(-300, -95, 120, 92, 6, INK2); q.fillStyle = PAPER; q.fillRect(-292, -82, 104, 4); q.fillRect(-292, -62, 104, 3);   /* lessenaar */
-    rr(-390, -18, 70, 40, 4, PAPER); q.fillStyle = INK2; for (var kb = 0; kb < 4; kb++) q.fillRect(-386 + kb * 17, -18, 9, 22);   /* toetsen */
-    [[-290, 100], [255, 100], [20, 100]].forEach(function (l_) { q.fillStyle = INK2; q.beginPath(); q.moveTo(l_[0], l_[1]); q.lineTo(l_[0] + 50, l_[1]); q.lineTo(l_[0] + 38, l_[1] + 230); q.lineTo(l_[0] + 12, l_[1] + 230); q.closePath(); q.fill(); circ(l_[0] + 25, l_[1] + 238, 12, INK1); });
-    q.strokeStyle = INK2; q.lineWidth = 9; q.beginPath(); q.moveTo(-150, 100); q.quadraticCurveTo(-175, 200, -140, 290); q.moveTo(-100, 100); q.quadraticCurveTo(-75, 200, -110, 290); q.stroke();   /* pedaallier */
-    rr(-170, 285, 90, 16, 4, INK2); q.fillStyle = PAPER; q.fillRect(-160, 292, 14, 6); q.fillRect(-133, 292, 14, 6); q.fillRect(-106, 292, 14, 6);
-    place = [0, 100, 0, .95];
+  } else if (motif === "bass") {   /* basgitaar met golvende body, grote witte slagplaat en lange hals */
+    rr(-26, -870, 52, 780, 4, INK2);                                      /* hals door de body */
+    q.fillStyle = PAPER; for (var bf = 0; bf < 20; bf++) { var by = -850 + bf * 40 - bf * bf * .45; q.fillRect(-26, by, 52, 3);
+      if ([3, 5, 7, 9, 12, 15, 17].indexOf(bf) >= 0) { q.beginPath(); q.moveTo(-16, by + 24); q.lineTo(16, by + 24); q.lineTo(-16, by + 8); q.closePath(); q.fill(); } }   /* driehoekige inleg */
+    q.fillStyle = INK2; q.beginPath(); q.moveTo(-30, -868); q.lineTo(-60, -925); q.quadraticCurveTo(-52, -976, 0, -976); q.quadraticCurveTo(52, -976, 60, -925); q.lineTo(30, -868); q.closePath(); q.fill();
+    q.lineWidth = 4; q.strokeStyle = PAPER; q.stroke();
+    q.fillStyle = PAPER; q.beginPath(); q.moveTo(-12, -880); q.lineTo(12, -880); q.lineTo(6, -950); q.lineTo(-6, -950); q.closePath(); q.fill();   /* afdekplaatje */
+    [-905, -948].forEach(function (ty) { [-1, 1].forEach(function (sg) { line(sg * 55, ty, sg * 82, ty, 7, PAPER); rr(sg > 0 ? 80 : -98, ty - 11, 18, 22, 5, PAPER); }); });
+    var bbody = function () { q.beginPath(); q.moveTo(-40, -115);
+      q.bezierCurveTo(-85, -150, -105, -265, -150, -245); q.bezierCurveTo(-205, -222, -170, -130, -186, -58);
+      q.bezierCurveTo(-202, 22, -232, 122, -212, 242); q.bezierCurveTo(-192, 380, -62, 412, 0, 412);
+      q.bezierCurveTo(90, 412, 202, 372, 207, 250); q.bezierCurveTo(212, 150, 172, 82, 177, 12);
+      q.bezierCurveTo(182, -58, 205, -112, 160, -132); q.bezierCurveTo(118, -150, 72, -92, 40, -115); q.closePath(); };
+    bbody(); q.fillStyle = INK2; q.fill(); q.lineWidth = 7; q.strokeStyle = PAPER; q.stroke();
+    rr(-26, -120, 52, 160, 2, INK2);
+    q.fillStyle = PAPER; q.beginPath(); q.moveTo(-30, -60); q.lineTo(120, -60); q.quadraticCurveTo(150, -40, 150, 40); q.lineTo(165, 250); q.quadraticCurveTo(160, 330, 90, 345);
+    q.lineTo(-40, 345); q.quadraticCurveTo(-150, 330, -150, 220); q.lineTo(-120, 60); q.quadraticCurveTo(-90, -40, -30, -60); q.closePath(); q.fill();   /* slagplaat */
+    rr(-60, 10, 120, 34, 6, INK2); q.fillStyle = PAPER; for (var bp = 0; bp < 4; bp++) { q.beginPath(); q.arc(-36 + bp * 24, 27, 5, 0, 7); q.fill(); }   /* halspickup */
+    rr(-75, 170, 150, 52, 10, INK1);                                       /* kapje over de brugpickup */
+    rr(-62, 255, 124, 22, 5, INK2); rr(-50, 300, 100, 30, 8, INK1);         /* brug en staartstuk */
+    [[100, 245], [130, 280], [100, 315], [130, 350]].forEach(function (k_) { circ(k_[0], k_[1], 15, INK2); circ(k_[0], k_[1], 5, PAPER); });
+    circ(-110, 120, 10, INK2); line(-110, 120, -125, 95, 5, INK2);         /* schakelaar */
+    q.strokeStyle = PAPER; q.lineWidth = 2.6; for (var bs = 0; bs < 4; bs++) { q.beginPath(); q.moveTo(-18 + bs * 12, 310); q.lineTo(-15 + bs * 10, -868); q.stroke(); }
+    q.strokeStyle = INK2; q.lineWidth = 2.6; for (var bs2 = 0; bs2 < 4; bs2++) { q.beginPath(); q.moveTo(-18 + bs2 * 12, 310); q.lineTo(-17 + bs2 * 11.5, -60); q.stroke(); }   /* snaren over de witte plaat */
+    place = [30, 205, .38, .66];
   } else if (motif === "stage") {   /* podium met lichttruss, spots, band en publiek */
     var truss = function (x, y, w, h) { q.strokeStyle = INK2; q.lineWidth = 7; q.strokeRect(x, y, w, h); q.lineWidth = 4; q.beginPath();
       if (w > h) for (var tx = x; tx < x + w; tx += 30) { q.moveTo(tx, y); q.lineTo(tx + 15, y + h); q.lineTo(tx + 30, y); } else for (var ty = y; ty < y + h; ty += 30) { q.moveTo(x, ty); q.lineTo(x + w, ty + 15); q.lineTo(x, ty + 30); } q.stroke(); };

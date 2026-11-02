@@ -132,8 +132,17 @@ nav [data-tab].dot{position:relative}nav [data-tab].dot::after{content:"";positi
 .ev.star .n::after{content:" ★";color:var(--gold)}
 .others{display:block;width:100%;margin:6px 0 4px;padding:12px;border-radius:12px;border:1px dashed var(--line);background:none;color:var(--muted);cursor:pointer;font:600 13px var(--f-b)}
 .seg{display:flex;gap:4px;padding:4px;background:var(--card);border-radius:12px;margin-top:14px}
-.seg button{flex:1;border:0;background:none;padding:9px;border-radius:9px;font:600 14px var(--f-b);color:var(--muted);cursor:pointer}
+.seg button{flex:1;min-width:0;border:0;background:none;padding:9px 2px;border-radius:9px;font:600 14px var(--f-b);color:var(--muted);cursor:pointer;white-space:nowrap}@media (max-width:430px){.seg button{font-size:12.5px}}
 .seg button[aria-pressed=true]{background:var(--card2);color:var(--fg)}
+.hbars{display:flex;align-items:flex-end;gap:2px;height:150px;padding:8px 0 22px;position:relative;border-bottom:1px solid var(--line)}
+.hb{flex:1;min-width:0;height:100%;border:0;background:none;padding:0;position:relative;cursor:pointer;display:flex;align-items:flex-end}
+.hb i{display:block;width:100%;background:var(--soft);border-radius:4px 4px 0 0;opacity:.85}.hb:hover i,.hb.on i{opacity:1;background:var(--acc)}
+.hb span{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:10.5px;color:var(--faint);white-space:nowrap}
+.hcap{font-size:12.5px;color:var(--muted);margin:2px 0 4px}.hread{min-height:20px;font-size:13px;color:var(--fg);margin-top:8px}
+.hrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);width:100%;background:none;border-left:0;border-right:0;border-top:0;color:var(--fg);text-align:left;font:inherit;cursor:default}
+button.hrow{cursor:pointer}.hrt{flex:0 0 46%;min-width:0}.hrt b{display:block;font:600 14px var(--f-b);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hrt span{font-size:12px;color:var(--muted)}
+.hrb{flex:1;height:8px;background:var(--card);border-radius:4px;overflow:hidden}.hrb i{display:block;height:100%;background:var(--soft);border-radius:4px}.hrow em{font-style:normal;font:700 14px var(--f-d);min-width:34px;text-align:right}
+button.hrow em{margin-left:auto}
 /* overzicht */
 .mapbox{position:relative;background:var(--bg2);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-top:6px}
 .map{display:block;width:100%;height:auto;touch-action:none;user-select:none}
@@ -1129,6 +1138,7 @@ function renderHist(yseg) {
   var list = histEvenings();
   var view = yseg + '<div class="seg" style="margin-top:8px">' + [["lijst", "Concerten"], ["art", "Artiesten"], ["fest", "Festivals"], ["kaart", "Kaart"], ["wereld", "Wereld"]].map(function (o) { return '<button data-aview="' + o[0] + '" aria-pressed="' + (st.aview === o[0]) + '">' + o[1] + "</button>"; }).join("") + "</div>";
   var foot = st.ayear === "arch" ? '<div class="note">Ingelezen: ' + HIST.rows + " regels, " + HIST.ev.length + " avonden en festivaldagen (" + HIST.at.slice(0, 10) + '). <label class="lnk" style="display:inline">Opnieuw inlezen<input type="file" accept=".xlsx,.xls,.csv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain,application/octet-stream" data-himport hidden></label> · <button class="lnk" data-hclear style="display:inline">Wissen</button></div>' : "";
+  if (st.aview === "cijfers") return head + histCharts(list) + foot;
   if (st.aview === "kaart" || st.aview === "wereld") {
     var per = {}, abroad = {}, akc = {};
     list.forEach(function (e) { var c = COORD[e.city] || XCOORD[e.city]; if (c) { COORD[e.city] = c; per[e.city] = (per[e.city] || 0) + 1; } else { var ak = e.city + flag(e.cc); akc[ak] = e.city; abroad[ak] = (abroad[ak] || 0) + 1; } });
@@ -1627,9 +1637,45 @@ function openYearPoster(next) {
     PV = [{ k: "Jaarposter", u: URL.createObjectURL(b), name: "jaarposter-" + y0.label.replace(/[^0-9a-z–-]+/gi, "-") }]; openPoster(0); }); };
   try { Promise.all([document.fonts.load('400 100px Anton'), document.fonts.load('800 100px "Bricolage Grotesque"'), document.fonts.load('700 30px "Instrument Sans"'), document.fonts.load('500 24px "Instrument Sans"')]).then(go, go); } catch (e) { go(); }
 }
+/* Historie in cijfers: per jaar, per maand, zalen door de jaren heen en de trouwste bands (volgt de gekozen jaren/periode) */
+function histCharts(list) {
+  if (!list.length) return '<div class="empty">Geen concerten in deze periode.</div>';
+  var yrs = {}, mon = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], zaal = {}, band = {};
+  list.forEach(function (e) {
+    var y = e.d.slice(0, 4), fe = !!e.fn || e.acts.some(function (x) { return x[1] === "F"; });
+    var o = yrs[y] = yrs[y] || { n: 0, f: 0 }; o.n++; if (fe) o.f++;
+    mon[+e.d.slice(5, 7) - 1]++;
+    var lc = String(e.loc || "").trim(); if (lc) { var z = zaal[lc + "|" + e.city] = zaal[lc + "|" + e.city] || { n: 0, a: y, b: y, l: lc, c: e.city }; z.n++; if (y < z.a) z.a = y; if (y > z.b) z.b = y; }
+    var had = {}; e.acts.forEach(function (x) { var nm = String(x[0] || "").trim(), k = normA(nm); if (!nm || !k || had[k]) return; had[k] = 1;
+      var b = band[k] = band[k] || { n: 0, a: e.d, b: e.d, nm: nice(nm) }; b.n++; if (e.d < b.a) b.a = e.d; if (e.d > b.b) b.b = e.d; });
+  });
+  var ys = Object.keys(yrs).sort(), y0 = +ys[0], y1 = +ys[ys.length - 1], all = [];
+  for (var y = y0; y <= y1; y++) all.push(String(y));   /* jaren zonder concerten ook tonen (lege plek) */
+  var maxY = Math.max.apply(null, all.map(function (k) { return (yrs[k] || {}).n || 0; })), every = all.length > 30 ? 10 : all.length > 12 ? 5 : 1;
+  var bars = function (items, max, lab) { return '<div class="hbars">' + items.map(function (it) {
+      var h = it.v ? Math.max(3, Math.round(it.v / max * 100)) : 0;
+      return '<button class="hb" data-hbar="' + esc(it.tip) + '" aria-label="' + esc(it.tip) + '"><i style="height:' + h + '%"></i><span>' + (lab(it) || "") + "</span></button>"; }).join("") + "</div>"; };
+  var peakY = all.filter(function (k) { return (yrs[k] || {}).n === maxY; })[0];
+  var html = '<div class="hl" style="margin-top:16px">Concerten per jaar</div><div class="hcap">Meeste in ' + peakY + ": " + maxY + " · tik op een balk</div>" +
+    bars(all.map(function (k) { var o = yrs[k] || { n: 0, f: 0 }; return { v: o.n, tip: k + ": " + o.n + (o.n === 1 ? " concert" : " concerten") + (o.f ? ", waarvan " + o.f + " festivaldag" + (o.f === 1 ? "" : "en") : ""), k: k }; }),
+      maxY, function (it) { return (+it.k % every === 0 || all.length <= 12) ? (all.length > 12 ? "'" + it.k.slice(2) : it.k) : ""; }) + '<div class="hread" data-hread></div>';
+  var maxM = Math.max.apply(null, mon), MN = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
+  html += '<div class="hl" style="margin-top:20px">Per maand</div><div class="hcap">Drukste maand: ' + MONL[mon.indexOf(maxM)] + "</div>" +
+    bars(mon.map(function (v, i) { return { v: v, tip: MONL[i] + ": " + v + (v === 1 ? " concert" : " concerten"), k: MN[i] }; }), maxM, function (it) { return it.k; }) + '<div class="hread" data-hread></div>';
+  var zl = Object.keys(zaal).map(function (k) { return zaal[k]; }).sort(function (a, b) { return b.n - a.n || a.l.localeCompare(b.l, "nl"); }).slice(0, 10), zmax = zl.length ? zl[0].n : 1;
+  html += '<div class="hl" style="margin-top:20px">Meest bezochte zalen</div>' + zl.map(function (z) {
+    return '<div class="hrow"><div class="hrt"><b>' + esc(z.l) + '</b><span>' + esc(z.c) + " · " + (z.a === z.b ? z.a : z.a + "–" + z.b) + '</span></div><div class="hrb"><i style="width:' + Math.round(z.n / zmax * 100) + '%"></i></div><em>' + z.n + "×</em></div>"; }).join("");
+  var dy = function (d) { return parse(d).getFullYear(); };
+  var tr = Object.keys(band).map(function (k) { return band[k]; }).filter(function (b) { return b.n >= 2 && dy(b.b) > dy(b.a); })
+    .sort(function (a, b) { return (dy(b.b) - dy(b.a)) - (dy(a.b) - dy(a.a)) || b.n - a.n; }).slice(0, 10);
+  if (tr.length) html += '<div class="hl" style="margin-top:20px">Trouwste bands</div><div class="hcap">Over de langste periode gezien</div>' + tr.map(function (b) {
+    var span = dy(b.b) - dy(b.a);
+    return '<button class="hrow band" data-band="' + esc(b.nm) + '"><div class="hrt"><b>' + esc(b.nm) + '</b><span>' + dy(b.a) + "–" + dy(b.b) + " · " + span + (span === 1 ? " jaar" : " jaar") + '</span></div><em>' + b.n + "×</em></button>"; }).join("");
+  return html;
+}
 function renderArchive() {
   var all = histEvenings(); if (!st.hyear) st.hyear = "";
-  if (["lijst", "art", "fest", "kaart", "wereld"].indexOf(st.aview) < 0) st.aview = "lijst";
+  if (["lijst", "art", "fest", "kaart", "wereld", "cijfers"].indexOf(st.aview) < 0) st.aview = "lijst";
   var years = {}; all.forEach(function (e) { years[e.d.slice(0, 4)] = (years[e.d.slice(0, 4)] || 0) + 1; });
   var ys = Object.keys(years).sort().reverse();
   /* jaren in blokken: dit jaar los, dan vorig jaar t/m 2010, dan 2009 en eerder; een blok opent de losse jaren */
@@ -1640,7 +1686,7 @@ function renderArchive() {
   if (st.hyear && !isRange && !years[st.hyear]) st.hyear = "";
   var inRange = function (y, r) { var p = r.split("-"); return y >= p[0] && y <= p[1]; };
   var list = !st.hyear ? all : isRange ? all.filter(function (e) { return inRange(e.d.slice(0, 4), st.hyear); }) : all.filter(function (e) { return e.d.slice(0, 4) === st.hyear; });
-  var tabs = '<div class="seg">' + [["lijst", "Concerten"], ["art", "Artiesten"], ["fest", "Festivals"], ["kaart", "Kaart"]].map(function (o) {
+  var tabs = '<div class="seg">' + [["lijst", "Concerten"], ["art", "Artiesten"], ["fest", "Festivals"], ["kaart", "Kaart"], ["cijfers", "Cijfers"]].map(function (o) {
     return '<button data-aview="' + o[0] + '" aria-pressed="' + (st.aview === o[0] || (o[0] === "kaart" && st.aview === "wereld")) + '">' + o[1] + "</button>"; }).join("") + "</div>";
   var openB = blocks.filter(function (b) { var r = b[0] + "-" + b[1]; return st.hyear === r || (st.hyear && !isRange && inRange(st.hyear, r)); })[0];
   var top = (years[cy] ? [[cy, cy]] : []).concat([["", "Alle jaren"]]).concat(blocks.map(function (b) { return [b[0] + "-" + b[1], (b[0] === b[1] ? b[0] : b[1] + "–" + b[0]) + (openB === b ? " ▴" : " ▾")]; }));
@@ -1656,6 +1702,7 @@ function renderArchive() {
   var foot = HIST && HIST.ev ? '<div class="note">Je eigen lijst: ' + HIST.rows + " regels, " + HIST.ev.length + " avonden en festivaldagen (ingelezen " + HIST.at.slice(0, 10) + '). <label class="lnk" style="display:inline">Opnieuw inlezen' + imp + '</label> · <button class="lnk" data-hclear style="display:inline">Wissen</button></div>'
     : '<div class="note">Heb je een eigen lijst van eerdere concerten (Excel of CSV met artiest, H/V/F, locatie, plaats, datum, land)? <label class="lnk" style="display:inline">Lees hem hier in' + imp + "</label>; daarna staat hij op al je gekoppelde apparaten.</div>";
   if (!all.length) return head + '<div class="empty">Concerten waarvoor je een kaartje had, komen hier na afloop vanzelf.</div>' + foot;
+  if (st.aview === "cijfers") return head + histCharts(list) + foot;
   if (st.aview === "kaart" || st.aview === "wereld") {
     var per = {}, abroad = {}, akc = {};
     list.forEach(function (e) { var c = COORD[e.city] || XCOORD[e.city]; if (c) { COORD[e.city] = c; per[e.city] = (per[e.city] || 0) + 1; } else { var ak = e.city + flag(e.cc); akc[ak] = e.city; abroad[ak] = (abroad[ak] || 0) + 1; } });
@@ -2066,6 +2113,9 @@ $("main").addEventListener("click", function (e) {
   if (t.closest("[data-hx]")) { var hx = t.closest("[data-hx]").getAttribute("data-hx"); st.hx = st.hx || {}; st.hx[hx] = !st.hx[hx]; var y0 = scrollY; render(); window.scrollTo(0, y0); return; }
   if (t.closest("[data-hdate]")) { openHDate(); return; }
   if (t.closest("[data-ypost]")) { openYearPoster(); return; }
+  var hb_ = t.closest("[data-hbar]");
+  if (hb_) { var bx = hb_.parentNode; [].forEach.call(bx.querySelectorAll(".hb.on"), function (x) { x.classList.remove("on"); }); hb_.classList.add("on");
+    var rd = bx.nextElementSibling; if (rd && rd.hasAttribute("data-hread")) rd.textContent = hb_.getAttribute("data-hbar"); return; }
   if (t.closest("[data-yfirst]")) { st.yfirst = true; var yy_ = scrollY; render(); window.scrollTo(0, yy_); return; }
   if (t.closest("[data-hdate-x]")) { st.hfrom = st.hto = ""; render(); return; }
   if (t.closest("[data-hyear]")) { st.hfrom = st.hto = ""; st.yfirst = false; st.hyear = t.closest("[data-hyear]").getAttribute("data-hyear"); st.hlimit = 300; render(); window.scrollTo(0, 0); return; }

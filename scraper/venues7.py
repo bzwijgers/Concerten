@@ -167,10 +167,12 @@ def vanpolanen():
             addr = addr if isinstance(addr, str) else (addr.get("addressLocality") or "")
             if OWN_VENUES.search(place): continue          # staat al bij die zaal zelf
             name = clean(_h.unescape(o.get("name") or ""))
+            sold = bool(re.match(r"(?i)^\W*(?:u\s?i\s?t\s?v\s?e\s?r\s?k\s?o\s?c\s?h\s?t|sold\s*out)\b", name))   # 'U I T V E R K O C H T: Danielle Nicole Band: ...'
+            name = re.sub(r"(?i)^\W*(?:u\s?i\s?t\s?v\s?e\s?r\s?k\s?o\s?c\s?h\s?t|sold\s*out)\W*", "", name) or name
             name = re.sub(r'^["“][^"”]+["”]\s*', "", name)            # reeksnaam vooraan ('"HALL OF FAME" ...')
             name = re.split(r"\s+[\"“”']|\s*:\s", name)[0].strip(" -–:") or name   # ondertitel weg
             city = (re.search(r"\d{4}\s?[A-Z]{2}\s+(.+)$", addr) or [None, ""])[1].strip()
-            e = ev("vanpolanen", d, name, u, t, "Van Polanen presenteert", sold_from_offers(o))
+            e = ev("vanpolanen", d, name, u, t, "Van Polanen presenteert", sold or sold_from_offers(o))
             img = o.get("image"); img = img.get("url") if isinstance(img, dict) else img
             if isinstance(img, str) and img.startswith("http"): e["img"] = img
             if d: out.append(e)

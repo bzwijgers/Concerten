@@ -1715,7 +1715,6 @@ function mapSvg(per, opt) {
     if (!pick) return; boxes.push(pick);
     svg += '<text class="ml' + (ci < 5 ? " big" : "") + '" style="font-size:' + (10 * k).toFixed(2) + 'px" x="' + pick[5].toFixed(2) + '" y="' + pick[6].toFixed(2) + '" text-anchor="' + pick[4] + '">' + esc(ct) + "</text>";
   });
-  if (z < 2) svg += '<text class="cl" style="font-size:' + 11 * k + 'px" x="' + ovX(3.2) + '" y="' + ovY(53.3) + '">NEDERLAND</text><text class="cl" style="font-size:' + 11 * k + 'px" x="' + ovX(4.5) + '" y="' + ovY(49.85) + '">BELGIË</text><text class="cl" style="font-size:' + 11 * k + 'px" text-anchor="end" x="' + ovX(7.25) + '" y="' + ovY(53.5) + '">DUITSLAND</text>';
   svg += "</svg>";
   return svg;
 }

@@ -206,7 +206,8 @@ def main():
     # geannuleerd / verplaatst (op de oude datum) eruit; 'nieuwe datum' uit de titel halen
     import re as _re
     gone = _re.compile(r"^\s*(cancelled|canceled|geannuleerd|afgelast|verplaatst|postponed)\s*[:\-–!]"
-                       r"|[\[(]\s*(cancelled|canceled|geannuleerd|afgelast|verplaatst|postponed)\s*[\])]", _re.I)
+                       r"|[\[(]\s*(cancelled|canceled|geannuleerd|afgelast|verplaatst|postponed)\s*[\])]"
+                       r"|[|\-–]\s*(cancelled|canceled|geannuleerd|afgelast|annul[ée]|postponed)\s*$", _re.I)   # 'My First Time | geannuleerd'
     newdate = _re.compile(r"^\s*nieuwe datum\s*[:\-–]\s*|\s*[\[(]\s*nieuwe datum\s*[\])]", _re.I)
     for key in fresh:
         before = len(fresh[key])

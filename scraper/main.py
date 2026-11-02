@@ -263,10 +263,11 @@ def main():
     # Rotown en BIRD organiseren ook in LantarenVenster en Maassilo: dan blijft hun versie, de app toont de echte zaal)
     import unicodedata as _ud, difflib as _dl
     ascii_ = lambda t: _ud.normalize("NFKD", t).encode("ascii", "ignore").decode()
-    tnorm = lambda t: _re.sub(r"[^a-z0-9]+", "", ascii_(t).lower().split(" + ")[0].split(":")[0].split(" (")[0])
+    tnorm = lambda t: _re.sub(r"[^a-z0-9]+", "", _re.split(r"\s+[-–—]\s+", ascii_(t).lower().split(" + ")[0].split(":")[0].split(" (")[0])[0])
     fnorm = lambda t: _re.sub(r"[^a-z0-9]+", "", ascii_(t).lower())
     for loser, leader in (("bird", "rotown"), ("annabel", "rotown"), ("helling", "tivoli"), ("v11", "rotown"), ("v11", "bird"),
-                          ("lantaren", "rotown"), ("lantaren", "bird"), ("maassilo", "rotown"), ("maassilo", "bird")):
+                          ("lantaren", "rotown"), ("lantaren", "bird"), ("maassilo", "rotown"), ("maassilo", "bird"),
+                          ("paradiso", "bitterzoet"), ("paradiso", "cinetol"), ("annabel", "bird")):
         if loser not in fresh: continue
         lead = fresh.get(leader) or [e for e in events.values() if e["v"] == leader]
         have, room, fulls = {}, {}, {}
@@ -315,6 +316,37 @@ def main():
             status["ticketmaster"] = {"ok": False, "error": str(ex)[:200], "at": status.get("ticketmaster", {}).get("at"),
                                       "count": status.get("ticketmaster", {}).get("count")}
             print("ticketmaster: FAILED", ex)
+    # festival dat ook bij een zaal op de agenda staat ('Roadburn 2027' bij 013, 'Le Guess Who? 2026' bij Tivoli/EKKO):
+    # alleen het festival houden (dat heeft de line-up); binnen vier dagen van een festivaldag
+    from datetime import date as _date
+    fests = [(e["d"], fnorm(e["n"])) for k in fresh if k.startswith("fest_") for e in fresh[k]] +             [(e["d"], fnorm(e["n"])) for e in events.values() if e["v"].startswith("fest_") and e["v"] not in fresh]
+    def fest_dup(e):
+        f = fnorm(e["n"])
+        return len(f) >= 6 and any(f == fn and abs((_date.fromisoformat(e["d"]) - _date.fromisoformat(fd)).days) <= 4 for fd, fn in fests)
+    for key in list(fresh):
+        if key.startswith("fest_"): continue
+        before = len(fresh[key])
+        fresh[key] = [e for e in fresh[key] if not fest_dup(e)]
+        if len(fresh[key]) < before: print(f"{key}: {before - len(fresh[key])} festival dubbel weggelaten")
+    # één evenement in losse blokken ('To the Moon and Back | Typhoon | Blok 4'): één regel, de artiesten als line-up
+    for key in fresh:
+        groups = {}
+        for e in fresh[key]:
+            parts = [x.strip() for x in e["n"].split("|")]
+            if len(parts) >= 2 and len(parts[0]) >= 4: groups.setdefault((e["d"], parts[0].lower()), []).append((e, parts))
+        drop = set()
+        for (d_, _), lst in groups.items():
+            if len(lst) < 4: continue
+            first_, acts = lst[0][0], []
+            for e, parts in lst:
+                a_ = parts[1]
+                if a_ and not _re.match(r"(?i)^blok\s*\d", a_) and a_ not in acts: acts.append(a_)
+                if e is not first_: drop.add(id(e))
+            first_["n"] = lst[0][1][0]; first_["la"] = acts
+            first_["t"] = min((e.get("t") or "99:99") for e, _ in lst).replace("99:99", "")
+        if drop:
+            fresh[key] = [e for e in fresh[key] if id(e) not in drop]
+            print(f"{key}: {len(drop)} blokken samengevoegd")
     # eenmalig (2026-10-10): de uitbreiding met 28 zalen en de datumcorrecties zijn geen 'nieuwe' concerten
     if "baseline-2026-10-10" not in store.get("migrations", []):
         n0 = 0

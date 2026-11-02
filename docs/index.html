@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Concerten">
 <title>Barry's concert agenda</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&display=swap">
 <style>
 /* Voorstel nieuw uiterlijk, versie 2: donker zoals de startfoto, goud van de lampjes als accent */
 :root{--bg:#0d0c12;--bg2:#15131c;--card:#1c1a25;--card2:#24212f;--line:#2e2a3a;--fg:#f3efe6;--muted:#a49db3;--faint:#7a7389;
@@ -1326,12 +1326,11 @@ function yearSummary(list, y, all, range) {   /* range: blok van jaren, dan zond
 var YPL = null;
 function yearPoster(list, label) {
   var W = 1080, H = 1350, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
-  var g = cv.getContext("2d"), FD = '"Bricolage Grotesque", system-ui, sans-serif', FB = '"Instrument Sans", system-ui, sans-serif';
-  var FG = "#f3efe6", MUT = "#a49db3", BG = "#0d0c12";
-  /* kleur per jaar: elk jaar een eigen sfeer */
-  var PAL = [["#f2b84b", "242,184,75", "180,90,60"], ["#ff7a59", "255,122,89", "150,40,90"], ["#7fd1c7", "127,209,199", "40,90,150"], ["#c9a0ff", "201,160,255", "90,40,150"],
-    ["#ffd25e", "255,210,94", "200,70,40"], ["#8fb2ff", "143,178,255", "40,60,150"], ["#ff8fb1", "255,143,177", "120,40,110"]];
-  var yr = parseInt(label, 10) || 0, P = PAL[yr % PAL.length], GOLD = P[0];
+  var g = cv.getContext("2d"), FA = 'Anton, "Bricolage Grotesque", Impact, sans-serif', FB = '"Instrument Sans", system-ui, sans-serif';
+  /* zeefdruk: papier en twee inktkleuren, elk jaar een andere combinatie */
+  var PAL = [["#f1e7d3", "#e2452b", "#1d2a4d"], ["#efe3cf", "#0f7c6f", "#2b1d3a"], ["#f3e9d6", "#f2a20c", "#262626"], ["#ece4d4", "#c2185b", "#1b2f5e"],
+    ["#f0e6d0", "#3b6fd6", "#3a1f14"], ["#f2e8d5", "#d84a1b", "#163a2b"], ["#efe4cf", "#7b3fb5", "#1f1f2e"]];
+  var yr = parseInt(label, 10) || 0, P = PAL[yr % PAL.length], PAPER = P[0], INK1 = P[1], INK2 = P[2];
   var isFest = function (e) { return !!e.fn || e.acts.some(function (x) { return x[1] === "F"; }); };
   /* cijfers */
   var zv = {}, st_ = {}, ld = {}, fests = {};
@@ -1339,38 +1338,66 @@ function yearPoster(list, label) {
     var lc = String(e.loc || "").trim(); if (lc) zv[lc] = 1; if (e.city) st_[e.city] = 1; ld[e.cc || "NL"] = 1;
     if (isFest(e)) fests[(festLabel(e) || e.fn || e.loc + " " + e.d.slice(0, 4)).toLowerCase()] = 1;
   });
-  /* achtergrond */
-  g.fillStyle = BG; g.fillRect(0, 0, W, H);
-  var rg = g.createRadialGradient(W / 2, -140, 40, W / 2, -140, 1150); rg.addColorStop(0, "rgba(" + P[1] + ",.42)"); rg.addColorStop(.5, "rgba(" + P[2] + ",.14)"); rg.addColorStop(1, "rgba(13,12,18,0)");
-  g.fillStyle = rg; g.fillRect(0, 0, W, H);
-  g.save(); g.globalCompositeOperation = "lighter";
-  [[-.62, .05, 0], [-.3, .08, 1], [-.08, .05, 0], [.12, .07, 1], [.36, .06, 0], [.6, .05, 1]].forEach(function (b) { g.save(); g.translate(b[2] ? W * .22 : W * .78, -40); g.rotate(b[0]);
-    var lg_ = g.createLinearGradient(0, 0, 0, 1300); lg_.addColorStop(0, "rgba(" + P[1] + "," + b[1] * 1.6 + ")"); lg_.addColorStop(1, "rgba(" + P[1] + ",0)");
-    g.fillStyle = lg_; g.beginPath(); g.moveTo(-14, 0); g.lineTo(14, 0); g.lineTo(190, 1300); g.lineTo(-190, 1300); g.closePath(); g.fill(); g.restore(); });
-  g.restore();
-  for (var i = 0; i < 3200; i++) { g.fillStyle = "rgba(255,255,255," + (Math.random() * .05) + ")"; g.fillRect(Math.random() * W, Math.random() * H, 1.6, 1.6); }
-  /* publiek met handen in de lucht, onderaan */
-  var crowd = function () {
-    var gl = g.createRadialGradient(W / 2, H - 120, 20, W / 2, H - 120, 700); gl.addColorStop(0, "rgba(" + P[1] + ",.55)"); gl.addColorStop(.5, "rgba(" + P[2] + ",.18)"); gl.addColorStop(1, "rgba(13,12,18,0)");
-    g.fillStyle = gl; g.fillRect(0, H - 700, W, 700);   /* podiumlicht achter het publiek */
-    var base = H - 10; g.fillStyle = "#06050a";
-    for (var x = -40; x < W + 50; x += 44 + Math.random() * 22) { var hgt = 50 + Math.random() * 70, r = 26 + Math.random() * 8;
-      g.beginPath(); g.arc(x, base - hgt, r, 0, 7); g.fill(); g.fillRect(x - r * 1.25, base - hgt + r * .6, r * 2.5, hgt + 40);
-      if (Math.random() < .32) { var s = Math.random() < .5 ? -1 : 1, ax = x + s * (r + 6), top_ = base - hgt - 100 - Math.random() * 90; g.lineWidth = 16; g.lineCap = "round"; g.strokeStyle = "#06050a";
-        g.beginPath(); g.moveTo(x + s * r * .8, base - hgt + r); g.lineTo(ax + s * 14, top_); g.stroke(); g.beginPath(); g.arc(ax + s * 14, top_ - 8, 13, 0, 7); g.fill();
-        if (Math.random() < .3) { g.lineWidth = 7; g.beginPath(); g.moveTo(ax + s * 14 - 11, top_ - 28); g.lineTo(ax + s * 14 - 11, top_ + 2); g.moveTo(ax + s * 14 + 11, top_ - 28); g.lineTo(ax + s * 14 + 11, top_ + 2); g.stroke(); } } }
-    var fade = g.createLinearGradient(0, H - 260, 0, H); fade.addColorStop(0, "rgba(6,5,10,0)"); fade.addColorStop(1, "rgba(6,5,10,.9)"); g.fillStyle = fade; g.fillRect(0, H - 260, W, 260); };
-  g.textAlign = "center"; g.textBaseline = "alphabetic";
   var fit = function (txt, font, size, maxW) { do { g.font = font.replace("#", size); if (g.measureText(txt).width <= maxW) break; size -= 3; } while (size > 16); return size; };
   var spaced = function (txt, x, y, sp) { var w = 0, ch = txt.split(""); ch.forEach(function (c) { w += g.measureText(c).width + sp; }); w -= sp;
-    var cx = x - w / 2; g.textAlign = "left"; ch.forEach(function (c) { g.fillText(c, cx, y); cx += g.measureText(c).width + sp; }); g.textAlign = "center"; };
-  var box = function (x, y, w, h, r) { g.beginPath(); if (g.roundRect) g.roundRect(x, y, w, h, r); else g.rect(x, y, w, h); };
-  /* vlaggetjes (getekend; emoji als het land niet in de lijst staat) */
+    var cx = x - w / 2; g.textAlign = "left"; ch.forEach(function (c) { g.fillText(c, cx, y); cx += g.measureText(c).width + sp; }); g.textAlign = "center"; return w; };
+  /* papier */
+  g.fillStyle = PAPER; g.fillRect(0, 0, W, H);
+  for (var i = 0; i < 9000; i++) { g.fillStyle = Math.random() < .5 ? "rgba(90,70,40,.05)" : "rgba(255,255,255,.18)"; g.fillRect(Math.random() * W, Math.random() * H, 2, 2); }
+  var CX = W / 2, CY = 700;
+  /* stralen vanuit de zon */
+  g.save(); g.translate(CX, CY); g.globalAlpha = .22; g.fillStyle = INK1;
+  for (var r = 0; r < 36; r += 2) { g.beginPath(); g.moveTo(0, 0); g.arc(0, 0, 1100, r * Math.PI / 18, (r + 1) * Math.PI / 18); g.closePath(); g.fill(); }
+  g.restore();
+  /* zon van rasterpunten: vol in het midden, naar de rand toe grotere gaten */
+  var R = 330; g.fillStyle = INK1; g.beginPath(); g.arc(CX, CY, R, 0, 7); g.fill();
+  g.save(); g.beginPath(); g.arc(CX, CY, R, 0, 7); g.clip(); g.fillStyle = PAPER;
+  for (var hy = CY - R; hy < CY + R; hy += 16) for (var hx = CX - R; hx < CX + R; hx += 16) {
+    var off = (Math.round((hy - CY) / 16) % 2) * 8, t = Math.max(0, ((hx + off - CX) * -.5 + (hy - CY) * .9) / R);
+    var dr = t * 7.2; if (dr > .6) { g.beginPath(); g.arc(hx + off, hy, dr, 0, 7); g.fill(); } }
+  g.restore();
+  /* elektrische gitaar (eigen tekening), schuin voor de zon; apart getekend zodat de uitsparing echt leeg is */
+  var gc = document.createElement("canvas"); gc.width = 760; gc.height = 1180; var q = gc.getContext("2d");
+  q.translate(380, 760);
+  q.fillStyle = INK2;
+  q.beginPath(); q.ellipse(0, 120, 255, 230, 0, 0, 7); q.fill();                       /* onderkant body */
+  q.beginPath(); q.ellipse(0, -110, 195, 175, 0, 0, 7); q.fill();                      /* bovenkant body */
+  q.beginPath(); q.moveTo(-200, -60); q.quadraticCurveTo(-150, 10, -240, 80); q.lineTo(240, 80); q.quadraticCurveTo(150, 10, 200, -60); q.closePath(); q.fill();
+  q.globalCompositeOperation = "destination-out";
+  q.beginPath(); q.ellipse(150, -225, 78, 92, -.35, 0, 7); q.fill();                   /* uitsparing */
+  q.globalCompositeOperation = "source-over";
+  q.fillStyle = INK2; q.fillRect(-34, -720, 68, 560);                                 /* hals */
+  q.beginPath(); q.moveTo(-40, -715); q.lineTo(-58, -880); q.quadraticCurveTo(0, -915, 58, -880); q.lineTo(40, -715); q.closePath(); q.fill();   /* kop */
+  q.fillStyle = PAPER; for (var f = 0; f < 15; f++) q.fillRect(-34, -700 + f * 36 + f * f * .6, 68, 3);   /* fretten */
+  for (var tn = 0; tn < 3; tn++) { [-1, 1].forEach(function (s) { q.beginPath(); q.arc(s * 70, -760 - tn * 40, 11, 0, 7); q.fill(); q.fillRect(s > 0 ? 50 : -70, -763 - tn * 40, 20, 6); }); }
+  q.fillStyle = INK1; q.beginPath(); q.moveTo(40, -120); q.quadraticCurveTo(175, -40, 150, 110); q.quadraticCurveTo(90, 190, 30, 140); q.closePath(); q.fill();   /* slagplaat */
+  q.fillStyle = PAPER;
+  [[-60, -70], [-60, 30]].forEach(function (p) { q.fillRect(-82, p[1], 164, 52); q.fillStyle = INK2; for (var pp = 0; pp < 6; pp++) { q.beginPath(); q.arc(-62 + pp * 25, p[1] + 26, 6, 0, 7); q.fill(); } q.fillStyle = PAPER; });
+  q.fillRect(-90, 130, 180, 14); q.fillRect(-70, 185, 140, 22);                       /* brug en staartstuk */
+  q.fillStyle = INK1; [[150, 180], [205, 140], [140, 255], [200, 225]].forEach(function (k) { q.beginPath(); q.arc(k[0], k[1], 19, 0, 7); q.fill(); });   /* knoppen */
+  q.strokeStyle = PAPER; q.lineWidth = 2.2; for (var sx = 0; sx < 6; sx++) { q.beginPath(); q.moveTo(-26 + sx * 10.4, 195); q.lineTo(-22 + sx * 8.8, -715); q.stroke(); }   /* snaren */
+  var sh = document.createElement("canvas"); sh.width = gc.width; sh.height = gc.height; var sq = sh.getContext("2d");   /* schaduw in de andere inkt */
+  sq.drawImage(gc, 0, 0); sq.globalCompositeOperation = "source-in"; sq.fillStyle = INK1; sq.fillRect(0, 0, sh.width, sh.height);
+  g.save(); g.translate(CX + 40, CY + 135); g.rotate(.5); g.scale(.82, .82); g.drawImage(sh, -380 + 18, -760 + 14); g.drawImage(gc, -380, -760); g.restore();   /* kop rechtsboven, naast de titel */
+  /* titel bovenaan */
+  g.textAlign = "center"; g.textBaseline = "alphabetic";
+  g.fillStyle = INK2; g.font = "700 34px " + FB; spaced("BARRY'S", CX, 92, 14);
+  var ts = fit("CONCERTJAAR", "400 #px " + FA, 168, W - 90);
+  g.font = "400 " + ts + "px " + FA; g.fillStyle = INK1; g.fillText("CONCERTJAAR", CX + 6, 90 + ts * .98 + 6); g.fillStyle = INK2; g.fillText("CONCERTJAAR", CX, 90 + ts * .98);
+  var ys = fit(label, "400 #px " + FA, label.length > 5 ? 150 : 210, W - 120), yy = 90 + ts * .98 + ys * .95 + 10;
+  g.font = "400 " + ys + "px " + FA; g.lineWidth = 10; g.strokeStyle = PAPER; g.strokeText(label, CX, yy); g.fillStyle = INK1; g.fillText(label, CX, yy);
+  /* onderband: de cijfers klein, zoals de informatieregel op een poster */
+  var nF = Object.keys(fests).length, cc = Object.keys(ld).sort(function (a, b) { return a === "NL" ? -1 : b === "NL" ? 1 : a < b ? -1 : 1; });
+  var bandY = H - 150; g.fillStyle = INK2; g.fillRect(0, bandY, W, 150);
+  g.fillStyle = INK1; g.fillRect(0, bandY - 10, W, 10);
+  var parts = [list.length + (list.length === 1 ? " CONCERT" : " CONCERTEN")]; if (nF) parts.push(nF + (nF === 1 ? " FESTIVAL" : " FESTIVALS"));
+  parts.push(Object.keys(zv).length + " ZALEN"); parts.push(Object.keys(st_).length + (Object.keys(st_).length === 1 ? " STAD" : " STEDEN")); parts.push(cc.length + (cc.length === 1 ? " LAND" : " LANDEN"));
+  var line = parts.join("  ·  "), ls = fit(line, "400 #px " + FA, 44, W - 100); g.fillStyle = PAPER; g.font = "400 " + ls + "px " + FA; g.fillText(line, CX, bandY + 62);
+  /* vlaggen */
   var FL = { NL: ["h", "#AE1C28", "#fff", "#21468B"], BE: ["v", "#000", "#FDDA24", "#EF3340"], DE: ["h", "#000", "#DD0000", "#FFCE00"], FR: ["v", "#0055A4", "#fff", "#EF4135"],
     IT: ["v", "#009246", "#fff", "#CE2B37"], LU: ["h", "#ED2939", "#fff", "#00A1DE"], AT: ["h", "#ED2939", "#fff", "#ED2939"], IE: ["v", "#169B62", "#fff", "#FF883E"],
-    ES: ["h", "#AA151B", "#F1BF00", "#AA151B"], HU: ["h", "#CE2939", "#fff", "#477050"], RU: ["h", "#fff", "#0039A6", "#D52B1E"], EE: ["h", "#0072CE", "#000", "#fff"] };
-  var cross = function (x, y, w, h, bg, c1, c2) {   /* scandinavisch kruis */
-    g.fillStyle = bg; g.fillRect(x, y, w, h); var cx = x + w * .36, t = h * .28;
+    ES: ["h", "#AA151B", "#F1BF00", "#AA151B"], HU: ["h", "#CE2939", "#fff", "#477050"], EE: ["h", "#0072CE", "#000", "#fff"] };
+  var cross = function (x, y, w, h, bg, c1, c2) { g.fillStyle = bg; g.fillRect(x, y, w, h); var cx = x + w * .36, t = h * .28;
     g.fillStyle = c1; g.fillRect(cx - t / 2, y, t, h); g.fillRect(x, y + h / 2 - t / 2, w, t);
     if (c2) { var t2 = t * .5; g.fillStyle = c2; g.fillRect(cx - t2 / 2, y, t2, h); g.fillRect(x, y + h / 2 - t2 / 2, w, t2); } };
   var SPECIAL = {
@@ -1394,36 +1421,23 @@ function yearPoster(list, label) {
       g.fillStyle = "#FFE900"; g.beginPath(); g.arc(x + w * .4, y + h / 2, h * .22, 0, 7); g.fill(); },
     JP: function (x, y, w, h) { g.fillStyle = "#fff"; g.fillRect(x, y, w, h); g.fillStyle = "#BC002D"; g.beginPath(); g.arc(x + w / 2, y + h / 2, h * .3, 0, 7); g.fill(); }
   };
-  var flag = function (cc, x, y, w, h) { var f = FL[cc];
-    if (SPECIAL[cc]) SPECIAL[cc](x, y, w, h);
+  var flag = function (c, x, y, w, h) { var f = FL[c];
+    if (SPECIAL[c]) SPECIAL[c](x, y, w, h);
     else if (f) { for (var j = 0; j < 3; j++) { g.fillStyle = f[j + 1]; if (f[0] === "h") g.fillRect(x, y + j * h / 3, w, h / 3 + .5); else g.fillRect(x + j * w / 3, y, w / 3 + .5, h); } }
-    else { g.fillStyle = "#2a2733"; g.fillRect(x, y, w, h); g.fillStyle = FG; g.font = "700 " + Math.round(h * .55) + "px " + FB; g.fillText(cc, x + w / 2, y + h * .72); }
-    g.strokeStyle = "rgba(255,255,255,.35)"; g.lineWidth = 1.5; g.strokeRect(x, y, w, h); };
-  /* kop en groot jaartal */
-  var big = fit(label, "800 #px " + FD, label.length > 5 ? 200 : 340, W - 110), y0 = 240;
-  g.fillStyle = GOLD; g.font = "700 32px " + FB; spaced("BARRY'S CONCERTJAAR", W / 2, y0, 8);
-  g.save(); g.shadowColor = "rgba(" + P[1] + ",.6)"; g.shadowBlur = 50; g.fillStyle = FG; g.font = "800 " + big + "px " + FD; g.fillText(label, W / 2, y0 + 30 + big * .9); g.restore();
-  var y = y0 + 30 + big * .9 + 60;
-  /* vier vakken; bij landen de vlaggen */
-  var nF = Object.keys(fests).length, cc = Object.keys(ld).sort(function (a, b) { return a === "NL" ? -1 : b === "NL" ? 1 : a < b ? -1 : 1; });
-  var tiles = [[list.length, list.length === 1 ? "concert" : "concerten", nF ? "waarvan " + nF + " festival" + (nF === 1 ? "" : "s") : ""],
-    [Object.keys(zv).length, "zalen", ""], [Object.keys(st_).length, Object.keys(st_).length === 1 ? "stad" : "steden", ""], [cc.length, cc.length === 1 ? "land" : "landen", "F"]];
-  var tw = (W - 120 - 3 * 18) / 4, th = cc.length > 5 ? 178 : 160;   /* meer dan 5 landen: vlaggen op twee rijen */
-  tiles.forEach(function (t, i) { var x = 60 + i * (tw + 18);
-    g.fillStyle = "rgba(255,255,255,.07)"; g.strokeStyle = "rgba(" + P[1] + ",.35)"; g.lineWidth = 2; box(x, y, tw, th, 20); g.fill(); g.stroke();
-    g.fillStyle = FG; g.font = "800 66px " + FD; g.fillText(String(t[0]), x + tw / 2, y + 74);
-    g.fillStyle = MUT; g.font = "500 24px " + FB; g.fillText(t[1], x + tw / 2, y + 108);
-    if (t[2] === "F") { var n = Math.min(cc.length, 10), per = n > 5 ? Math.ceil(n / 2) : n, gap = 6, fw = Math.min(34, (tw - 20 - (per - 1) * gap) / per), fh = fw * .68;
-      cc.slice(0, n).forEach(function (c, j) { var row = Math.floor(j / per), inRow = row ? n - per : per, col = j % per, tot = inRow * fw + (inRow - 1) * gap;
-        flag(c, x + tw / 2 - tot / 2 + col * (fw + gap), y + 120 + row * (fh + 5), fw, fh); }); }
-    else if (t[2]) { g.fillStyle = GOLD; g.font = "600 19px " + FB; g.fillText(t[2], x + tw / 2, y + 138); } });
-  crowd();
-  return new Promise(function (ok) { cv.toBlob(function (b) { ok(b); }, "image/jpeg", .92); });
+    else { g.fillStyle = PAPER; g.fillRect(x, y, w, h); g.fillStyle = INK2; g.font = "700 " + Math.round(h * .6) + "px " + FB; g.textAlign = "center"; g.fillText(c, x + w / 2, y + h * .75); }
+    g.strokeStyle = "rgba(255,255,255,.5)"; g.lineWidth = 1.2; g.strokeRect(x, y, w, h); };
+  var n = Math.min(cc.length, 14), fw = 40, fh = 27, gap = 9, tot = n * fw + (n - 1) * gap, fx = CX - tot / 2;
+  cc.slice(0, n).forEach(function (c, j) { flag(c, fx + j * (fw + gap), bandY + 88, fw, fh); });
+  /* drukslijtage: hier en daar is de inkt weg */
+  g.fillStyle = PAPER; g.globalAlpha = .55;
+  for (var sp = 0; sp < 1400; sp++) { var sx_ = Math.random() * W, sy_ = Math.random() * H; g.fillRect(sx_, sy_, 1 + Math.random() * 2.5, 1 + Math.random() * 2.5); }
+  g.globalAlpha = 1;
+  return new Promise(function (ok) { cv.toBlob(function (b) { ok(b); }, "image/jpeg", .93); });
 }
 function openYearPoster() {
   if (!YPL) return; var y0 = YPL;
   var go = function () { yearPoster(y0.list, y0.label).then(function (b) { if (!b) return; PV = [{ k: "Jaarposter", u: URL.createObjectURL(b), name: "jaarposter-" + y0.label.replace(/[^0-9a-z–-]+/gi, "-") }]; openPoster(0); }); };
-  try { Promise.all([document.fonts.load('800 100px "Bricolage Grotesque"'), document.fonts.load('700 30px "Instrument Sans"'), document.fonts.load('500 24px "Instrument Sans"')]).then(go, go); } catch (e) { go(); }
+  try { Promise.all([document.fonts.load('400 100px Anton'), document.fonts.load('800 100px "Bricolage Grotesque"'), document.fonts.load('700 30px "Instrument Sans"'), document.fonts.load('500 24px "Instrument Sans"')]).then(go, go); } catch (e) { go(); }
 }
 function renderArchive() {
   var all = histEvenings(); if (!st.hyear) st.hyear = "";

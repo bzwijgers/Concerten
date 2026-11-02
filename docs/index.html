@@ -2323,6 +2323,9 @@ Promise.all([fetch("app.js", { cache: "no-cache" }).then(function (r) { return r
     if (cur) save("ca-lastnew", cur);
   })();
   render();
+  /* geopend vanuit de melding 'Nieuw van jouw bands' (Android) */
+  var bnHash = function () { if (location.hash === "#bandnews") { try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} if (bandNews().length) openBandNews(); } };
+  bnHash(); window.addEventListener("hashchange", bnHash);
   try { var _sy = +sessionStorage.getItem("ca-scroll"); sessionStorage.removeItem("ca-scroll"); if (_sy) setTimeout(function () { window.scrollTo(0, _sy); }, 60); } catch (e) {}
   var u = new Date(data.updated);
   try { localStorage.setItem("ca-updated", data.updated); } catch (e) {}

@@ -22,6 +22,12 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.Constraints
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
     private lateinit var web: WebView
@@ -33,6 +39,8 @@ class MainActivity : AppCompatActivity() {
         val r = pendingCam; pendingCam = null
         if (r != null) { if (ok) r.grant(arrayOf(PermissionRequest.RESOURCE_VIDEO_CAPTURE)) else r.deny() }
     }
+    // meldingen 'Nieuw van jouw bands' (Android 13+ vraagt eenmalig toestemming)
+    private val notifPerm = registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
     // back-up opslaan: de gebruiker kiest zelf waar (Downloads, Drive, ...)
     private val saveDoc = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
         val uri = r.data?.data; val txt = pendingSave; pendingSave = null
@@ -79,6 +87,20 @@ class MainActivity : AppCompatActivity() {
             }
             @JavascriptInterface fun shareText(text: String) {
                 runOnUiThread { startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text), "Delen")) }
+            }
+            // lijst met jouw bands (die je zag of met interesse) en wat je al gezien hebt; de achtergrondtaak kijkt elke 6 uur naar nieuwe concerten
+            @JavascriptInterface fun setWatch(json: String) {
+                getSharedPreferences("bandnews", MODE_PRIVATE).edit().putString("watch", json).apply()
+                runOnUiThread {
+                    if (android.os.Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED &&
+                        !getSharedPreferences("bandnews", MODE_PRIVATE).getBoolean("asked", false)) {
+                        getSharedPreferences("bandnews", MODE_PRIVATE).edit().putBoolean("asked", true).apply()
+                        notifPerm.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    }
+                }
+                val req = PeriodicWorkRequestBuilder<BandWorker>(6, TimeUnit.HOURS)
+                    .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()).build()
+                WorkManager.getInstance(this@MainActivity).enqueueUniquePeriodicWork("bandnews", ExistingPeriodicWorkPolicy.KEEP, req)
             }
             @JavascriptInterface fun saveFile(name: String, content: String) {
                 runOnUiThread {
@@ -130,7 +152,13 @@ class MainActivity : AppCompatActivity() {
                 if (web.canGoBack()) web.goBack() else finish()
             }
         })
-        if (savedInstanceState == null) web.loadUrl(START) else web.restoreState(savedInstanceState)
+        if (savedInstanceState == null) web.loadUrl(if (intent?.getStringExtra("open") == "bandnews") "$START#bandnews" else START) else web.restoreState(savedInstanceState)
+    }
+
+    // tik op de melding terwijl de app al open is: lijst 'Nieuw van jouw bands' tonen
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        if (intent.getStringExtra("open") == "bandnews") web.evaluateJavascript("location.hash='bandnews'", null)
     }
 
     private fun bars(show: Boolean) {

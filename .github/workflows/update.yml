@@ -1,8 +1,13 @@
 name: update
 on:
   schedule:
-    - cron: "0 4 * * *"   # 04:00 UTC = 05:00/06:00 Amsterdam; de tweede dekt zomer-/wintertijd
-    - cron: "0 5 * * *"
+    # niet op het hele uur: dan stelt GitHub geplande taken uren uit (nov 2026: 06:00 werd 12:00-13:30).
+    # Meerdere momenten rond 06:00 Amsterdam (zomer- en wintertijd); de eerste vanaf 06:00 draait, de rest stopt meteen.
+    - cron: "11 4 * * *"
+    - cron: "41 4 * * *"
+    - cron: "11 5 * * *"
+    - cron: "41 5 * * *"
+    - cron: "17 6 * * *"
   workflow_dispatch:
   push:
     paths: ["data/inbox/**"]

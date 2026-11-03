@@ -1,7 +1,9 @@
 {
-"_last": [],
+"_last": [
+"maassilo"
+],
 "ab": {
-"good": 239
+"good": 238
 },
 "acu": {
 "good": 14
@@ -25,7 +27,7 @@
 "good": 68
 },
 "bird": {
-"good": 37
+"good": 36
 },
 "bitterzoet": {
 "good": 5
@@ -61,7 +63,7 @@
 "good": 14
 },
 "cinetol": {
-"good": 51
+"good": 50
 },
 "concertgebouw": {
 "good": 3
@@ -76,7 +78,7 @@
 "good": 97
 },
 "doornroosje": {
-"good": 191
+"good": 190
 },
 "druckluft": {
 "good": 28
@@ -88,7 +90,7 @@
 "good": 109
 },
 "ekko": {
-"good": 68
+"good": 67
 },
 "engel": {
 "good": 102
@@ -269,10 +271,10 @@
 "good": 140
 },
 "mezz": {
-"good": 137
+"good": 135
 },
 "musicon": {
-"good": 62
+"good": 61
 },
 "muziekgieterij": {
 "good": 92
@@ -288,7 +290,7 @@
 },
 "nor": {},
 "o13": {
-"good": 140
+"good": 139
 },
 "occii": {
 "good": 22
@@ -303,7 +305,7 @@
 "good": 149
 },
 "paradiso": {
-"good": 434
+"good": 431
 },
 "patronaat": {
 "good": 159
@@ -336,7 +338,7 @@
 "good": 22
 },
 "spot": {
-"good": 190
+"good": 188
 },
 "studiogonz": {
 "good": 18
@@ -345,7 +347,7 @@
 "good": 22
 },
 "ticketmaster": {
-"good": 709
+"good": 706
 },
 "tivoli": {
 "good": 324
@@ -360,7 +362,7 @@
 "good": 52
 },
 "v11": {
-"good": 22
+"good": 21
 },
 "vanpolanen": {
 "good": 11
@@ -378,10 +380,10 @@
 "good": 23
 },
 "vorst": {
-"good": 69
+"good": 68
 },
 "vorstin": {
-"good": 55
+"good": 54
 },
 "w2": {
 "good": 19

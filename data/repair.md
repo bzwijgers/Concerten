@@ -1,6 +1,6 @@
-@bzwijgers, ochtendcontrole 2026-10-31:
+@bzwijgers, ochtendcontrole 2026-11-03:
 
-- **Melkweg**: de agendapagina geeft de update van GitHub sinds 29 oktober een "404 niet gevonden", ook vandaag weer, ook na drie pogingen met een minuut wachten. Vanaf een andere computer (mijn omgeving) werkt dezelfde pagina gewoon en levert de scraper 282 concerten. De site lijkt dus alleen de GitHub-servers te weigeren. Ik heb niets aan de code veranderd: dat zou alleen kunnen door een blokkade te omzeilen, en dat doe ik niet. De laatst bekende Melkweg-concerten blijven in de agenda staan. Mogelijke oplossing voor jou: Melkweg ook op je eigen pc laten ophalen, zoals Tivoli en 013.
-- Zelf herstelde zalen vandaag: geen.
+- **Maassilo**: de melding "maar 2 concerten" is geen kapotte scraper. De website en de opbouw van de pagina zijn ongewijzigd en de scraper leest ze goed. Maassilo zet gewoon bijna alleen dance in de agenda; op dit moment staan er maar 2 concerten onder hun genres concert, rock, hiphop en afrobeat (Секрет FM op 15 nov en Broederliefde op 20 nov). Ik heb niets aangepast. Zodra Maassilo meer concerten aankondigt, komen die vanzelf binnen.
+- **Melkweg**: vanochtend opgehaald (268 concerten) en klaargezet voor de update.
 
-Er is dus nog één zaal die jouw aandacht nodig heeft (Melkweg); de rest is in orde.
+Alles is in orde; alleen Maassilo heeft op dit moment weinig concerten.

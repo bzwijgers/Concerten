@@ -105,6 +105,7 @@ header.sc{border-bottom-color:var(--line)}
 .yhead{position:sticky;top:var(--hh,150px);z-index:4;background:var(--bg);display:flex;align-items:baseline;gap:8px;padding:14px 0 4px}.yhead b{font:800 18px var(--f-d)}.yhead span{color:var(--faint);font-size:12px}
 .posters{display:flex;gap:10px;overflow-x:auto;margin:6px 0 6px;padding-bottom:4px}.pst{flex:none;position:relative;padding:0;border:0;background:none;cursor:pointer}.pst img{height:220px;max-width:70vw;border-radius:12px;object-fit:contain;background:var(--card2);display:block}
 .ptag{position:absolute;left:6px;bottom:6px;font-size:11px;padding:2px 7px;border-radius:9px;background:rgba(0,0,0,.6);color:#fff}
+.slset{font:700 12px var(--f-b);color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:10px 0 0}
 .acts.slinks{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}.slinks .btn{flex:none;width:auto;padding:6px 10px;font-size:12.5px}.slist{margin:6px 0 8px;padding-left:24px;line-height:1.55;font-size:14px;color:var(--fg)}
 .afiles .pst img{height:130px}.afiles .padd{width:104px;height:130px;font-size:12px}.afile span{word-break:break-all;padding:0 6px;max-height:3.2em;overflow:hidden}.afile .fdel{position:absolute;right:4px;top:2px;font-size:13px;color:var(--faint);padding:4px;font-style:normal}
 .padd{width:130px;height:220px;border:1.5px dashed var(--line);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--faint);font-size:13px;text-align:center}.padd b{font-size:30px;font-weight:400}
@@ -1245,7 +1246,8 @@ function appRow(a, xacts, xloc, xtitle) { if (!xacts && !xloc && isFestMark(mark
               '<select data-actr="' + i + '"><option value="H"' + (x[1] !== "V" && x[1] !== "F" ? " selected" : "") + '>hoofdact</option><option value="V"' + (x[1] === "V" ? " selected" : "") + '>voorprogramma</option><option value="F"' + (x[1] === "F" ? " selected" : "") + '>festival</option></select><button data-actdel="' + i + '" aria-label="Weghalen">✕</button></div>'; }).join("") +
           '<button class="lnk" data-actadd>+ artiest toevoegen</button>') +
           '<textarea data-rv placeholder="Korte review (optioneel)" style="margin-top:10px">' + esc(a.rv.txt || "") + "</textarea>" +
-          setlistHtml(a.id, (hs[0] || vs[0] || [""])[0] || (fa.length ? "" : nice(a.s.n)), v.city || (a.id.indexOf("hist|") === 0 ? a.id.split("|")[3] : "")) + afilesHtml(a.id) +
+          setlistHtml(a.id, (hs[0] || vs[0] || [""])[0] || (fa.length ? "" : nice(a.s.n)), v.city || (a.id.indexOf("hist|") === 0 ? a.id.split("|")[3] : ""), a.s.d,
+            (hs.length ? hs : vs).map(function (x) { return x[0]; }).concat(hs.length || vs.length ? [] : [nice(a.s.n)])) + afilesHtml(a.id) +
           (xacts || a.id.indexOf("hist|") === 0 ? "" : st.aconfirm === a.id ? '<div class="conf">Uit je archief verwijderen? Je cijfer en review gaan ook weg.<div class="acts" style="margin-top:8px"><button class="btn" data-adel style="color:var(--red)">Ja, verwijderen</button><button class="btn" data-anodel>Annuleren</button></div></div>'
                                 : '<button class="lnk" data-aask>Verwijderen uit archief</button>') + "</div>" : "") + "</div>"; }
 function starsHtml(r) { var stars = "";
@@ -1262,8 +1264,23 @@ function prevSeenHtml(names, d0) {
   return out ? '<div class="hl" style="margin:12px 0 4px">Andere keren gezien</div>' + out : "";
 }
 /* setlist bij een gezien-concert: zoeken op setlist.fm (artiest + stad werkt daar het best), Concert Archives of Setlisting; zelf plakken of typen */
-function setlistHtml(aid, artist, city) {
+/* opgehaalde setlists (setlist.fm, via de dagelijkse taak in je privé-opslag): setlists.json, sleutel 'datum|artiest' */
+var SETL = null, SETLat = 0;
+function loadSetlists() {
+  if (!SYNC || !SYNC.token || (SETL && Date.now() - SETLat < 3600000)) return;
+  SETLat = Date.now();
+  ghGet("setlists.json").then(function (r) { SETL = r ? JSON.parse(r.txt) : {}; if (st.tab === "a" && st.aopen) { var y = scrollY; render(); window.scrollTo(0, y); } }).catch(function () { SETL = SETL || {}; });
+}
+function setlistHtml(aid, artist, city, d, names) {
   var m = marks[aid] || {}, sl = m.sl || "", url = (sl.match(/https?:\/\/\S+/) || [""])[0];
+  loadSetlists();
+  var got = !sl && SETL && d ? (names || [artist]).map(function (n) { return SETL[d + "|" + normA(n)]; }).filter(function (x) { return x && x.s && x.s.length; }) : [];
+  if (got.length) return '<div class="hl" style="margin:12px 0 4px">Setlist</div>' + got.map(function (x) {
+      var nr = 0;
+      return (got.length > 1 ? '<div class="bnwhy" style="margin:8px 0 2px">' + esc(x.a) + "</div>" : "") + x.s.map(function (p) {
+        return (p[0] ? '<div class="slset">' + esc(p[0]) + "</div>" : "") + '<ol class="slist" start="' + (nr + 1) + '">' + p[1].map(function (t) { nr++; return "<li>" + esc(t) + "</li>"; }).join("") + "</ol>"; }).join("") +
+        '<a class="lnk" href="' + esc(x.u) + '" target="_blank" rel="noopener">Setlist via setlist.fm ↗</a>'; }).join("") +
+    '<textarea data-sl rows="2" placeholder="Klopt deze niet? Plak hier je eigen setlist of de link ernaar">' + "</textarea>";
   var lnk = function (u, t) { return '<a class="btn" href="' + esc(u) + '" target="_blank" rel="noopener">' + t + " ↗</a>"; };
   var songs = sl.split("\n").map(function (x) { return x.trim(); }).filter(function (x) { return x && !/^https?:\/\//.test(x); });
   return '<div class="hl" style="margin:12px 0 4px">Setlist</div>' +

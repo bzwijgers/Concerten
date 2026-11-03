@@ -3,13 +3,13 @@
 "maassilo"
 ],
 "ab": {
-"good": 238
+"good": 236
 },
 "acu": {
 "good": 14
 },
 "afasdome": {
-"good": 30
+"good": 31
 },
 "altenberg": {
 "good": 12
@@ -33,7 +33,7 @@
 "good": 5
 },
 "boerderij": {
-"good": 65
+"good": 66
 },
 "bolwerk": {
 "good": 51
@@ -60,7 +60,7 @@
 "good": 14
 },
 "casino": {
-"good": 14
+"good": 15
 },
 "cinetol": {
 "good": 50
@@ -72,7 +72,7 @@
 "good": 26
 },
 "dbs": {
-"good": 51
+"good": 52
 },
 "depot": {
 "good": 97
@@ -84,10 +84,10 @@
 "good": 28
 },
 "dynamo": {
-"good": 44
+"good": 45
 },
 "effenaar": {
-"good": 109
+"good": 110
 },
 "ekko": {
 "good": 67
@@ -192,7 +192,7 @@
 "good": 0
 },
 "fluor": {
-"good": 53
+"good": 54
 },
 "gashouder": {
 "good": 30
@@ -201,13 +201,13 @@
 "good": 62
 },
 "gigant": {
-"good": 32
+"good": 34
 },
 "grenswerk": {
 "good": 49
 },
 "ha": {
-"good": 79
+"good": 80
 },
 "hedon": {
 "good": 121
@@ -240,7 +240,7 @@
 "good": 57
 },
 "lantaren": {
-"good": 68
+"good": 69
 },
 "littledevil": {
 "good": 20
@@ -252,7 +252,7 @@
 "good": 17
 },
 "luxor": {
-"good": 123
+"good": 124
 },
 "maassilo": {
 "good": 3,
@@ -265,7 +265,7 @@
 "good": 18
 },
 "melkweg": {
-"good": 273
+"good": 266
 },
 "metropool": {
 "good": 140
@@ -274,23 +274,23 @@
 "good": 135
 },
 "musicon": {
-"good": 61
+"good": 63
 },
 "muziekgieterij": {
-"good": 92
+"good": 93
 },
 "n9": {
 "good": 17
 },
 "neushoorn": {
-"good": 89
+"good": 90
 },
 "nobel": {
 "good": 100
 },
 "nor": {},
 "o13": {
-"good": 140
+"good": 141
 },
 "occii": {
 "good": 22
@@ -299,16 +299,16 @@
 "good": 1
 },
 "p3": {
-"good": 60
+"good": 62
 },
 "paard": {
-"good": 149
+"good": 151
 },
 "paradiso": {
-"good": 431
+"good": 433
 },
 "patronaat": {
-"good": 159
+"good": 160
 },
 "pul": {
 "good": 60
@@ -329,7 +329,7 @@
 "good": 19
 },
 "simplon": {
-"good": 50
+"good": 51
 },
 "sounddog": {
 "good": 18
@@ -338,7 +338,7 @@
 "good": 22
 },
 "spot": {
-"good": 188
+"good": 190
 },
 "studiogonz": {
 "good": 18
@@ -347,7 +347,7 @@
 "good": 22
 },
 "ticketmaster": {
-"good": 705
+"good": 706
 },
 "tivoli": {
 "good": 324
@@ -356,7 +356,7 @@
 "good": 15
 },
 "trix": {
-"good": 127
+"good": 128
 },
 "turbinenhalle": {
 "good": 52
@@ -374,16 +374,16 @@
 "good": 97
 },
 "vierad": {
-"good": 14
+"good": 15
 },
 "volt": {
 "good": 23
 },
 "vorst": {
-"good": 68
+"good": 69
 },
 "vorstin": {
-"good": 54
+"good": 55
 },
 "w2": {
 "good": 19
@@ -392,6 +392,6 @@
 "good": 43
 },
 "worm": {
-"good": 11
+"good": 12
 }
 }

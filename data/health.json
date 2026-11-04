@@ -3,7 +3,7 @@
 "maassilo"
 ],
 "ab": {
-"good": 240
+"good": 242
 },
 "acu": {
 "good": 13
@@ -27,7 +27,7 @@
 "good": 68
 },
 "bird": {
-"good": 36
+"good": 37
 },
 "bitterzoet": {
 "good": 5
@@ -36,7 +36,7 @@
 "good": 66
 },
 "bolwerk": {
-"good": 51
+"good": 52
 },
 "bos": {
 "good": 51
@@ -78,19 +78,19 @@
 "good": 97
 },
 "doornroosje": {
-"good": 196
+"good": 200
 },
 "druckluft": {
 "good": 28
 },
 "dynamo": {
-"good": 43
+"good": 46
 },
 "effenaar": {
 "good": 109
 },
 "ekko": {
-"good": 66
+"good": 67
 },
 "engel": {
 "good": 102
@@ -210,7 +210,7 @@
 "good": 80
 },
 "hedon": {
-"good": 120
+"good": 121
 },
 "helling": {
 "good": 59
@@ -222,10 +222,10 @@
 "good": 29
 },
 "iduna": {
-"good": 40
+"good": 41
 },
 "kade": {
-"good": 9
+"good": 13
 },
 "klokgebouw": {
 "good": 7
@@ -240,7 +240,7 @@
 "good": 57
 },
 "lantaren": {
-"good": 69
+"good": 70
 },
 "littledevil": {
 "good": 20
@@ -252,7 +252,7 @@
 "good": 17
 },
 "luxor": {
-"good": 124
+"good": 125
 },
 "maassilo": {
 "good": 3,
@@ -268,13 +268,13 @@
 "good": 266
 },
 "metropool": {
-"good": 141
+"good": 142
 },
 "mezz": {
-"good": 134
+"good": 136
 },
 "musicon": {
-"good": 62
+"good": 63
 },
 "muziekgieterij": {
 "good": 93
@@ -286,11 +286,11 @@
 "good": 90
 },
 "nobel": {
-"good": 100
+"good": 102
 },
 "nor": {},
 "o13": {
-"good": 141
+"good": 142
 },
 "occii": {
 "good": 22
@@ -302,28 +302,28 @@
 "good": 62
 },
 "paard": {
-"good": 152
+"good": 153
 },
 "paradiso": {
-"good": 435
+"good": 440
 },
 "patronaat": {
-"good": 160
+"good": 163
 },
 "pul": {
 "good": 60
 },
 "qfactory": {
-"good": 36
+"good": 37
 },
 "reflektor": {
-"good": 74
+"good": 76
 },
 "roma": {
 "good": 21
 },
 "rotown": {
-"good": 127
+"good": 128
 },
 "rwa": {
 "good": 19
@@ -371,7 +371,7 @@
 "good": 50
 },
 "victorie": {
-"good": 97
+"good": 98
 },
 "vierad": {
 "good": 15

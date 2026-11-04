@@ -3,10 +3,10 @@
 "maassilo"
 ],
 "ab": {
-"good": 241
+"good": 240
 },
 "acu": {
-"good": 14
+"good": 13
 },
 "afasdome": {
 "good": 31
@@ -15,7 +15,7 @@
 "good": 12
 },
 "amare": {
-"good": 34
+"good": 35
 },
 "annabel": {
 "good": 11
@@ -39,7 +39,7 @@
 "good": 51
 },
 "bos": {
-"good": 48
+"good": 51
 },
 "bosuil": {
 "good": 63
@@ -63,7 +63,7 @@
 "good": 15
 },
 "cinetol": {
-"good": 50
+"good": 49
 },
 "concertgebouw": {
 "good": 3
@@ -78,19 +78,19 @@
 "good": 97
 },
 "doornroosje": {
-"good": 190
+"good": 196
 },
 "druckluft": {
 "good": 28
 },
 "dynamo": {
-"good": 45
+"good": 43
 },
 "effenaar": {
-"good": 110
+"good": 109
 },
 "ekko": {
-"good": 67
+"good": 66
 },
 "engel": {
 "good": 102
@@ -108,7 +108,7 @@
 "good": 1
 },
 "fest_cb": {
-"good": 1
+"good": 0
 },
 "fest_dour": {
 "good": 1
@@ -210,7 +210,7 @@
 "good": 80
 },
 "hedon": {
-"good": 121
+"good": 120
 },
 "helling": {
 "good": 59
@@ -219,7 +219,7 @@
 "good": 9
 },
 "hof": {
-"good": 30
+"good": 29
 },
 "iduna": {
 "good": 40
@@ -268,13 +268,13 @@
 "good": 266
 },
 "metropool": {
-"good": 140
+"good": 141
 },
 "mezz": {
-"good": 135
+"good": 134
 },
 "musicon": {
-"good": 63
+"good": 62
 },
 "muziekgieterij": {
 "good": 93
@@ -302,10 +302,10 @@
 "good": 62
 },
 "paard": {
-"good": 151
+"good": 152
 },
 "paradiso": {
-"good": 433
+"good": 435
 },
 "patronaat": {
 "good": 160
@@ -314,16 +314,16 @@
 "good": 60
 },
 "qfactory": {
-"good": 34
+"good": 36
 },
 "reflektor": {
-"good": 73
+"good": 74
 },
 "roma": {
 "good": 21
 },
 "rotown": {
-"good": 128
+"good": 127
 },
 "rwa": {
 "good": 19
@@ -338,7 +338,7 @@
 "good": 22
 },
 "spot": {
-"good": 190
+"good": 191
 },
 "studiogonz": {
 "good": 18
@@ -347,7 +347,7 @@
 "good": 22
 },
 "ticketmaster": {
-"good": 706
+"good": 701
 },
 "tivoli": {
 "good": 324
@@ -356,7 +356,7 @@
 "good": 15
 },
 "trix": {
-"good": 128
+"good": 127
 },
 "turbinenhalle": {
 "good": 52
@@ -365,7 +365,7 @@
 "good": 21
 },
 "vanpolanen": {
-"good": 11
+"good": 10
 },
 "vera": {
 "good": 50
@@ -380,7 +380,7 @@
 "good": 23
 },
 "vorst": {
-"good": 69
+"good": 68
 },
 "vorstin": {
 "good": 55

@@ -1,6 +1,5 @@
-@bzwijgers, ochtendcontrole 2026-11-03:
+@bzwijgers, ochtendcontrole 2026-11-04:
 
-- **Maassilo**: de melding "maar 2 concerten" is geen kapotte scraper. De website en de opbouw van de pagina zijn ongewijzigd en de scraper leest ze goed. Maassilo zet gewoon bijna alleen dance in de agenda; op dit moment staan er maar 2 concerten onder hun genres concert, rock, hiphop en afrobeat (Секрет FM op 15 nov en Broederliefde op 20 nov). Ik heb niets aangepast. Zodra Maassilo meer concerten aankondigt, komen die vanzelf binnen.
-- **Melkweg**: vanochtend opgehaald (268 concerten) en klaargezet voor de update.
-
-Alles is in orde; alleen Maassilo heeft op dit moment weinig concerten.
+- **Maassilo**: de melding "slechts 2 evenementen" klopt. De website is niet veranderd en de scraper leest hem nog goed. Maassilo zet zelf maar 2 concerten in de genres concert, rock, hiphop en afro beat (Секрет FM op 15 nov en Broederliefde op 20 nov). De rest van hun agenda is dance, feest of dj. Ik heb niets aangepast. De melding verdwijnt vanzelf zodra Maassilo meer concerten plaatst.
+- **Melkweg**: vanochtend opgehaald, 270 concerten.
+- Verder alles in orde.

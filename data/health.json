@@ -6,7 +6,7 @@
 "good": 240
 },
 "acu": {
-"good": 13
+"good": 14
 },
 "afasdome": {
 "good": 31
@@ -51,19 +51,19 @@
 "good": 24
 },
 "burgerweeshuis": {
-"good": 51
+"good": 52
 },
 "cacao": {
 "good": 30
 },
 "capsloc": {
-"good": 14
+"good": 16
 },
 "casino": {
 "good": 14
 },
 "cinetol": {
-"good": 47
+"good": 48
 },
 "concertgebouw": {
 "good": 3
@@ -72,13 +72,13 @@
 "good": 26
 },
 "dbs": {
-"good": 52
+"good": 53
 },
 "depot": {
-"good": 96
+"good": 97
 },
 "doornroosje": {
-"good": 199
+"good": 201
 },
 "druckluft": {
 "good": 28
@@ -87,10 +87,10 @@
 "good": 46
 },
 "effenaar": {
-"good": 108
+"good": 111
 },
 "ekko": {
-"good": 66
+"good": 67
 },
 "engel": {
 "good": 101
@@ -192,37 +192,37 @@
 "good": 0
 },
 "fluor": {
-"good": 54
+"good": 56
 },
 "gashouder": {
 "good": 30
 },
 "gebouwt": {
-"good": 62
+"good": 63
 },
 "gigant": {
-"good": 34
+"good": 36
 },
 "grenswerk": {
 "good": 49
 },
 "ha": {
-"good": 80
+"good": 81
 },
 "hedon": {
 "good": 119
 },
 "helling": {
-"good": 59
+"good": 69
 },
 "helvete": {
 "good": 9
 },
 "hof": {
-"good": 28
+"good": 29
 },
 "iduna": {
-"good": 41
+"good": 43
 },
 "kade": {
 "good": 13
@@ -252,7 +252,7 @@
 "good": 17
 },
 "luxor": {
-"good": 124
+"good": 125
 },
 "maassilo": {
 "good": 3,
@@ -268,16 +268,16 @@
 "good": 266
 },
 "metropool": {
-"good": 142
+"good": 144
 },
 "mezz": {
-"good": 136
+"good": 138
 },
 "musicon": {
 "good": 62
 },
 "muziekgieterij": {
-"good": 94
+"good": 97
 },
 "n9": {
 "good": 17
@@ -302,10 +302,10 @@
 "good": 62
 },
 "paard": {
-"good": 153
+"good": 154
 },
 "paradiso": {
-"good": 440
+"good": 444
 },
 "patronaat": {
 "good": 162
@@ -317,22 +317,22 @@
 "good": 37
 },
 "reflektor": {
-"good": 75
+"good": 76
 },
 "roma": {
 "good": 21
 },
 "rotown": {
-"good": 130
+"good": 129
 },
 "rwa": {
 "good": 19
 },
 "simplon": {
-"good": 51
+"good": 52
 },
 "sounddog": {
-"good": 19
+"good": 21
 },
 "sowhat": {
 "good": 22
@@ -347,7 +347,7 @@
 "good": 22
 },
 "ticketmaster": {
-"good": 698
+"good": 702
 },
 "tivoli": {
 "good": 324
@@ -371,7 +371,7 @@
 "good": 50
 },
 "victorie": {
-"good": 98
+"good": 99
 },
 "vierad": {
 "good": 15

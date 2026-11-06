@@ -785,7 +785,7 @@ function renderAgenda() {
   var shown = 0;
   if (newVer) html += '<div class="since"><button data-newver><b>↻ Nieuwe versie van de agenda</b><span>Tik om te verversen; je blijft op dezelfde plek.</span></button></div>';
   if (SYNC && SYNC.token && SYNC.err) html += '<div class="since"><button data-syncfix style="border-color:rgba(255,107,107,.45);background:rgba(255,107,107,.08)"><b style="color:var(--red)">⚠ Synchroniseren werkt niet meer</b><span>' + esc(SYNC.err) + " Tik om het te herstellen.</span></button></div>";
-  var bn = anyFilter() ? [] : bandNews();
+  var bn = bandNews(); if (st.q.trim() || st.venue || st.city) bn = [];   /* altijd rekenen: dit geeft ook je bands door aan de telefoon */
   if (bn.length) html += '<div class="since"><button data-bandnews class="bn"><b>🔔 ' + (bn.length === 1 ? "Nieuw van " + esc(bn[0].who) : bn.length + " nieuwe concerten van jouw bands") + "</b><span>" +
     esc(bn.slice(0, 3).map(function (x) { var d = parse(x.c.d); return x.who + " (" + d.getDate() + " " + MON[d.getMonth()] + ", " + venue(x.c).label + ")"; }).join(" · ")) + (bn.length > 3 ? " …" : "") +
     '</span></button><button class="x" data-bandnews-off aria-label="Gezien">✕</button></div>';

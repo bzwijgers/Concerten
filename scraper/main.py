@@ -9,7 +9,7 @@ DATA = os.path.join(ROOT, "data")
 OUT = os.path.join(ROOT, "docs", "data")
 
 # zo weinig concerten is verdacht (storing); zomerzalen en festivals zonder nieuwe data mogen leeg zijn
-MIN_EVENTS = {"tolhuistuin": 1, "olt": 0, "bitterzoet": 1, "lockkeepers": 1, "botanique": 0, **{k: 0 for k in festivals.FEST}}
+MIN_EVENTS = {"tolhuistuin": 1, "olt": 0, "bitterzoet": 1, "lockkeepers": 1, "maassilo": 1, "botanique": 0, **{k: 0 for k in festivals.FEST}}
 VENUES = [  # key, label, fn
     ("baroeg", venues2.baroeg), ("rotown", venues1.rotown), ("paradiso", None), ("melkweg", venues1.melkweg),
     ("o13", venues1.o13), ("paard", venues1.paard), ("mezz", venues1.mezz), ("effenaar", venues2.effenaar),

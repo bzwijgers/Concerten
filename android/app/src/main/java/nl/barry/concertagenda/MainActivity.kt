@@ -115,6 +115,7 @@ class MainActivity : AppCompatActivity() {
             domStorageEnabled = true
             cacheMode = WebSettings.LOAD_DEFAULT
             mediaPlaybackRequiresUserGesture = true
+            textZoom = 100   // vaste tekstgrootte: de letterinstelling van de telefoon vergroot de agenda niet
             // versie van de app meesturen: de infopagina laat zien welke versie op de telefoon staat
             userAgentString = userAgentString + " ConcertAgendaApp/" + packageManager.getPackageInfo(packageName, 0).versionName
         }

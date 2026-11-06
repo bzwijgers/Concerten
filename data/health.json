@@ -3,10 +3,10 @@
 "maassilo"
 ],
 "ab": {
-"good": 240
+"good": 232
 },
 "acu": {
-"good": 14
+"good": 13
 },
 "afasdome": {
 "good": 32
@@ -15,7 +15,7 @@
 "good": 12
 },
 "amare": {
-"good": 34
+"good": 33
 },
 "annabel": {
 "good": 11
@@ -33,7 +33,7 @@
 "good": 6
 },
 "boerderij": {
-"good": 67
+"good": 68
 },
 "bolwerk": {
 "good": 52
@@ -72,13 +72,13 @@
 "good": 26
 },
 "dbs": {
-"good": 53
+"good": 54
 },
 "depot": {
 "good": 97
 },
 "doornroosje": {
-"good": 204
+"good": 202
 },
 "druckluft": {
 "good": 27
@@ -93,7 +93,7 @@
 "good": 65
 },
 "engel": {
-"good": 99
+"good": 98
 },
 "fest_alcatraz": {
 "good": 1
@@ -201,7 +201,7 @@
 "good": 63
 },
 "gigant": {
-"good": 36
+"good": 35
 },
 "grenswerk": {
 "good": 49
@@ -213,7 +213,7 @@
 "good": 118
 },
 "helling": {
-"good": 69
+"good": 70
 },
 "helvete": {
 "good": 9
@@ -237,10 +237,10 @@
 "good": 28
 },
 "kulttempel": {
-"good": 56
+"good": 55
 },
 "lantaren": {
-"good": 69
+"good": 68
 },
 "littledevil": {
 "good": 20
@@ -252,14 +252,14 @@
 "good": 17
 },
 "luxor": {
-"good": 126
+"good": 125
 },
 "maassilo": {
 "good": 3,
 "since": "2026-11-02"
 },
 "manifesto": {
-"good": 14
+"good": 13
 },
 "meester": {
 "good": 18
@@ -268,16 +268,16 @@
 "good": 266
 },
 "metropool": {
-"good": 145
+"good": 146
 },
 "mezz": {
-"good": 140
+"good": 141
 },
 "musicon": {
 "good": 61
 },
 "muziekgieterij": {
-"good": 98
+"good": 97
 },
 "n9": {
 "good": 18
@@ -286,11 +286,11 @@
 "good": 88
 },
 "nobel": {
-"good": 102
+"good": 105
 },
 "nor": {},
 "o13": {
-"good": 140
+"good": 139
 },
 "occii": {
 "good": 22
@@ -299,7 +299,7 @@
 "good": 1
 },
 "p3": {
-"good": 63
+"good": 64
 },
 "paard": {
 "good": 154
@@ -317,7 +317,7 @@
 "good": 38
 },
 "reflektor": {
-"good": 76
+"good": 75
 },
 "roma": {
 "good": 21
@@ -347,16 +347,16 @@
 "good": 22
 },
 "ticketmaster": {
-"good": 707
+"good": 704
 },
 "tivoli": {
 "good": 324
 },
 "tolhuistuin": {
-"good": 15
+"good": 16
 },
 "trix": {
-"good": 123
+"good": 120
 },
 "turbinenhalle": {
 "good": 55
@@ -371,7 +371,7 @@
 "good": 50
 },
 "victorie": {
-"good": 101
+"good": 103
 },
 "vierad": {
 "good": 15
@@ -383,7 +383,7 @@
 "good": 67
 },
 "vorstin": {
-"good": 56
+"good": 55
 },
 "w2": {
 "good": 19

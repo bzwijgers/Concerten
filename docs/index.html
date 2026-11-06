@@ -649,7 +649,7 @@ function pass(c, noDate) {
   if (q && !qhit(c.n + " " + v.label + " " + v.city + " " + dateWords(c.d) + (c.la ? " " + c.la.join(" ") : ""), q) && v.label.toLowerCase().replace(/[^a-z0-9]/g, "").indexOf(q.replace(/[^a-z0-9]/g, "") || "#") < 0) return false;
   if (c.o && !q && !st.other && !has(c.id, "t") && !has(c.id, "i")) return false;   /* geen concert: verborgen tenzij gevraagd */
   if (st.city && v.city !== st.city) return false;
-  if (st.venue && c.v !== st.venue) return false;
+  if (st.venue && c.v !== st.venue && otherVenue(c) !== VENUES[st.venue]) return false;
   if (st.cc && (v.cc || "NL") !== st.cc) return false;   /* tik op een vlag: alleen dat land */
   if (!noDate && st.month && c.d.slice(0, 7) !== st.month) return false;
   if (!noDate && st.from && c.d < st.from) return false;
@@ -682,6 +682,8 @@ function otherVenue(c) {
   var r = c.r.toLowerCase().trim(), k = LBL[r] || LBL[r.replace(/^(de|het)\s+/, "")];
   return k && k !== c.v ? VENUES[k] : null;
 }
+/* telt mee bij de organisator én bij de echte zaal, zoals het zaalfilter */
+function countV(per, c) { per[c.v] = (per[c.v] || 0) + 1; var o = otherVenue(c); if (o) Object.keys(VENUES).some(function (k) { if (VENUES[k] === o) { per[k] = (per[k] || 0) + 1; return true; } }); }
 function where(c) { var v = venue(c), o = otherVenue(c);
   if (o) return esc(o.label) + " · via " + esc(v.label);
   return (c.v === "rotown" || c.v === "bird") && c.r && c.r.toLowerCase() !== v.label.toLowerCase() ? esc(c.r) + " · via " + esc(v.label) : esc(v.label); }
@@ -1773,11 +1775,11 @@ function ovX(l) { return 10 + (l - 2.45) / (7.3 - 2.45) * 300; }
 function ovY(b) { return 10 + (53.6 - b) / (53.6 - 49.45) * 420; }
 function regionOf(v) { return v.fest ? "Festivals" : (v.cc === "BE" ? "België" : v.cc === "DE" ? "Duitsland" : REGION_OF[v.city] || "Overig"); }
 function ovVenues() {   /* overzicht per zaal: per regio, open te klappen */
-  var per = {}; ALL.forEach(function (c) { if (c.d >= TODAY && pass(c)) per[c.v] = (per[c.v] || 0) + 1; });
+  var per = {}, rt = {}; ALL.forEach(function (c) { if (c.d >= TODAY && pass(c)) { countV(per, c); var g = regionOf(venue(c)); rt[g] = (rt[g] || 0) + 1; } });
   var groups = {}; Object.keys(per).forEach(function (k) { var r = regionOf(VENUES[k] || {}); (groups[r] = groups[r] || []).push(k); });
   var order = REGION_ORDER.concat(["België", "Duitsland", "Festivals", "Overig"]).filter(function (r, i, a) { return groups[r] && a.indexOf(r) === i; });
   return '<div class="hl">Zalen per regio · tik om open te klappen</div>' + order.map(function (r) {
-    var ks = groups[r].sort(function (a, b) { return per[b] - per[a]; }), tot = ks.reduce(function (t, k) { return t + per[k]; }, 0), open = !!st.ovreg[r];
+    var ks = groups[r].sort(function (a, b) { return per[b] - per[a]; }), tot = rt[r] || 0, open = !!st.ovreg[r];
     return '<button class="mrow regrow" data-reg="' + esc(r) + '"><span style="width:auto;flex:1">' + (open ? "▾ " : "▸ ") + esc(r) + '</span><em style="width:auto">' + ks.length + " zalen · " + tot + "</em></button>" +
       (open ? ks.map(function (k) { var v = VENUES[k], c = { v: k, n: v.label, th: "" };
         return '<div class="ev" data-venue="' + esc(k) + '">' + lg(c) + '<div class="b"><div class="n">' + esc(v.label) + '</div><div class="s">' + esc(v.city) + '</div></div><div class="tm">' + per[k] + "<small>concerten</small></div></div>"; }).join("") : "");
@@ -2330,7 +2332,7 @@ $("menu").addEventListener("click", function (e) { var b = e.target.closest("[da
   if (b.getAttribute("data-m") === "sync") openSync();
   if (b.getAttribute("data-m") === "other") { st.other = !st.other; save("ca-other", st.other); render(); } });
 function openVenues() {   /* mijn zalen kiezen: per plaats, aangevinkt = in 'Mijn zalen' */
-  var cnt = {}; ALL.forEach(function (c) { if (c.d >= TODAY) cnt[c.v] = (cnt[c.v] || 0) + 1; });
+  var cnt = {}; ALL.forEach(function (c) { if (c.d >= TODAY) countV(cnt, c); });
   var ks = Object.keys(VENUES).filter(function (k) { return cnt[k] || VENUES[k].fest; }).sort(function (a, b) {
     var A = VENUES[a], B = VENUES[b]; return (A.fest ? 1 : 0) - (B.fest ? 1 : 0) || (A.cc || "NL").localeCompare(B.cc || "NL") || (A.fest ? 0 : A.city.localeCompare(B.city)) || A.label.localeCompare(B.label); });
   var last = "";

@@ -1,6 +1,6 @@
-@bzwijgers, ochtendcontrole 2026-11-05:
+@bzwijgers, ochtendcontrole 2026-11-06:
 
-- **Maassilo**: de melding "maar 2 concerten" klopt met de eigen website. Op de agenda van maassilo.com staan op dit moment maar 4 evenementen in totaal (waarvan 2 concert/rock/hiphop; de rest is feest of techno). De site is dus niet veranderd en de scraper werkt goed, dus ik heb niets aangepast. Levert nu 2 concerten. De melding verdwijnt vanzelf zodra Maassilo meer concerten aankondigt.
-- Melkweg is vanochtend opgehaald (275 concerten).
+- **Melkweg**: vanochtend opnieuw opgehaald via de ochtendcontrole (277 concerten) en doorgegeven; dat is dus in orde.
+- **Maassilo**: de melding "maar 2 evenementen" klopt met wat de site zelf toont. Op maassilo.com/agenda staan nu maar 4 evenementen in totaal (waarvan 2 concerten volgens het genrefilter: Секрет FM en Broederliefde) en hun eigen lijst (de koppeling voor evenementen) is leeg. De scraper werkt dus nog goed; er is niets stuk, de zaal heeft gewoon weinig te melden. Ik heb niets aangepast. De melding verdwijnt vanzelf zodra er weer meer concerten op hun site komen.
 
-Verder is alles in orde.
+Alles is in orde; alleen Maassilo is rustig.

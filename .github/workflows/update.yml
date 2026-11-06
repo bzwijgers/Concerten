@@ -1,7 +1,8 @@
 name: update
 on:
   schedule:
-    # niet op het hele uur: dan stelt GitHub geplande taken uren uit (nov 2026: 06:00 werd 12:00-13:30).
+    # GitHub stelt geplande taken uren uit (nov 2026: pas rond 13:00), dit is dus een tweede ronde overdag.
+    # De update van voor 06:00 start de ochtendcontrole (02:45 UTC) met zijn push naar data/inbox.
     # Meerdere momenten rond 06:00 Amsterdam (zomer- en wintertijd); de eerste vanaf 06:00 draait, de rest stopt meteen.
     - cron: "11 4 * * *"
     - cron: "41 4 * * *"
@@ -21,8 +22,8 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with: { python-version: "3.12" }
       - run: pip install beautifulsoup4 lxml pillow
       - name: Eén keer per ochtend vanaf 06:00 Amsterdamse tijd (of als hij met de hand / door de pc gestart is)

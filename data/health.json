@@ -1,9 +1,7 @@
 {
-"_last": [
-"maassilo"
-],
+"_last": [],
 "ab": {
-"good": 232
+"good": 238
 },
 "acu": {
 "good": 13
@@ -21,7 +19,7 @@
 "good": 11
 },
 "baroeg": {
-"good": 34
+"good": 33
 },
 "bibelot": {
 "good": 68
@@ -51,7 +49,7 @@
 "good": 24
 },
 "burgerweeshuis": {
-"good": 53
+"good": 52
 },
 "cacao": {
 "good": 29
@@ -84,10 +82,10 @@
 "good": 27
 },
 "dynamo": {
-"good": 47
+"good": 45
 },
 "effenaar": {
-"good": 109
+"good": 106
 },
 "ekko": {
 "good": 65
@@ -255,14 +253,13 @@
 "good": 125
 },
 "maassilo": {
-"good": 3,
-"since": "2026-11-02"
+"good": 2
 },
 "manifesto": {
 "good": 13
 },
 "meester": {
-"good": 18
+"good": 17
 },
 "melkweg": {
 "good": 266
@@ -293,7 +290,7 @@
 "good": 139
 },
 "occii": {
-"good": 22
+"good": 21
 },
 "olt": {
 "good": 1
@@ -308,10 +305,10 @@
 "good": 444
 },
 "patronaat": {
-"good": 161
+"good": 159
 },
 "pul": {
-"good": 60
+"good": 59
 },
 "qfactory": {
 "good": 38
@@ -335,7 +332,7 @@
 "good": 26
 },
 "sowhat": {
-"good": 22
+"good": 21
 },
 "spot": {
 "good": 195
@@ -347,7 +344,7 @@
 "good": 22
 },
 "ticketmaster": {
-"good": 704
+"good": 703
 },
 "tivoli": {
 "good": 324
@@ -359,7 +356,7 @@
 "good": 120
 },
 "turbinenhalle": {
-"good": 55
+"good": 54
 },
 "v11": {
 "good": 19
@@ -371,7 +368,7 @@
 "good": 50
 },
 "victorie": {
-"good": 103
+"good": 101
 },
 "vierad": {
 "good": 15

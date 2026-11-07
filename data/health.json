@@ -76,7 +76,7 @@
 "good": 97
 },
 "doornroosje": {
-"good": 200
+"good": 201
 },
 "druckluft": {
 "good": 26
@@ -196,7 +196,7 @@
 "good": 29
 },
 "gebouwt": {
-"good": 60
+"good": 61
 },
 "gigant": {
 "good": 35
@@ -296,8 +296,7 @@
 "good": 1
 },
 "p3": {
-"good": 64,
-"since": "2026-11-07"
+"good": 64
 },
 "paard": {
 "good": 150
@@ -354,7 +353,7 @@
 "good": 16
 },
 "trix": {
-"good": 120
+"good": 119
 },
 "turbinenhalle": {
 "good": 53

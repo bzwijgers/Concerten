@@ -4,7 +4,7 @@ on:
     branches: [main]
     paths: ["docs/**"]
   workflow_run:
-    workflows: ["update"]
+    workflows: ["update", "android"]
     types: [completed]
   workflow_dispatch:
 permissions:

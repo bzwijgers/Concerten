@@ -76,7 +76,7 @@
 "good": 97
 },
 "doornroosje": {
-"good": 201
+"good": 200
 },
 "druckluft": {
 "good": 26
@@ -296,7 +296,8 @@
 "good": 1
 },
 "p3": {
-"good": 64
+"good": 64,
+"since": "2026-11-07"
 },
 "paard": {
 "good": 150

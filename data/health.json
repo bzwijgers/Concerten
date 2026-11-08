@@ -43,7 +43,7 @@
 "good": 62
 },
 "botanique": {
-"good": 2
+"good": 3
 },
 "bridges": {
 "good": 26
@@ -196,7 +196,7 @@
 "good": 29
 },
 "gebouwt": {
-"good": 58
+"good": 60
 },
 "gigant": {
 "good": 34
@@ -308,7 +308,7 @@
 "good": 155
 },
 "pul": {
-"good": 58
+"good": 57
 },
 "qfactory": {
 "good": 35
@@ -365,7 +365,7 @@
 "good": 10
 },
 "vera": {
-"good": 48
+"good": 50
 },
 "victorie": {
 "good": 99

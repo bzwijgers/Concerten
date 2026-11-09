@@ -22,7 +22,7 @@
 "good": 31
 },
 "bibelot": {
-"good": 68
+"good": 62
 },
 "bird": {
 "good": 33
@@ -40,7 +40,7 @@
 "good": 41
 },
 "bosuil": {
-"good": 60
+"good": 61
 },
 "botanique": {
 "good": 3
@@ -49,7 +49,7 @@
 "good": 25
 },
 "burgerweeshuis": {
-"good": 50
+"good": 51
 },
 "cacao": {
 "good": 27
@@ -73,10 +73,10 @@
 "good": 51
 },
 "depot": {
-"good": 95
+"good": 96
 },
 "doornroosje": {
-"good": 196
+"good": 198
 },
 "druckluft": {
 "good": 26
@@ -136,7 +136,7 @@
 "good": 1
 },
 "fest_lgw": {
-"good": 0
+"good": 1
 },
 "fest_lokerse": {
 "good": 0
@@ -235,7 +235,7 @@
 "good": 27
 },
 "kulttempel": {
-"good": 55
+"good": 56
 },
 "lantaren": {
 "good": 66
@@ -247,7 +247,7 @@
 "good": 11
 },
 "lottoarena": {
-"good": 15
+"good": 17
 },
 "luxor": {
 "good": 122
@@ -265,16 +265,16 @@
 "good": 266
 },
 "metropool": {
-"good": 134
+"good": 135
 },
 "mezz": {
-"good": 133
+"good": 134
 },
 "musicon": {
 "good": 59
 },
 "muziekgieterij": {
-"good": 95
+"good": 96
 },
 "n9": {
 "good": 18
@@ -290,7 +290,7 @@
 "good": 137
 },
 "occii": {
-"good": 20
+"good": 21
 },
 "olt": {
 "good": 1
@@ -299,13 +299,13 @@
 "good": 63
 },
 "paard": {
-"good": 142
+"good": 144
 },
 "paradiso": {
-"good": 432
+"good": 437
 },
 "patronaat": {
-"good": 153
+"good": 154
 },
 "pul": {
 "good": 56
@@ -314,7 +314,7 @@
 "good": 35
 },
 "reflektor": {
-"good": 71
+"good": 72
 },
 "roma": {
 "good": 21
@@ -335,7 +335,7 @@
 "good": 20
 },
 "spot": {
-"good": 194
+"good": 195
 },
 "studiogonz": {
 "good": 16
@@ -344,7 +344,7 @@
 "good": 20
 },
 "ticketmaster": {
-"good": 694
+"good": 710
 },
 "tivoli": {
 "good": 324
@@ -353,7 +353,7 @@
 "good": 15
 },
 "trix": {
-"good": 117
+"good": 118
 },
 "turbinenhalle": {
 "good": 50
@@ -380,7 +380,7 @@
 "good": 66
 },
 "vorstin": {
-"good": 53
+"good": 54
 },
 "w2": {
 "good": 17
@@ -389,6 +389,6 @@
 "good": 40
 },
 "worm": {
-"good": 10
+"good": 11
 }
 }

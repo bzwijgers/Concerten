@@ -1,7 +1,7 @@
 {
 "_last": [],
 "ab": {
-"good": 237
+"good": 235
 },
 "acu": {
 "good": 12
@@ -76,7 +76,7 @@
 "good": 96
 },
 "doornroosje": {
-"good": 197
+"good": 199
 },
 "druckluft": {
 "good": 27
@@ -274,7 +274,7 @@
 "good": 60
 },
 "muziekgieterij": {
-"good": 96
+"good": 95
 },
 "n9": {
 "good": 18
@@ -287,7 +287,7 @@
 },
 "nor": {},
 "o13": {
-"good": 139
+"good": 138
 },
 "occii": {
 "good": 21
@@ -335,10 +335,11 @@
 "good": 20
 },
 "spot": {
-"good": 197
+"good": 196
 },
 "studiogonz": {
-"good": 16
+"good": 16,
+"since": "2026-11-09"
 },
 "tbeest": {
 "good": 20

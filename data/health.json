@@ -64,7 +64,7 @@
 "good": 50
 },
 "concertgebouw": {
-"good": 3
+"good": 2
 },
 "corneel": {
 "good": 26
@@ -296,8 +296,7 @@
 "good": 4
 },
 "p3": {
-"good": 62,
-"since": "2026-11-13"
+"good": 64
 },
 "paard": {
 "good": 153

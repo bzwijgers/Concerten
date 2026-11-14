@@ -797,8 +797,9 @@ function renderAgenda() {
   }
   if (st.f["new"] && !st.f.since) return html + renderNew(list);
   if (!anyFilter() && !(sl.length && !st.sinceOff)) {   /* korte melding bovenaan: wat er deze week is aangekondigd */
-    var wk = list.filter(isNew), td = wk.filter(function (c) { return c.first === TODAY; }).length;
-    if (wk.length) html += '<div class="since"><button data-since data-newweek><b>✦ ' + wk.length + " nieuw aangekondigd deze week</b><span>" + (td ? td + " vandaag · " : "") + "tik om ze per dag te zien</span></button></div>";
+    var wk = list.filter(isNew), td = wk.filter(function (c) { return c.first === TODAY; }).length, ng = wk.length ? newGroups(wk) : null;
+    if (wk.length) html += '<div class="since"><button data-since data-newweek><b>✦ ' + (ng.you.length ? ng.you.length + " voor jou · " : "") + wk.length + " nieuw aangekondigd deze week</b><span>" + (td ? td + " vandaag · " : "") +
+      (ng.big.length ? ng.big.length + " in grote zalen · " : "") + "tik om ze te zien</span></button></div>";
   }
   if (st.f.since && list.length) {
     var seenNew = list.filter(function (c) { return c.seen; });
@@ -829,27 +830,47 @@ function rowNew(c) {
   var d = parse(c.d), y = c.d.slice(0, 4) !== TODAY.slice(0, 4);
   return row(c).replace('<span class="bd nw">nieuw</span>', "").replace(/<div class="tm[^"]*">[\s\S]*?<\/div><\/div>$/, '<div class="tm dt">' + d.getDate() + " " + MON[d.getMonth()] + "<small>" + DOW[d.getDay()] + (y ? " '" + c.d.slice(2, 4) : "") + "</small></div></div>");
 }
-function renderNew(list) {
-  var html = "", days = {}, order = [];
-  list.slice().sort(function (a, b) { return a.first < b.first ? 1 : a.first > b.first ? -1 : a.d < b.d ? -1 : a.d > b.d ? 1 : 0; })
-    .forEach(function (c) { if (!days[c.first]) { days[c.first] = []; order.push(c.first); } days[c.first].push(c); });
-  var y = iso(new Date(NOW.getTime() - 864e5));
-  html += '<div class="newhead"><b>' + list.length + " concerten nieuw aangekondigd</b><span>in de afgelopen 7 dagen · per dag waarop ze in de agenda kwamen</span></div>";
-  if (!list.length) return html + '<div class="empty">Deze week is er (met deze filters) niets nieuws aangekondigd. <button class="others" data-clear style="margin-top:12px">Alle filters uit</button></div>';
-  order.forEach(function (d0) {
-    var all = days[d0], score = function (c) { return (has(c.id, "t") ? 8 : 0) + (has(c.id, "i") ? 4 : 0) + (c.seen ? 2 : 0) + (inMine(c) ? 1 : 0); };
-    /* kaartje, interesse en artiesten die je eerder zag altijd tonen (bovenaan); 'alleen in je zalen' telt mee tot 8 */
-    var mineL = all.filter(function (c) { return score(c) > 0; }).sort(function (a, b) { return (score(b) >= 2) - (score(a) >= 2) || score(b) - score(a) || (a.d < b.d ? -1 : a.d > b.d ? 1 : 0); }),
-      rest = all.filter(function (c) { return score(c) === 0; }), strong = mineL.filter(function (c) { return score(c) >= 2; }).length;
-    var open = st.more["n" + d0], dd = parse(d0);
-    var lbl = d0 === TODAY ? "Vandaag aangekondigd" : d0 === y ? "Gisteren aangekondigd" : DOWL[dd.getDay()].replace(/^./, function (x) { return x.toUpperCase(); }) + " " + dd.getDate() + " " + MONL[dd.getMonth()];
-    html += '<div class="day"><b>' + lbl + "</b><span>" + all.length + " nieuw</span></div>";
-    var showMine = open ? mineL : mineL.slice(0, Math.max(8, strong)), showRest = open ? rest : rest.slice(0, Math.max(0, 6 - showMine.length));
-    if (showMine.length) html += (rest.length ? '<div class="sub">Voor jou</div>' : "") + showMine.map(rowNew).join("");
-    if (showRest.length) html += (showMine.length ? '<div class="sub">Overige</div>' : "") + showRest.map(rowNew).join("");
-    var hidden = all.length - showMine.length - showRest.length;
-    if (hidden > 0) html += '<button class="others" data-more="n' + d0 + '">nog ' + hidden + " nieuwe concerten van deze dag</button>";
+/* Nieuw aangekondigd, geordend van 'voor jou' naar 'de rest':
+   voor jou (kaartje, interesse, bands die je zag) · grote zalen en arena's · binnenkort (30 dagen) · per zaal ingeklapt · overig (tributes, open podia, feesten) */
+var BIGV = /(^|-)(ziggo-dome|rotterdam-ahoy|ing-arena|afas-live|gelredome|johan-cruijff[a-z-]*|sportpaleis)$|^(lottoarena|afasdome|vorst|rwa)$/;
+var NOISE = /\b(tribute|to be announced|tba|open stage|open mic|open podium|silent disco|karaoke|pubquiz|quiz|bingo|workshop|djs\b[^,]*drinks|house classix|party)\b/i;
+function newGroups(list) {
+  var keys = myBands(), g = { you: [], big: [], soon: [], noise: [], rest: [] }, s30 = iso(new Date(NOW.getTime() + 30 * 864e5));
+  list.slice().sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; }).forEach(function (c) {
+    var mineBand = bandsOf(c).concat(c.la || []).some(function (n) { return keys[normA(n)]; });
+    if (has(c.id, "t") || has(c.id, "i") || c.seen || mineBand) g.you.push(c);
+    else if (NOISE.test(c.n)) g.noise.push(c);
+    else if (BIGV.test(c.v)) g.big.push(c);
+    else if (c.d <= s30) g.soon.push(c);
+    else g.rest.push(c);
   });
+  return g;
+}
+function renderNew(list) {
+  var g = newGroups(list), html = '<div class="newhead"><b>' + list.length + " concerten nieuw aangekondigd</b><span>in de afgelopen 7 dagen</span></div>";
+  if (!list.length) return html + '<div class="empty">Deze week is er (met deze filters) niets nieuws aangekondigd. <button class="others" data-clear style="margin-top:12px">Alle filters uit</button></div>';
+  var part = function (key, title, cap, items, max) {
+    if (!items.length) return "";
+    var open = st.more[key], show = open || items.length <= max + 2 ? items : items.slice(0, max);
+    return '<div class="hl" style="margin-top:18px">' + title + " · " + items.length + "</div>" + (cap ? '<div class="hcap">' + cap + "</div>" : "") + show.map(rowNew).join("") +
+      (show.length < items.length ? '<button class="others" data-more="' + key + '">nog ' + (items.length - show.length) + " tonen</button>" : "");
+  };
+  html += g.you.length ? part("nyou", "★ Voor jou", "Kaartje, interesse of een band die je eerder zag", g.you, 99)
+    : '<div class="hl" style="margin-top:18px">★ Voor jou</div><div class="hcap">Deze week niets nieuws van jouw bands.</div>';
+  html += part("nbig", "Grote namen", "Arena's en grote zalen: kaarten gaan hier vaak snel", g.big, 8);
+  html += part("nsoon", "Binnenkort", "In de komende 30 dagen", g.soon, 10);
+  if (g.rest.length) {   /* de rest per zaal, ingeklapt; jouw zalen eerst */
+    var per = {}; g.rest.forEach(function (c) { (per[c.v] = per[c.v] || []).push(c); });
+    var ks = Object.keys(per).sort(function (a, b) { return (inMine(per[b][0]) ? 1 : 0) - (inMine(per[a][0]) ? 1 : 0) || per[b].length - per[a].length || venue(per[a][0]).label.localeCompare(venue(per[b][0]).label, "nl"); });
+    html += '<div class="hl" style="margin-top:18px">Later · per zaal · ' + g.rest.length + '</div><div class="hcap">Tik op een zaal om de nieuwe concerten te zien</div>' + ks.map(function (k) {
+      var open = st.more["nv" + k], v = venue(per[k][0]);
+      return '<button class="mrow regrow" data-ngrp="nv' + esc(k) + '"><span style="width:auto;flex:1">' + (open ? "▾ " : "▸ ") + esc(v.label) + ' <small style="color:var(--muted)">' + esc(v.city) + (mine.indexOf(k) >= 0 ? " · jouw zaal" : "") + '</small></span><em style="width:auto">' + per[k].length + "</em></button>" +
+        (open ? per[k].map(rowNew).join("") : ""); }).join("");
+  }
+  if (g.noise.length) {
+    var on = st.more.nnoise;
+    html += '<button class="mrow regrow" style="margin-top:14px" data-ngrp="nnoise"><span style="width:auto;flex:1">' + (on ? "▾ " : "▸ ") + 'Overig <small style="color:var(--muted)">tributes, open podia, feesten</small></span><em style="width:auto">' + g.noise.length + "</em></button>" + (on ? g.noise.map(rowNew).join("") : "");
+  }
   return html;
 }
 /* let op: een concert met interesse is uitverkocht, of een gemarkeerd concert staat niet meer in de agenda van de zaal */
@@ -2230,6 +2251,7 @@ $("main").addEventListener("click", function (e) {
       save("ca-marks", marks); try { buildSeen(); } catch (x) {} var y_ = scrollY; render(); window.scrollTo(0, y_); }
     return;
   }
+  var ng_ = t.closest("[data-ngrp]"); if (ng_) { var gk = ng_.getAttribute("data-ngrp"); st.more[gk] = !st.more[gk]; render(); return; }
   if (t.closest("[data-more]")) { st.more[t.closest("[data-more]").getAttribute("data-more")] = true; render(); return; }
   if (t.closest("[data-clear]")) { st.venue = ""; st.cc = ""; st.f = {}; st.q = ""; $("q").value = ""; st.city = ""; st.month = ""; st.from = st.to = ""; render(); return; }
   if (t.closest("[data-hsort]")) { var hs = t.closest("[data-hsort]").getAttribute("data-hsort"); st.hrev = (st.hsort || "d") === hs ? !st.hrev : false; st.hsort = hs; render(); return; }

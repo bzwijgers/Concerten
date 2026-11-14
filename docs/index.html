@@ -1298,10 +1298,10 @@ function setlistHtml(aid, artist, city, d, names) {
 function afilesHtml(aid) { return '<div class="hl" style="margin:12px 0 4px">Posters, foto\'s en bestanden</div><div class="posters afiles" data-afiles="' + esc(aid) + '"></div><div class="pstat" data-afstat></div>'; }
 function loadAFiles(aid, au) {
   var box = document.querySelector("[data-afiles]"); if (!box || box.getAttribute("data-afiles") !== aid) return;
-  var m = marks[aid] || {}, fot = m.fot || [], fil = m.fil || [], ok = SYNC && SYNC.token, hide = m.phide || [];
+  var m = marks[aid] || {}, fot = m.fot || [], fil = m.fil || [], ok = SYNC && SYNC.token, hide = m.phide || [], gone = hide.concat(m.pdel || []);
   if (ok && au === undefined) loadAuto().then(function (a) { loadAFiles(aid, (a.marks || {})[aid] || null); });
   var items = (m.pst || []).map(function (p) { return { k: "Eigen", p: p, aid: aid }; });
-  (au && au.img || []).forEach(function (x) { if (hide.indexOf(x.p) < 0) items.push({ k: x.k === "gen" ? "Gemaakt" : x.k === "zaal" ? "Zaal" : "Artiest", p: x.p, src: x.src, aid: aid }); });
+  (au && au.img || []).forEach(function (x) { if (gone.indexOf(x.p) < 0 && !(m.nogen && x.k === "gen")) items.push({ k: x.k === "gen" ? "Gemaakt" : x.k === "zaal" ? "Zaal" : "Artiest", p: x.p, src: x.src, aid: aid }); });
   items = pOrder(items, m);
   var np = items.length;
   fot.forEach(function (p) { items.push({ k: "Foto", p: p, aid: aid }); });
@@ -1944,9 +1944,9 @@ function loadPosters(c) {
   var imgs = IMGS ? Promise.resolve(IMGS) : fetch("data/img.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; });
   Promise.all([imgs, loadAuto()]).then(function (res) {
     IMGS = res[0]; var au = (res[1].marks || {})[id] || null; if (!$("posters") || st.open !== id) return;
-    var hide = m.phide || [], items = [], seen = {}, add = function (it) { var k = it.p || it.u; if (k && !seen[k] && hide.indexOf(k) < 0) { seen[k] = 1; items.push(it); } };
+    var hide = m.phide || [], gone = hide.concat(m.pdel || []), items = [], seen = {}, add = function (it) { var k = it.p || it.u; if (k && !seen[k] && gone.indexOf(k) < 0) { seen[k] = 1; items.push(it); } };
     (m.pst || []).forEach(function (p) { add({ k: "Eigen", p: p }); });
-    (au && au.img || []).forEach(function (x) { if (x.k === "gen") add({ k: "Gemaakt", p: x.p }); });
+    (au && au.img || []).forEach(function (x) { if (x.k === "gen" && !m.nogen) add({ k: "Gemaakt", p: x.p }); });
     (au && au.img || []).forEach(function (x) { if (x.k !== "gen") add({ k: x.k === "zaal" ? "Zaal" : "Artiest", p: x.p, src: x.src }); });
     if (!(au && au.img || []).some(function (x) { return x.k === "zaal"; })) {
       var key = nice(c.n).toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 10);
@@ -2007,7 +2007,7 @@ function openPoster(i) {
   var it = PV[i]; if (!it) return; PVI = i; PVB = null;
   var v = $("pview"), im = v.querySelector("img"); im.src = it.p ? (PBLOB[it.p] || {}).url || "" : it.u;
   var own = it.k === "Eigen" || it.k === "Foto", pd = v.querySelector("[data-pvdel]");
-  pd.hidden = it.k === "Jaarposter" || !marks[it.aid || st.open]; pd.textContent = own ? "Weghalen" : "Verbergen";
+  pd.hidden = it.k === "Jaarposter" || !marks[it.aid || st.open]; pd.textContent = "Verwijderen";
   v.querySelector("[data-pvprom]").hidden = it.k !== "Foto";
   v.querySelector("[data-pvfirst]").hidden = i === 0 || it.k === "Foto" || it.k === "Jaarposter" || !marks[it.aid || st.open];
   v.querySelector("[data-pvnext]").hidden = it.k !== "Jaarposter";
@@ -2040,8 +2040,8 @@ function pOrder(items, m) {
 /* eerste poster van een concert (eigen of gemaakt/gevonden, niet verborgen, jouw volgorde) */
 function firstPoster(id) {
   var m = marks[id]; if (!m) return null;
-  var hide = m.phide || [], au = ((AUTO || {}).marks || {})[id], items = (m.pst || []).map(function (p) { return { p: p }; });
-  (au && au.img || []).forEach(function (x) { if (x.k === "gen") items.push({ p: x.p }); });
+  var hide = (m.phide || []).concat(m.pdel || []), au = ((AUTO || {}).marks || {})[id], items = (m.pst || []).map(function (p) { return { p: p }; });
+  (au && au.img || []).forEach(function (x) { if (x.k === "gen" && !m.nogen) items.push({ p: x.p }); });
   (au && au.img || []).forEach(function (x) { if (x.k !== "gen") items.push({ p: x.p }); });
   items = pOrder(items.filter(function (it) { return hide.indexOf(it.p) < 0; }), m);
   return items[0] || null;
@@ -2083,11 +2083,15 @@ function firstPosterNow() {   /* deze poster vooraan: ook het plaatje in Mijn co
 }
 function delPoster() {
   var it = PV[PVI], id = it && it.aid || st.open, m = marks[id], k = it && it.k === "Foto" ? "fot" : "pst"; if (!it || it.k === "Jaarposter" || !m) return;
-  if (it.k !== "Eigen" && it.k !== "Foto") {   /* gemaakt of gevonden: alleen verbergen (terugzetten kan) */
-    if (!confirm("Deze poster verbergen? Terugzetten kan altijd.")) return;
-    m.phide = (m.phide || []).concat([it.p || it.u]); save("ca-marks", marks); afterPoster(id, it.aid); return;
+  if (it.k !== "Eigen" && it.k !== "Foto") {   /* gemaakt of gevonden: weg uit je opslag, en de postertaak haalt hem niet terug */
+    if (!confirm(it.k === "Gemaakt" ? "De gemaakte poster verwijderen? Er wordt voor dit concert geen nieuwe meer gemaakt." : "Deze poster verwijderen?")) return;
+    if (it.p) {
+      m.pdel = (m.pdel || []).concat([it.p]); if (it.k === "Gemaakt") m.nogen = true;
+      ghApi("/contents/" + it.p).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { if (j && j.sha) ghApi("/contents/" + it.p, { method: "DELETE", body: JSON.stringify({ message: "poster weg", sha: j.sha }) }); }).catch(function () {});
+    } else m.phide = (m.phide || []).concat([it.u]);   /* afbeelding op de site van de zaal: alleen niet meer tonen */
+    save("ca-marks", marks); afterPoster(id, it.aid); return;
   }
-  if (!confirm(k === "fot" ? "Deze foto weghalen?" : "Deze poster weghalen?")) return;
+  if (!confirm(k === "fot" ? "Deze foto verwijderen?" : "Deze poster verwijderen?")) return;
   m[k] = (m[k] || []).filter(function (p) { return p !== it.p; }); if (!m[k].length) delete m[k]; save("ca-marks", marks);
   ghApi("/contents/" + it.p).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { if (j && j.sha) ghApi("/contents/" + it.p, { method: "DELETE", body: JSON.stringify({ message: "poster weg", sha: j.sha }) }); }).catch(function () {});
   if (it.aid) { closePoster(); render(); syncSoon(); return; }

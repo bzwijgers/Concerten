@@ -229,7 +229,7 @@
 "good": 7
 },
 "kreun": {
-"good": 13
+"good": 55
 },
 "kroepoek": {
 "good": 28
@@ -338,13 +338,14 @@
 "good": 190
 },
 "studiogonz": {
-"good": 16
+"good": 16,
+"since": "2026-11-14"
 },
 "tbeest": {
-"good": 21
+"good": 20
 },
 "ticketmaster": {
-"good": 712
+"good": 714
 },
 "tivoli": {
 "good": 324

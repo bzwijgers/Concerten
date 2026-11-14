@@ -1352,16 +1352,31 @@ function loadAFiles(aid, au) {
   PV = items;
   box.innerHTML = items.map(function (it, i) { return '<button class="pst" data-pv="' + i + '"><img data-pp="' + esc(it.p) + '" alt="' + it.k + '">' + (i < np ? '<span class="ptag">' + (it.k === "Eigen" ? "Poster" : it.k) + "</span>" : "") + "</button>"; }).join("") +
     fil.map(function (f, i) { return '<button class="pst padd afile" data-afile="' + i + '"><b>📄</b><span>' + esc(f.n) + '</span><i class="fdel" data-afdel="' + i + '" aria-label="Weghalen">✕</i></button>'; }).join("") +
+    '<label class="pst padd"><input type="file" accept="image/*" data-apst hidden><b>＋</b><span>Poster</span></label>' +
     '<label class="pst padd"><input type="file" accept="image/*" multiple data-aup hidden><b>＋</b><span>Foto\'s</span></label>' +
     '<label class="pst padd"><input type="file" multiple data-aupf hidden><b>📎</b><span>Bestand<br>(pdf, kaartje …)</span></label>' +
     (navigator.clipboard && navigator.clipboard.read ? '<button class="pst padd" data-apaste><b>📋</b><span>Foto plakken</span></button>' : "") +
     (hide.length ? '<button class="pst padd" data-punhide="' + esc(aid) + '"><b>↺</b><span>' + hide.length + (hide.length === 1 ? " verborgen poster" : " verborgen posters") + "<br>terugzetten</span></button>" : "");
+  var arow = box.closest("[data-aid]"), who = arow && arow.querySelector(".n") ? arow.querySelector(".n").textContent : "", loc = arow && arow.querySelector(".s") ? arow.querySelector(".s").textContent.split(" · ")[1] || "" : "";
+  if (!items.length && who && !box.parentNode.querySelector(".pzoek")) box.insertAdjacentHTML("afterend", '<a class="lnk pzoek" style="display:inline-block;margin:2px 0 4px" href="https://www.google.com/search?tbm=isch&q=' + encodeURIComponent(who + " " + loc + " " + aid.split("|")[1].slice(0, 4) + " poster") + '" target="_blank" rel="noopener">Poster zoeken ↗</a>');
   var say = document.querySelector("[data-afstat]"); if (say && !ok) say.textContent = "Zet synchroniseren aan (menu → Synchroniseren) om foto's en bestanden te bewaren.";
   if (!ok) return;
   [].forEach.call(box.querySelectorAll("img[data-pp]"), function (im) { ghRaw(im.getAttribute("data-pp")).then(function (o) { im.src = o.url; }).catch(function () { im.alt = "niet gevonden"; }); });
   fil.forEach(function (f) { ghRaw(f.p).catch(function () {}); });   /* alvast laden: openen moet direct op de tik gebeuren (iPad) */
 }
 function readB64(file) { return new Promise(function (ok, no) { var fr = new FileReader(); fr.onload = function () { ok(String(fr.result).split(",")[1]); }; fr.onerror = no; fr.readAsDataURL(file); }); }
+function addHistPoster(aid, file) {   /* eigen poster bij een concert in Historie: posters/eigen/, vooraan */
+  if (!SYNC || !SYNC.token) { alert("Zet eerst synchroniseren aan (menu → Synchroniseren)."); return; }
+  ensureHistMark(aid); if (!marks[aid]) return;
+  var s_ = document.querySelector("[data-afstat]"); if (s_) s_.textContent = "Poster opslaan…";
+  shrink(file).then(function (b64) {
+    var path = "posters/eigen/" + Date.now().toString(36) + ".jpg";
+    return ghApi("/contents/" + path, { method: "PUT", body: JSON.stringify({ message: "poster", content: b64 }) }).then(function (r) {
+      if (!r.ok) throw new Error("fout " + r.status);
+      var m = marks[aid]; m.pst = [path].concat(m.pst || []); m.pord = [path].concat(m.pord || []).slice(0, 30); save("ca-marks", marks); render(); syncSoon();
+    });
+  }).catch(function (er) { var s2 = document.querySelector("[data-afstat]"); if (s2) s2.textContent = "Opslaan mislukt: " + (er && er.message || er); });
+}
 function addAFiles(aid, files, photo) {
   if (!SYNC || !SYNC.token) { alert("Zet eerst synchroniseren aan (menu → Synchroniseren). Je foto's en bestanden worden in je eigen privé-opslag bewaard, zodat je ze op al je apparaten hebt."); return; }
   ensureHistMark(aid); if (!marks[aid]) return;
@@ -1842,8 +1857,8 @@ function renderArchive() {
     if ((srt === "d" || srt === "o") && (!st.hyear || isRange) && e.d.slice(0, 4) !== lastY) { lastY = e.d.slice(0, 4); html += '<div class="yhead"><b>' + lastY + "</b><span>" + years[lastY] + "</span></div>"; }
     if (e.src === "a" && marks[e.id] && e.festPart) { /* andere dagen van hetzelfde festival: al in de festivalregel */ }
     else if (e.src === "a" && marks[e.id]) html += appRow({ id: e.id, s: marks[e.id].s, rv: marks[e.id].rv || {} });
-    else if (!e.mid && e.src !== "a" && e.d >= "2026") { var hid = histId(e), hm = marks[hid];
-      html += appRow({ id: hid, s: { n: (e.acts[0] || [e.loc])[0], d: e.d, v: venueKeyFor(e.loc, e.city) || "", u: "" }, rv: (hm && hm.rv) || {} }, null, e.loc, (e.fn || e.acts.some(function (x) { return x[1] === "F"; })) ? festLabel(e) || e.loc : ""); }
+    else if (!e.mid && e.src !== "a") { var hid = histId(e), hm = marks[hid];
+      html += appRow({ id: hid, s: { n: (e.acts[0] || [e.loc])[0], d: e.d, v: venueKeyFor(e.loc, e.city) || "", u: "" }, rv: (hm && hm.rv) || {} }, e.d >= "2026" ? null : e.acts, e.loc, (e.fn || e.acts.some(function (x) { return x[1] === "F"; })) ? festLabel(e) || e.loc : ""); }
     else if (e.mid && marks[e.mid]) html += appRow({ id: e.mid, s: marks[e.mid].s, rv: marks[e.mid].rv || {} }, e.d >= "2026" ? null : e.acts, e.loc);   /* ook in je eigen lijst: beoordelen kan, artiesten uit je lijst */
     else html += histRow(e);
   });
@@ -2414,6 +2429,7 @@ function actEdit(e, render_) {   /* wijziging in 'Wie zag je?' bewaren */
 }
 $("main").addEventListener("change", function (e) { if (actEdit(e, true)) return;
   var ss = e.target.closest("[data-hsortsel]"); if (ss) { st.hsort = ss.value; st.hrev = false; render(); } });
+$("main").addEventListener("change", function (e) { var hp = e.target.closest("[data-apst]"); if (hp && hp.files && hp.files[0]) { addHistPoster(hp.closest("[data-afiles]").getAttribute("data-afiles"), hp.files[0]); hp.value = ""; return; } });
 $("main").addEventListener("change", function (e) { var f = e.target.closest("[data-aup],[data-aupf]"); if (f && f.files && f.files.length) { var fl = [].slice.call(f.files); addAFiles(f.closest("[data-afiles]").getAttribute("data-afiles"), fl, f.hasAttribute("data-aup")); f.value = ""; } });
 $("main").addEventListener("change", function (e) { var f = e.target.closest("[data-himport]"); if (f && f.files && f.files[0]) importHist(f.files[0]); });
 $("panel").addEventListener("input", function (e) {   /* notitie bij een kaartje bewaren tijdens het typen */

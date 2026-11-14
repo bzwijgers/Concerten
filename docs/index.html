@@ -1857,6 +1857,7 @@ function renderArchive() {
   if (st.aview === "fest") return head + festView(list, srt) + foot;
   /* lijst */
   var opts = [["d", "Nieuwste"], ["o", "Oudste"], ["n", "A–Z"], ["t", "Top"], ["r", "Cijfer"]];   /* kort: past op de regel van de jaren, ook op een telefoon */
+  if (!list.some(function (e) { return e.d >= "2013"; })) { opts = opts.filter(function (o) { return o[0] !== "t"; }); if (srt === "t") srt = "d"; }   /* 'Top' (je jaarlijsten) pas vanaf 2013 */
   if (["d", "o", "n", "t", "r"].indexOf(srt) < 0) srt = "d";
   var name0 = function (e) { return nice(e.fn || (e.acts[0] || [e.loc])[0]); };
   var L = list.slice();

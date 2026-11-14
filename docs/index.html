@@ -1445,7 +1445,7 @@ function loadRanks() {
   RANKat = Date.now();
   ghGet("ranks.json").then(function (r) { RANKS = r ? JSON.parse(r.txt).ranks || {} : {}; if (st.tab === "a") { var y = scrollY; render(); window.scrollTo(0, y); } }).catch(function () { RANKS = RANKS || {}; });
 }
-function eveRank(e) { var b = 0; if (RANKS) e.acts.forEach(function (a) { var r = RANKS[e.d + "|" + normA(String(a[0] || ""))]; if (r && (!b || r < b)) b = r; }); return b; }
+function eveRank(e) { var b = 0; if (RANKS) (e.fn ? e.acts.concat([[e.fn]]) : e.acts).forEach(function (a) {   /* festival zonder bandnamen: op festivalnaam */ var r = RANKS[e.d + "|" + normA(String(a[0] || ""))]; if (r && (!b || r < b)) b = r; }); return b; }
 /* plaats van elke avond in de ranglijst van zijn jaar (1 = beste), voor de regels, sortering 'Top' en de samenvatting */
 function rankPositions(all) {
   RPOS = {}; RCNT = {}; if (!RANKS) return;

@@ -27,9 +27,27 @@ import androidx.work.NetworkType
 import androidx.work.Constraints
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.ExistingWorkPolicy
+import androidx.work.workDataOf
 import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
+    // concertdag: per datum met een kaartje één melding om 9 uur (DayWorker); vandaag na 9 uur maar vóór 18 uur: meteen
+    private fun planDays(json: String) {
+        val tix = try { org.json.JSONObject(json).optJSONArray("tix") } catch (e: Exception) { null } ?: return
+        val wm = WorkManager.getInstance(this)
+        val now = System.currentTimeMillis()
+        val fmt = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
+        val today = fmt.format(java.util.Date(now))
+        for (d in (0 until tix.length()).map { tix.getJSONObject(it).optString("d") }.filter { it.length == 10 }.toSet()) {
+            val at = java.util.Calendar.getInstance().apply { time = fmt.parse(d) ?: return@apply; set(java.util.Calendar.HOUR_OF_DAY, 9); set(java.util.Calendar.MINUTE, 0) }.timeInMillis
+            var delay = at - now
+            if (delay < 0) { if (d == today && java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY) < 18) delay = 0 else continue }
+            val req = OneTimeWorkRequestBuilder<DayWorker>().setInitialDelay(delay, TimeUnit.MILLISECONDS).setInputData(workDataOf("d" to d)).build()
+            wm.enqueueUniqueWork("dayof-$d", ExistingWorkPolicy.KEEP, req)
+        }
+    }
     private lateinit var web: WebView
     private var fileCb: ValueCallback<Array<Uri>>? = null
     private var pendingSave: String? = null
@@ -104,6 +122,7 @@ class MainActivity : AppCompatActivity() {
                 val req = PeriodicWorkRequestBuilder<BandWorker>(6, TimeUnit.HOURS)
                     .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()).build()
                 WorkManager.getInstance(this@MainActivity).enqueueUniquePeriodicWork("bandnews", ExistingPeriodicWorkPolicy.KEEP, req)
+                planDays(json)
             }
             @JavascriptInterface fun saveFile(name: String, content: String) {
                 runOnUiThread {

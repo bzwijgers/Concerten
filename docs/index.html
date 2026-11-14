@@ -76,6 +76,7 @@ header.sc{border-bottom-color:var(--line)}
 .lg{object-fit:cover;background:var(--card2);box-shadow:0 0 0 1px var(--line)}
 .lgw{position:relative;display:inline-block;flex:none;border-radius:13px;background:var(--card2)}
 .lgw::before{content:attr(data-ch);position:absolute;inset:0;display:grid;place-items:center;font:800 20px var(--f-d);color:var(--faint)}
+.dayacts{margin:8px 0 4px}.dayacts .btn{flex:1 1 auto}
 .lgw.ok::before{content:none}.lgw.pth .lg{object-fit:cover;background:none}.lgw .lg{position:relative;display:block;opacity:0;transition:opacity .2s}.lgw.ok .lg{opacity:1}
 .ev .lgw,.ev .lgw .lg{width:50px;height:50px;border-radius:13px}.next .lgw,.next .lgw .lg{width:56px;height:56px;border-radius:14px}.next .lgw{margin-bottom:12px}.next .lgw .lg{margin:0}
 .mc .lgw,.mc .lgw .lg{width:42px;height:42px;border-radius:11px}.pb .lgw,.pb .lgw .lg{width:64px;height:64px;border-radius:16px}
@@ -767,7 +768,8 @@ function bandNews() {
   });
   out.sort(function (a, b) { return a.c.first > b.c.first ? -1 : a.c.first < b.c.first ? 1 : a.c.d < b.c.d ? -1 : 1; });
   if (window.AndroidApp && AndroidApp.setWatch) { var skip = ALL.filter(function (c) { return c.d >= TODAY && c.first && c.first !== "base" && c.first >= cut && (c.o || marks[c.id]); }).map(function (c) { return c.id; });
-    var w = JSON.stringify({ keys: Object.keys(keys).sort(), seen: Object.keys(BNSEEN).concat(skip) }); if (w !== BNWATCH) { BNWATCH = w; try { AndroidApp.setWatch(w); } catch (e) {} } }
+    var t60 = iso(new Date(NOW.getTime() + 60 * 864e5)), tix = ticketList().filter(function (c) { return c.d <= t60; }).map(function (c) { var v = venue(c); return { d: c.d, n: nice(c.n), w: (otherVenue(c) || v).label + ", " + v.city, t: (c.t || "").replace("deuren ", "") }; });
+    var w = JSON.stringify({ keys: Object.keys(keys).sort(), seen: Object.keys(BNSEEN).concat(skip), tix: tix }); if (w !== BNWATCH) { BNWATCH = w; try { AndroidApp.setWatch(w); } catch (e) {} } }
   return out;
 }
 function bandNewsSeen(list) { list.forEach(function (x) { BNSEEN[x.c.id] = TODAY; });
@@ -779,6 +781,26 @@ function openBandNews() {
     '<button class="others" data-bnall style="margin-top:14px">Alles gezien</button></div>';
   showSheet(); $("panel").scrollTop = 0;
 }
+function ticketList() {
+  var out = [];
+  Object.keys(marks).forEach(function (id) {
+    var m = marks[id]; if (!m.t || !m.s || !m.s.d || m.s.d < TODAY) return;
+    out.push(findC(id) || (ORPH[id] = { id: id, v: m.s.v, d: m.s.d, n: m.s.n, u: m.s.u || "", t: "", r: m.s.r || "", s: false, orphan: true }));
+  });
+  return out.sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; });
+}
+/* concertdag: vandaag (en morgen) bovenaan de agenda, met route en je kaartjes */
+function dayCards() {
+  var tm = iso(new Date(NOW.getTime() + 864e5));
+  return ticketList().filter(function (c) { return c.d === TODAY || c.d === tm; }).map(function (c) {
+    var v = venue(c), fil = (marks[c.id] || {}).fil || [];
+    fil.forEach(function (f) { if (SYNC && SYNC.token) ghRaw(f.p).catch(function () {}); });   /* alvast laden: openen moet direct op de tik gebeuren */
+    return '<div class="dayc" style="margin-top:12px">' + card(c, true) +
+      '<div class="acts dayacts"><a class="btn pri" href="https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent((otherVenue(c) || v).label + ", " + v.city) + '" target="_blank" rel="noopener">🧭 Route</a>' +
+      fil.slice(0, 3).map(function (f, i) { return '<button class="btn" data-dfile="' + esc(c.id) + '" data-i="' + i + '">🎟 ' + esc(f.n.length > 18 ? f.n.slice(0, 16) + "…" : f.n) + "</button>"; }).join("") +
+      (fil.length ? "" : '<button class="btn" data-dopen="' + esc(c.id) + '">🎟 Kaartje toevoegen</button>') + "</div></div>";
+  }).join("");
+}
 function renderAgenda() {
   var list = ALL.filter(function (c) { return c.d >= TODAY && pass(c); });
   var html = "", days = {}, order = [];
@@ -786,6 +808,7 @@ function renderAgenda() {
   var shown = 0;
   if (newVer) html += '<div class="since"><button data-newver><b>↻ Nieuwe versie van de agenda</b><span>Tik om te verversen; je blijft op dezelfde plek.</span></button></div>';
   if (SYNC && SYNC.token && SYNC.err) html += '<div class="since"><button data-syncfix style="border-color:rgba(255,107,107,.45);background:rgba(255,107,107,.08)"><b style="color:var(--red)">⚠ Synchroniseren werkt niet meer</b><span>' + esc(SYNC.err) + " Tik om het te herstellen.</span></button></div>";
+  if (!st.q.trim()) html += dayCards();
   var bn = bandNews(); if (st.q.trim() || st.venue || st.city) bn = [];   /* altijd rekenen: dit geeft ook je bands door aan de telefoon */
   if (bn.length) html += '<div class="since"><button data-bandnews class="bn"><b>🔔 ' + (bn.length === 1 ? "Nieuw van " + esc(bn[0].who) : bn.length + " nieuwe concerten van jouw bands") + "</b><span>" +
     esc(bn.slice(0, 3).map(function (x) { var d = parse(x.c.d); return x.who + " (" + d.getDate() + " " + MON[d.getMonth()] + ", " + venue(x.c).label + ")"; }).join(" · ")) + (bn.length > 3 ? " …" : "") +
@@ -1344,7 +1367,7 @@ function addAFiles(aid, files, photo) {
   ensureHistMark(aid); if (!marks[aid]) return;
   files = [].slice.call(files, 0, 30); if (!files.length) return;
   var say = function (t) { var s_ = document.querySelector("[data-afstat]"); if (s_) s_.textContent = t; }, done = 0;
-  files.reduce(function (pr, file, i) {
+  return files.reduce(function (pr, file, i) {
     return pr.then(function () {
       if (!photo && file.size > 25e6) throw new Error((file.name || "bestand") + " is groter dan 25 MB");
       say((photo ? "Foto's" : "Bestanden") + " opslaan… " + (done + 1) + " van " + files.length);
@@ -2070,9 +2093,10 @@ function firstPoster(id) {
 }
 /* Mijn concerten: je eerste poster als plaatje bij het concert (in plaats van het zaallogo) */
 function mineThumbs() {
-  if (st.tab !== "mine" || !SYNC || !SYNC.token) return;
+  var sel = st.tab === "mine" ? "[data-id]" : st.tab === "agenda" ? ".dayc [data-id]" : "";
+  if (!sel || !SYNC || !SYNC.token || !$("main").querySelector(sel)) return;
   if (!AUTO) { loadAuto().then(function () { if (AUTO) mineThumbs(); }); return; }
-  [].forEach.call($("main").querySelectorAll("[data-id]"), function (el) {
+  [].forEach.call($("main").querySelectorAll(sel), function (el) {
     var fp = firstPoster(el.getAttribute("data-id")); if (!fp) return;
     ghRaw(fp.p).then(function (o) {
       var bg = el.querySelector(".bgimg"); if (bg) bg.style.backgroundImage = "url(" + o.url + ")";
@@ -2136,11 +2160,15 @@ function openSheet(id) {
     '<a class="btn" href="' + esc(c.u) + '" target="_blank" rel="noopener">Zaal ↗</a>' +
     '<a class="btn" href="' + esc(c.k || c.ka || "https://www.ticketswap.nl/search?q=" + encodeURIComponent(c.n)) + '" target="_blank" rel="noopener">TicketSwap ↗</a>' +
     '<a class="btn wide" href="' + esc(gcal(c)) + '" target="_blank" rel="noopener">📅 Zet in Google Agenda</a></div>' + lineupHtml(c) +
+    (tk ? '<div class="hl" style="margin-top:16px">Kaartjes en bestanden</div><div class="posters afiles">' + ((marks[id] || {}).fil || []).map(function (f, i) {
+        return '<button class="pst padd afile" data-tkfile="' + i + '"><b>📄</b><span>' + esc(f.n) + '</span><i class="fdel" data-tkdel="' + i + '" aria-label="Weghalen">✕</i></button>'; }).join("") +
+      '<label class="pst padd"><input type="file" multiple data-tkup hidden><b>📎</b><span>Kaartje of<br>bestand</span></label></div><div class="pstat" data-afstat></div>' : "") +
     (tk ? '<div class="hl" style="margin-top:16px">Posters</div><div id="posters" class="posters"><span style="color:var(--faint);font-size:13px">Laden…</span></div><div id="pstat" class="pstat"></div>' +
       '<a class="lnk" href="https://www.google.com/search?tbm=isch&q=' + encodeURIComponent(nice(c.n).split(/\s+[-–:]\s+|\s+\+\s+/)[0] + " tour poster " + c.d.slice(0, 4)) + '" target="_blank" rel="noopener">Meer tourposters zoeken ↗</a>' +
       '<div class="hl" style="margin-top:16px">Mijn foto\'s</div><div id="fotos" class="posters"></div><div id="fstat" class="pstat"></div>' : "") +
     (tk ? '<div class="hl" style="margin-top:16px">Notitie</div><textarea data-note placeholder="Bijv. met wie, stoel- of rijnummer, parkeren, treintijden">' + esc((marks[id] || {}).note || "") + "</textarea>" : "") + "</div>";
   showSheet(); if (tk) loadPosters(c);
+  if (tk && SYNC && SYNC.token) ((marks[id] || {}).fil || []).forEach(function (f) { ghRaw(f.p).catch(function () {}); });
 }
 /* de terugknop van de telefoon sluit eerst een open scherm (concert, datum, zalen) in plaats van de pagina te verlaten */
 function showSheet() {
@@ -2189,7 +2217,9 @@ $("pview").addEventListener("click", function (e) {
   if (e.target.closest("[data-pvfirst]")) { firstPosterNow(); return; }
   if (e.target.closest("[data-pvshare]")) sharePoster(); else if (e.target.closest("[data-pvdel]")) delPoster(); else if (e.target.closest("[data-pvclose]") || e.target === this) closePoster();
 });
-$("panel").addEventListener("change", function (e) { var f = e.target.closest("[data-pup],[data-fup]"); if (f && f.files && f.files.length) { addPoster(f.files, f.hasAttribute("data-fup")); f.value = ""; } });
+$("panel").addEventListener("change", function (e) {
+  var tf = e.target.closest("[data-tkup]");
+  if (tf && tf.files && tf.files.length) { var fl = [].slice.call(tf.files), id0 = st.open; tf.value = ""; var pr = addAFiles(id0, fl, false); if (pr && pr.then) pr.then(function () { if (st.open === id0) openSheet(id0); }); return; } var f = e.target.closest("[data-pup],[data-fup]"); if (f && f.files && f.files.length) { addPoster(f.files, f.hasAttribute("data-fup")); f.value = ""; } });
 /* foto plakken: Ctrl+V op de pc, of de knop 'Foto plakken' (gekopieerd uit WhatsApp, Foto's, een website ...) */
 function pasteFiles(list) { return [].filter.call(list || [], function (f) { return /^image\//.test(f.type); }); }
 document.addEventListener("paste", function (e) {
@@ -2209,6 +2239,8 @@ function pasteButton() {
   }).catch(function () { if ($("fstat")) $("fstat").textContent = "Geen foto gevonden om te plakken. Kopieer eerst een foto (lang drukken op de foto → Kopieer) en tik dan op 'Foto plakken'."; });
 }
 $("panel").addEventListener("click", function (e) {
+  var tkd = e.target.closest("[data-tkdel]"); if (tkd) { var oid = st.open; delAFile(oid, +tkd.getAttribute("data-tkdel")); if (oid) openSheet(oid); return; }
+  var tkf = e.target.closest("[data-tkfile]"); if (tkf) { openAFile(st.open, +tkf.getAttribute("data-tkfile")); return; }
   var uh_ = e.target.closest("[data-punhide]"); if (uh_) { unhidePosters(uh_.getAttribute("data-punhide")); return; }
   var pv = e.target.closest("[data-pv]"); if (pv) { openPoster(+pv.getAttribute("data-pv")); return; }
   if (e.target.closest("[data-fpaste]")) { pasteButton(); return; }
@@ -2234,6 +2266,8 @@ function toggle(id, k) {
   if (k === "t" && m.t) setTimeout(function () { posterRequest(id); }, 6000);   /* na de sync: posters van de artiest laten zoeken */
 }
 $("main").addEventListener("click", function (e) {
+  var df_ = e.target.closest("[data-dfile]"); if (df_) { openAFile(df_.getAttribute("data-dfile"), +df_.getAttribute("data-i")); return; }
+  var do_ = e.target.closest("[data-dopen]"); if (do_) { openSheet(do_.getAttribute("data-dopen")); return; }
   var uh_ = e.target.closest("[data-punhide]"); if (uh_) { unhidePosters(uh_.getAttribute("data-punhide")); return; }
   var t = e.target;
   if (t.closest("[data-newver]")) { try { sessionStorage.setItem("ca-scroll", "0"); } catch (x) {} location.reload(); return; }

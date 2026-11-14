@@ -76,7 +76,7 @@ header.sc{border-bottom-color:var(--line)}
 .lg{object-fit:cover;background:var(--card2);box-shadow:0 0 0 1px var(--line)}
 .lgw{position:relative;display:inline-block;flex:none;border-radius:13px;background:var(--card2)}
 .lgw::before{content:attr(data-ch);position:absolute;inset:0;display:grid;place-items:center;font:800 20px var(--f-d);color:var(--faint)}
-.lgw.ok::before{content:none}.lgw .lg{position:relative;display:block;opacity:0;transition:opacity .2s}.lgw.ok .lg{opacity:1}
+.lgw.ok::before{content:none}.lgw.pth .lg{object-fit:cover;background:none}.lgw .lg{position:relative;display:block;opacity:0;transition:opacity .2s}.lgw.ok .lg{opacity:1}
 .ev .lgw,.ev .lgw .lg{width:50px;height:50px;border-radius:13px}.next .lgw,.next .lgw .lg{width:56px;height:56px;border-radius:14px}.next .lgw{margin-bottom:12px}.next .lgw .lg{margin:0}
 .mc .lgw,.mc .lgw .lg{width:42px;height:42px;border-radius:11px}.pb .lgw,.pb .lgw .lg{width:64px;height:64px;border-radius:16px}
 .lg.inv{filter:invert(1) hue-rotate(180deg) brightness(1.15)}
@@ -263,7 +263,7 @@ window.onerror = function (msg, src, line) { try { var m = localStorage.getItem(
   <div class="chips" id="chips"></div>
 </div></header>
 <main class="wrap" id="main"><div class="empty">Laden…</div></main>
-<div id="pview" hidden><button class="xclose" data-pvclose aria-label="Sluiten">✕</button><img alt="poster"><div class="pvbar"><button class="btn pri" data-pvshare>Delen</button><button class="btn" data-pvnext hidden>↻ Andere versie</button><a class="btn" data-pvsrc target="_blank" rel="noopener" hidden>Bron ↗</a><button class="btn" data-pvdel style="color:var(--red)" hidden>Weghalen</button></div></div>
+<div id="pview" hidden><button class="xclose" data-pvclose aria-label="Sluiten">✕</button><img alt="poster"><div class="pvbar"><button class="btn pri" data-pvshare>Delen</button><button class="btn" data-pvnext hidden>↻ Andere versie</button><a class="btn" data-pvsrc target="_blank" rel="noopener" hidden>Bron ↗</a><button class="btn" data-pvprom hidden>Als poster</button><button class="btn" data-pvfirst hidden>Vooraan zetten</button><button class="btn" data-pvdel style="color:var(--red)" hidden>Weghalen</button></div></div>
 <div class="sheet" id="sheet"><div class="bk" data-close></div><div class="panel" id="panel"></div></div>
 <nav id="nav" class="bottombar">
   <button data-tab="agenda" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Agenda</button>
@@ -1295,16 +1295,23 @@ function setlistHtml(aid, artist, city, d, names) {
     '<textarea data-sl rows="3" placeholder="Plak hier de setlist (één nummer per regel) of de link ernaar">' + esc(sl) + "</textarea>";
 }
 /* foto's en bestanden bij een gezien-concert: in je privé sync-opslag (posters/fotos/ en bestanden/) */
-function afilesHtml(aid) { return '<div class="hl" style="margin:12px 0 4px">Foto\'s en bestanden</div><div class="posters afiles" data-afiles="' + esc(aid) + '"></div><div class="pstat" data-afstat></div>'; }
-function loadAFiles(aid) {
+function afilesHtml(aid) { return '<div class="hl" style="margin:12px 0 4px">Posters, foto\'s en bestanden</div><div class="posters afiles" data-afiles="' + esc(aid) + '"></div><div class="pstat" data-afstat></div>'; }
+function loadAFiles(aid, au) {
   var box = document.querySelector("[data-afiles]"); if (!box || box.getAttribute("data-afiles") !== aid) return;
-  var m = marks[aid] || {}, fot = m.fot || [], fil = m.fil || [], ok = SYNC && SYNC.token;
-  PV = fot.map(function (p) { return { k: "Foto", p: p, aid: aid }; });
-  box.innerHTML = fot.map(function (p, i) { return '<button class="pst" data-pv="' + i + '"><img data-pp="' + esc(p) + '" alt="Foto"></button>'; }).join("") +
+  var m = marks[aid] || {}, fot = m.fot || [], fil = m.fil || [], ok = SYNC && SYNC.token, hide = m.phide || [];
+  if (ok && au === undefined) loadAuto().then(function (a) { loadAFiles(aid, (a.marks || {})[aid] || null); });
+  var items = (m.pst || []).map(function (p) { return { k: "Eigen", p: p, aid: aid }; });
+  (au && au.img || []).forEach(function (x) { if (hide.indexOf(x.p) < 0) items.push({ k: x.k === "gen" ? "Gemaakt" : x.k === "zaal" ? "Zaal" : "Artiest", p: x.p, src: x.src, aid: aid }); });
+  items = pOrder(items, m);
+  var np = items.length;
+  fot.forEach(function (p) { items.push({ k: "Foto", p: p, aid: aid }); });
+  PV = items;
+  box.innerHTML = items.map(function (it, i) { return '<button class="pst" data-pv="' + i + '"><img data-pp="' + esc(it.p) + '" alt="' + it.k + '">' + (i < np ? '<span class="ptag">' + (it.k === "Eigen" ? "Poster" : it.k) + "</span>" : "") + "</button>"; }).join("") +
     fil.map(function (f, i) { return '<button class="pst padd afile" data-afile="' + i + '"><b>📄</b><span>' + esc(f.n) + '</span><i class="fdel" data-afdel="' + i + '" aria-label="Weghalen">✕</i></button>'; }).join("") +
     '<label class="pst padd"><input type="file" accept="image/*" multiple data-aup hidden><b>＋</b><span>Foto\'s</span></label>' +
     '<label class="pst padd"><input type="file" multiple data-aupf hidden><b>📎</b><span>Bestand<br>(pdf, kaartje …)</span></label>' +
-    (navigator.clipboard && navigator.clipboard.read ? '<button class="pst padd" data-apaste><b>📋</b><span>Foto plakken</span></button>' : "");
+    (navigator.clipboard && navigator.clipboard.read ? '<button class="pst padd" data-apaste><b>📋</b><span>Foto plakken</span></button>' : "") +
+    (hide.length ? '<button class="pst padd" data-punhide="' + esc(aid) + '"><b>↺</b><span>' + hide.length + (hide.length === 1 ? " verborgen poster" : " verborgen posters") + "<br>terugzetten</span></button>" : "");
   var say = document.querySelector("[data-afstat]"); if (say && !ok) say.textContent = "Zet synchroniseren aan (menu → Synchroniseren) om foto's en bestanden te bewaren.";
   if (!ok) return;
   [].forEach.call(box.querySelectorAll("img[data-pp]"), function (im) { ghRaw(im.getAttribute("data-pp")).then(function (o) { im.src = o.url; }).catch(function () { im.alt = "niet gevonden"; }); });
@@ -1894,6 +1901,7 @@ function render() {
   catch (e) { $("main").innerHTML = '<div class="empty">Er ging iets mis bij dit scherm: ' + esc(String(e && e.message || e)) + "</div>"; setTimeout(function () { throw e; }); }
   document.documentElement.style.setProperty("--hh", $("hdr").offsetHeight + "px");
   if (st.tab === "a" && st.aopen) loadAFiles(st.aopen);
+  mineThumbs();
 }
 function gcal(c) {   /* opent Google Agenda met het concert al ingevuld */
   var v = venue(c), t = ((c.t || "").match(/\d\d:\d\d/) || ["20:00"])[0], s = c.d.replace(/-/g, "") + "T" + t.replace(":", "") + "00";
@@ -1936,15 +1944,16 @@ function loadPosters(c) {
   var imgs = IMGS ? Promise.resolve(IMGS) : fetch("data/img.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; });
   Promise.all([imgs, loadAuto()]).then(function (res) {
     IMGS = res[0]; var au = (res[1].marks || {})[id] || null; if (!$("posters") || st.open !== id) return;
-    var items = [], seen = {}, add = function (it) { var k = it.p || it.u; if (k && !seen[k]) { seen[k] = 1; items.push(it); } };
-    (au && au.img || []).forEach(function (x) { if (x.k === "gen") add({ k: "Gemaakt", p: x.p }); });
+    var hide = m.phide || [], items = [], seen = {}, add = function (it) { var k = it.p || it.u; if (k && !seen[k] && hide.indexOf(k) < 0) { seen[k] = 1; items.push(it); } };
     (m.pst || []).forEach(function (p) { add({ k: "Eigen", p: p }); });
+    (au && au.img || []).forEach(function (x) { if (x.k === "gen") add({ k: "Gemaakt", p: x.p }); });
     (au && au.img || []).forEach(function (x) { if (x.k !== "gen") add({ k: x.k === "zaal" ? "Zaal" : "Artiest", p: x.p, src: x.src }); });
     if (!(au && au.img || []).some(function (x) { return x.k === "zaal"; })) {
       var key = nice(c.n).toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 10);
       add({ k: "Zaal", u: IMGS[c.u] });
       ALL.forEach(function (x) { if (x !== c && x.d === c.d && nice(x.n).toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 10) === key) add({ k: "Zaal", u: IMGS[x.u] }); });
     }
+    items = pOrder(items, m);
     var np = items.length, fot = (m.fot || []).slice(0, 4);
     fot.forEach(function (p) { items.push({ k: "Foto", p: p }); });
     PV = items;
@@ -1958,7 +1967,8 @@ function loadPosters(c) {
     var host = function (u) { try { return new URL(u).hostname.replace(/^www\./, ""); } catch (e) { return u; } };
     $("pstat").innerHTML = !SYNC || !SYNC.token ? "Zet synchroniseren aan om posters te bewaren en de artiest te laten zoeken."
       : !au ? "De poster van de artiest wordt gezocht; kijk over een paar minuten nog eens."
-      : (au.site ? 'Site van de artiest: <a href="' + esc(au.site) + '" target="_blank" rel="noopener">' + esc(host(au.site)) + "</a> · " : (au.msg ? esc(au.msg) + " · " : "")) + '<button class="lnk" data-psite>' + (au.site ? "andere site" : "site invullen") + "</button>";
+      : (au.site ? 'Site van de artiest: <a href="' + esc(au.site) + '" target="_blank" rel="noopener">' + esc(host(au.site)) + "</a> · " : (au.msg ? esc(au.msg) + " · " : "")) + '<button class="lnk" data-psite>' + (au.site ? "andere site" : "site invullen") + "</button>" +
+        (hide.length ? ' · <button class="lnk" data-punhide="' + esc(id) + '">' + hide.length + (hide.length === 1 ? " verborgen poster" : " verborgen posters") + " terugzetten</button>" : "");
   });
 }
 function shrink(file) {   /* foto verkleinen tot max. 1600 px (jpg), zodat opslaan en laden snel gaat */
@@ -1996,7 +2006,10 @@ function addPoster(files, foto) {
 function openPoster(i) {
   var it = PV[i]; if (!it) return; PVI = i; PVB = null;
   var v = $("pview"), im = v.querySelector("img"); im.src = it.p ? (PBLOB[it.p] || {}).url || "" : it.u;
-  v.querySelector("[data-pvdel]").hidden = it.k !== "Eigen" && it.k !== "Foto";
+  var own = it.k === "Eigen" || it.k === "Foto", pd = v.querySelector("[data-pvdel]");
+  pd.hidden = it.k === "Jaarposter" || !marks[it.aid || st.open]; pd.textContent = own ? "Weghalen" : "Verbergen";
+  v.querySelector("[data-pvprom]").hidden = it.k !== "Foto";
+  v.querySelector("[data-pvfirst]").hidden = i === 0 || it.k === "Foto" || it.k === "Jaarposter" || !marks[it.aid || st.open];
   v.querySelector("[data-pvnext]").hidden = it.k !== "Jaarposter";
   v.querySelector("[data-pvsrc]").hidden = !it.src; if (it.src) v.querySelector("[data-pvsrc]").href = it.src;
   v.hidden = false; try { history.pushState({ pv: 1 }, ""); } catch (e) {}
@@ -2020,8 +2033,60 @@ function sharePoster() {
   else if (navigator.share) navigator.share({ text: txt, url: u }).catch(function () {});
   else window.open(u, "_blank");
 }
+function pOrder(items, m) {
+  var o = m && m.pord || [], ix = function (it) { var i = o.indexOf(it.p || it.u); return i < 0 ? 1e3 : i; };
+  return items.map(function (it, n) { return [it, n]; }).sort(function (a, b) { return ix(a[0]) - ix(b[0]) || a[1] - b[1]; }).map(function (x) { return x[0]; });
+}
+/* eerste poster van een concert (eigen of gemaakt/gevonden, niet verborgen, jouw volgorde) */
+function firstPoster(id) {
+  var m = marks[id]; if (!m) return null;
+  var hide = m.phide || [], au = ((AUTO || {}).marks || {})[id], items = (m.pst || []).map(function (p) { return { p: p }; });
+  (au && au.img || []).forEach(function (x) { if (x.k === "gen") items.push({ p: x.p }); });
+  (au && au.img || []).forEach(function (x) { if (x.k !== "gen") items.push({ p: x.p }); });
+  items = pOrder(items.filter(function (it) { return hide.indexOf(it.p) < 0; }), m);
+  return items[0] || null;
+}
+/* Mijn concerten: je eerste poster als plaatje bij het concert (in plaats van het zaallogo) */
+function mineThumbs() {
+  if (st.tab !== "mine" || !SYNC || !SYNC.token) return;
+  if (!AUTO) { loadAuto().then(function () { if (AUTO) mineThumbs(); }); return; }
+  [].forEach.call($("main").querySelectorAll("[data-id]"), function (el) {
+    var fp = firstPoster(el.getAttribute("data-id")); if (!fp) return;
+    ghRaw(fp.p).then(function (o) {
+      var bg = el.querySelector(".bgimg"); if (bg) bg.style.backgroundImage = "url(" + o.url + ")";
+      var lw = el.querySelector(".lgw,.lt"); if (!lw) return;
+      var sp = document.createElement("span"); sp.className = lw.className.replace(/\blt\b/, "lgw") + " ok pth"; sp.innerHTML = '<img class="lg" alt="" src="' + o.url + '">';
+      lw.parentNode.replaceChild(sp, lw);
+    }).catch(function () {});
+  });
+}
+function afterPoster(id, aid) {   /* viewer dicht via 'terug' (de kaart blijft open), daarna de kaart of Historie opnieuw tekenen */
+  syncSoon();
+  var done = function () { if (aid) render(); else openSheet(id); };
+  if (!$("pview").hidden && history.state && history.state.pv) {
+    window.addEventListener("popstate", function h() { window.removeEventListener("popstate", h); setTimeout(done, 0); });
+    history.back();
+  } else { closePoster(true); done(); }
+}
+function promotePoster() {   /* eigen foto wordt (eerste) poster */
+  var it = PV[PVI], id = it && it.aid || st.open, m = marks[id]; if (!it || it.k !== "Foto" || !m) return;
+  m.fot = (m.fot || []).filter(function (p) { return p !== it.p; }); if (!m.fot.length) delete m.fot;
+  m.pst = [it.p].concat((m.pst || []).filter(function (p) { return p !== it.p; }));
+  m.pord = [it.p].concat((m.pord || []).filter(function (x) { return x !== it.p; })).slice(0, 30); save("ca-marks", marks);
+  afterPoster(id, it.aid);
+}
+function unhidePosters(id) { var m = marks[id]; if (!m) return; delete m.phide; save("ca-marks", marks); syncSoon(); if (st.open === id && $("sheet").classList.contains("on")) openSheet(id); else render(); }
+function firstPosterNow() {   /* deze poster vooraan: ook het plaatje in Mijn concerten */
+  var it = PV[PVI], id = it && it.aid || st.open, m = marks[id], k = it && (it.p || it.u); if (!k || !m) return;
+  m.pord = [k].concat((m.pord || []).filter(function (x) { return x !== k; })).slice(0, 30); save("ca-marks", marks);
+  afterPoster(id, it.aid);
+}
 function delPoster() {
-  var it = PV[PVI], id = it && it.aid || st.open, m = marks[id], k = it && it.k === "Foto" ? "fot" : "pst"; if (!it || (it.k !== "Eigen" && it.k !== "Foto") || !m) return;
+  var it = PV[PVI], id = it && it.aid || st.open, m = marks[id], k = it && it.k === "Foto" ? "fot" : "pst"; if (!it || it.k === "Jaarposter" || !m) return;
+  if (it.k !== "Eigen" && it.k !== "Foto") {   /* gemaakt of gevonden: alleen verbergen (terugzetten kan) */
+    if (!confirm("Deze poster verbergen? Terugzetten kan altijd.")) return;
+    m.phide = (m.phide || []).concat([it.p || it.u]); save("ca-marks", marks); afterPoster(id, it.aid); return;
+  }
   if (!confirm(k === "fot" ? "Deze foto weghalen?" : "Deze poster weghalen?")) return;
   m[k] = (m[k] || []).filter(function (p) { return p !== it.p; }); if (!m[k].length) delete m[k]; save("ca-marks", marks);
   ghApi("/contents/" + it.p).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { if (j && j.sha) ghApi("/contents/" + it.p, { method: "DELETE", body: JSON.stringify({ message: "poster weg", sha: j.sha }) }); }).catch(function () {});
@@ -2088,12 +2153,14 @@ function openArchCity(ct) {   /* archiefkaart: welke concerten zag je in deze st
 function closeSheet(fromBack) {
   try { stopScan(); } catch (e) {}
   if (!$("sheet").classList.contains("on")) return;
-  $("sheet").classList.remove("on"); document.body.style.overflow = ""; st.open = null;
+  $("sheet").classList.remove("on"); document.body.style.overflow = ""; st.open = null; mineThumbs();
   if (!fromBack && history.state && history.state.sheet) { try { history.back(); } catch (e) {} }
 }
 document.addEventListener("keydown", function (e) { if (e.key !== "Escape") return; if (!$("pview").hidden) closePoster(); else if ($("sheet").classList.contains("on")) closeSheet(); });
 $("pview").addEventListener("click", function (e) {
   if (e.target.closest("[data-pvnext]")) { openYearPoster(true); return; }
+  if (e.target.closest("[data-pvprom]")) { promotePoster(); return; }
+  if (e.target.closest("[data-pvfirst]")) { firstPosterNow(); return; }
   if (e.target.closest("[data-pvshare]")) sharePoster(); else if (e.target.closest("[data-pvdel]")) delPoster(); else if (e.target.closest("[data-pvclose]") || e.target === this) closePoster();
 });
 $("panel").addEventListener("change", function (e) { var f = e.target.closest("[data-pup],[data-fup]"); if (f && f.files && f.files.length) { addPoster(f.files, f.hasAttribute("data-fup")); f.value = ""; } });
@@ -2116,6 +2183,7 @@ function pasteButton() {
   }).catch(function () { if ($("fstat")) $("fstat").textContent = "Geen foto gevonden om te plakken. Kopieer eerst een foto (lang drukken op de foto → Kopieer) en tik dan op 'Foto plakken'."; });
 }
 $("panel").addEventListener("click", function (e) {
+  var uh_ = e.target.closest("[data-punhide]"); if (uh_) { unhidePosters(uh_.getAttribute("data-punhide")); return; }
   var pv = e.target.closest("[data-pv]"); if (pv) { openPoster(+pv.getAttribute("data-pv")); return; }
   if (e.target.closest("[data-fpaste]")) { pasteButton(); return; }
   var bd = e.target.closest("[data-band]"); if (bd) { openBand(bd.getAttribute("data-band")); return; }
@@ -2140,6 +2208,7 @@ function toggle(id, k) {
   if (k === "t" && m.t) setTimeout(function () { posterRequest(id); }, 6000);   /* na de sync: posters van de artiest laten zoeken */
 }
 $("main").addEventListener("click", function (e) {
+  var uh_ = e.target.closest("[data-punhide]"); if (uh_) { unhidePosters(uh_.getAttribute("data-punhide")); return; }
   var t = e.target;
   if (t.closest("[data-newver]")) { try { sessionStorage.setItem("ca-scroll", "0"); } catch (x) {} location.reload(); return; }
   if (t.closest("[data-syncfix]")) { localStorage.removeItem("ca-sync"); var o_ = SYNC; SYNC = { owner: o_.owner, repo: o_.repo }; openSync(); return; }

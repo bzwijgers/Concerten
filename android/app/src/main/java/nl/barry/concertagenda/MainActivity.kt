@@ -74,9 +74,12 @@ class MainActivity : AppCompatActivity() {
             // poster delen (Instagram, WhatsApp, ...): bestand in de cache zetten en het deelmenu van Android openen
             @JavascriptInterface fun shareImage(b64: String, mime: String, text: String) {
                 try {
-                    val dir = java.io.File(cacheDir, "share").apply { mkdirs() }
-                    val ext = if (mime.contains("png")) "png" else if (mime.contains("webp")) "webp" else "jpg"
-                    val f = java.io.File(dir, "poster.$ext")
+                    val dir = java.io.File(cacheDir, "share").apply { mkdirs(); listFiles()?.forEach { it.delete() } }
+                    // bestandsnaam uit de tekst (artiest · zaal · datum, of de naam van het bestand), zodat het in pCloud e.d. herkenbaar opgeslagen wordt
+                    val ext = when { mime.contains("png") -> "png"; mime.contains("webp") -> "webp"; mime.contains("pdf") -> "pdf"; mime.contains("jpeg") -> "jpg"; else -> "" }
+                    val base = text.lineSequence().first().replace(Regex("[\\\\/:*?\"<>|]+"), " ").replace(Regex("\\s+"), " ").trim().take(90).ifEmpty { "poster" }
+                    val name = if (ext.isEmpty() || Regex("\\.[A-Za-z0-9]{1,6}$").containsMatchIn(base)) base else "$base.$ext"
+                    val f = java.io.File(dir, name)
                     f.writeBytes(android.util.Base64.decode(b64, android.util.Base64.DEFAULT))
                     val uri = androidx.core.content.FileProvider.getUriForFile(this@MainActivity, "$packageName.files", f)
                     val i = Intent(Intent.ACTION_SEND).setType(mime).putExtra(Intent.EXTRA_STREAM, uri).putExtra(Intent.EXTRA_TEXT, text).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)

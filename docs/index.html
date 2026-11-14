@@ -2020,7 +2020,8 @@ function openPoster(i) {
 function closePoster(fromBack) { var v = $("pview"); if (v.hidden) return; v.hidden = true; PVI = -1; if (!fromBack && history.state && history.state.pv) { try { history.back(); } catch (e) {} } }
 function sharePoster() {
   var it = PV[PVI], c = findC(st.open); if (!it) return;
-  var txt = c ? nice(c.n) + " · " + venue(c).label + ", " + venue(c).city : "", b = PVB;
+  var src = c || (it.aid && (marks[it.aid] || {}).s), dd = src && src.d ? parse(src.d) : null, b = PVB;
+  var txt = src ? nice(src.n) + " · " + venue(src).label + ", " + venue(src).city + (dd ? " · " + dd.getDate() + " " + MON[dd.getMonth()] + " " + dd.getFullYear() : "") : (it.name || "");
   if (b) {
     var type = /^image\/(jpeg|png|webp|gif)/.test(b.type) ? b.type.split(";")[0] : "image/jpeg", name = (it.name || "poster") + "." + type.split("/")[1].replace("jpeg", "jpg");
     if (window.AndroidApp && AndroidApp.shareImage) { var fr = new FileReader(); fr.onload = function () { AndroidApp.shareImage(String(fr.result).split(",")[1], type, txt); }; fr.readAsDataURL(b); return; }

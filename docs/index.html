@@ -2302,7 +2302,7 @@ function firstPoster(id, sub) {
   (au && au.img || []).forEach(function (x) { if (x.k === "gen" && !m.nogen) items.push({ p: x.p }); });
   (au && au.img || []).forEach(function (x) { if (x.k !== "gen" && x.k !== "fb") items.push({ p: x.p }); });
   items = pOrder(fbFirst(items.filter(function (it) { return hide.indexOf(it.p) < 0; })), m);
-  return items[0] || null;
+  return items[0] || (!sub && eveOf(id) !== id ? firstPoster(eveOf(id), true) : null);   /* band op een festival zonder eigen poster: die van het festival */
 }
 /* Mijn concerten: je eerste poster als plaatje bij het concert (in plaats van het zaallogo) */
 function mineThumbs() {

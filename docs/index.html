@@ -631,6 +631,7 @@ var DEFACTS = {};   /* standaard 'Wie zag je?' voor concerten uit je lijst (vana
 function defActs(acts) { return acts.map(function (x) { return [x[0], x[1] === "V" ? "V" : "H", true]; }); }
 function histId(e) { return "hist|" + e.d + "|" + e.loc + "|" + e.city; }
 function ensureHistMark(aid) {
+  if (!marks[aid] && aid.indexOf("||") > 0) { var pp = aid.split("||"), par = marks[pp[0]]; marks[aid] = { h: true, s: { n: pp[1], d: par && par.s ? par.s.d : "", v: "", u: "" } }; return; }
   if (marks[aid] || aid.indexOf("hist|") !== 0) return;
   var p = aid.split("|"); marks[aid] = { h: true, s: { n: "", d: p[1], v: "", u: "", loc: p[2], city: p[3] } };
   if (DEFACTS[aid]) marks[aid].acts = DEFACTS[aid].map(function (x) { return x.slice(); });
@@ -1174,24 +1175,36 @@ function festName(e) {
 /* festivalnaam altijd met het volledige jaar van de datum: 'Pinkpop 2007' (niet '07 of zonder jaar) */
 function festBase(e) { return e.fn ? e.fn.replace(/\s+('{1,2}\d{2}|(19|20)\d{2})$/, "") : festName(e); }
 function festLabel(e) { var b = festBase(e); return b ? b + " " + e.d.slice(0, 4) : ""; }
-function eveOf(id) { var p = String(id || "").split("|"); return p[0] === "hist" && p.length > 4 ? p.slice(0, 4).join("|") : id; }   /* bandregel van een festival -> de avond (posters, kaartjes, foto's) */
+function eveOf(id) { if (String(id || "").indexOf("||") > 0) return String(id).split("||")[0]; var p = String(id || "").split("|"); return p[0] === "hist" && p.length > 4 ? p.slice(0, 4).join("|") : id; }   /* bandregel van een festival -> de avond (posters, kaartjes, foto's) */
 function rpos(e) { return (e.rid && RPOS[e.rid]) || RPOS[e.d + "|" + e.loc]; }
 function splitFest(L) {
   var out = [], grp = {};
   L.forEach(function (e) {
+    if (e.src === "a" && marks[e.id]) {
+      var m = marks[e.id], sa = seenActs(m), ttl = nice(m.s.n || "");
+      if (!(isFestMark(m) || sa.some(function (x) { return x[1] === "F"; }))) { out.push(e); return; }
+      if (e.festPart) return;   /* andere dagen: zitten al in de bands hieronder */
+      var GA = { label: ttl + (ttl.indexOf(m.s.d.slice(0, 4)) < 0 ? " " + m.s.d.slice(0, 4) : ""), city: e.city, cc: e.cc, loc: e.loc, ds: [], n: 0, bands: [], fid: e.id, app: true, eids: [] };
+      sa.filter(function (a) { return a[1] !== "V" && normA(a[0]) !== normA(m.s.n); }).forEach(function (a) {
+        var d = a[3] || m.s.d, rid = e.id + "||" + a[0], bm = marks[rid]; GA.ds.push(d); GA.n++; GA.bands.push([a[0], "F"]);
+        out.push({ d: d, loc: a[4] || e.loc, city: e.city, cc: e.cc, acts: [[a[0], "H"]], fn: GA.label, src: "x", band: a[0], eid: e.id, rid: rid, fg: GA, r: bm && bm.rv ? bm.rv.r : undefined }); });
+      if (!GA.n) out.push(e);
+      return;
+    }
     var fest = e.src !== "a" && !e.mid && (e.fn || e.acts.some(function (x) { return x[1] === "F"; }));
     var bands = fest ? e.acts.filter(function (a) { return a[1] !== "V" && String(a[0] || "").trim(); }) : [];
     if (!bands.length) { out.push(e); return; }
     var lab = festLabel(e) || e.loc, gk = lab + "|" + String(e.city || "").toLowerCase(), G = grp[gk];
-    if (!G || !G.ds.some(function (d) { return Math.abs(Date.parse(d) - Date.parse(e.d)) <= 6 * 864e5; })) G = grp[gk] = { label: lab, city: e.city, cc: e.cc, loc: e.loc, ds: [], n: 0, bands: [], k: gk + "|" + e.d };
-    G.ds.push(e.d);
+    if (!G || !G.ds.some(function (d) { return Math.abs(Date.parse(d) - Date.parse(e.d)) <= 6 * 864e5; })) G = grp[gk] = { label: lab, city: e.city, cc: e.cc, loc: e.loc, ds: [], n: 0, bands: [], eids: [], k: gk + "|" + e.d };
+    G.ds.push(e.d); G.eids.push(histId(e));
     bands.forEach(function (a) { var eid = histId(e), rid = eid + "|" + a[0], bm = marks[rid];
       G.n++; G.bands.push([a[0], "F"]); out.push({ d: e.d, loc: e.loc, city: e.city, cc: e.cc, acts: [[a[0], "H"]], fn: e.fn, src: "x", band: a[0], eid: eid, rid: rid, fg: G, r: bm && bm.rv ? bm.rv.r : undefined }); });
   });
   return out;
 }
+var FESTEV = {};
 function festRowH(G) {
-  var ds = G.ds.slice().sort(), d0 = ds[0], fid = "hist|" + d0 + "|" + G.label + "|" + G.city, fm = marks[fid];
+  var ds = G.ds.slice().sort(), d0 = ds[0], fid = "hist|" + d0 + "|" + G.label + "|" + G.city, fm = marks[fid]; FESTEV[fid] = G.eids || [];
   var a = parse(d0), b = parse(ds[ds.length - 1]);
   var dt = d0 === ds[ds.length - 1] ? b.getDate() + " " + MONL[b.getMonth()] + " " + b.getFullYear() : a.getMonth() === b.getMonth() ? a.getDate() + "–" + b.getDate() + " " + MONL[b.getMonth()] + " " + b.getFullYear() : a.getDate() + " " + MONL[a.getMonth()] + " – " + b.getDate() + " " + MONL[b.getMonth()] + " " + b.getFullYear();
   return appRow({ id: fid, s: { n: G.label, d: d0, v: venueKeyFor(G.loc, G.city) || "", u: "" }, rv: (fm && fm.rv) || {} }, G.bands, G.loc, G.label, dt + " · " + G.city).replace('class="arow', 'class="arow fhrow');
@@ -2014,7 +2027,7 @@ function renderArchive() {
     else if (e.src === "a" && marks[e.id]) html += appRow({ id: e.id, s: marks[e.id].s, rv: marks[e.id].rv || {} });
     else if (e.band) { var bm_ = marks[e.rid], dd_ = parse(e.d);
       var grouped_ = (srt === "d" || srt === "o") && !!e.fg;
-      if (grouped_ && e.fg !== lastG) html += festRowH(e.fg);
+      if (grouped_ && e.fg !== lastG) html += e.fg.app ? appRow({ id: e.fg.fid, s: marks[e.fg.fid].s, rv: marks[e.fg.fid].rv || {} }).replace('class="arow', 'class="arow fhrow') : festRowH(e.fg);
       var br_ = appRow({ id: e.rid, s: { n: e.band, d: e.d, v: venueKeyFor(e.loc, e.city) || "", u: "" }, rv: (bm_ && bm_.rv) || {} }, e.acts, e.loc, e.band,
         (e.fg && !grouped_ ? e.fg.label + " · " : "") + DOW[dd_.getDay()] + " " + dd_.getDate() + " " + MON[dd_.getMonth()] + " · " + e.loc);
       html += grouped_ ? br_.replace('class="arow', 'class="arow fband') : br_; }
@@ -2278,7 +2291,7 @@ function pOrder(items, m) {
 function fbFirst(L) { return L.filter(function (it) { return it.k === "Facebook" || it.fb; }).concat(L.filter(function (it) { return !(it.k === "Facebook" || it.fb); })); }   /* je Facebook-poster is de poster van het concert (tenzij je zelf de volgorde koos) */
 /* eerste poster van een concert (eigen of gemaakt/gevonden, niet verborgen, jouw volgorde) */
 function firstPoster(id) {
-  if (eveOf(id) !== id) return firstPoster(eveOf(id));
+  if (FESTEV[id] && !(marks[id] || {}).pst) { for (var fi = 0; fi < FESTEV[id].length; fi++) { var fp_ = firstPoster(FESTEV[id][fi]); if (fp_) return fp_; } }
   var m = marks[id] || {};
   var hide = (m.phide || []).concat(m.pdel || []), au = ((AUTO || {}).marks || {})[id], items = (m.pst || []).map(function (p) { return { p: p }; });
   (au && au.img || []).forEach(function (x) { if (x.k === "fb") items.push({ p: x.p, fb: 1 }); });

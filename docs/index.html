@@ -285,7 +285,7 @@ window.onerror = function (msg, src, line) { try { var m = localStorage.getItem(
   <div class="chips" id="chips"></div>
 </div></header>
 <main class="wrap" id="main"><div class="empty">Laden…</div></main>
-<div id="pview" hidden><button class="xclose" data-pvclose aria-label="Sluiten">✕</button><img alt="poster"><div class="pvbar"><button class="btn pri" data-pvshare>Delen</button><button class="btn" data-pvnext hidden>↻ Andere versie</button><a class="btn" data-pvsrc target="_blank" rel="noopener" hidden>Bron ↗</a><button class="btn" data-pvprom hidden>Als poster</button><button class="btn" data-pvfirst hidden>Vooraan zetten</button><button class="btn" data-pvdel style="color:var(--red)" hidden>Weghalen</button></div></div>
+<div id="pview" hidden><button class="xclose" data-pvclose aria-label="Sluiten">✕</button><img alt="poster"><div class="pvbar"><button class="btn pri" data-pvshare>Delen</button><button class="btn" data-pvnext hidden>↻ Andere versie</button><a class="btn" data-pvsrc target="_blank" rel="noopener" hidden>Bron ↗</a><button class="btn" data-pvprom hidden>Als poster</button><button class="btn" data-pvfirst hidden>Vooraan zetten</button><button class="btn" data-pvband hidden>Poster van deze band</button><button class="btn" data-pvdel style="color:var(--red)" hidden>Weghalen</button></div></div>
 <div class="sheet" id="sheet"><div class="bk" data-close></div><div class="panel" id="panel"></div></div>
 <nav id="nav" class="bottombar">
   <button data-tab="agenda" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Agenda</button>
@@ -1456,7 +1456,7 @@ function loadAFiles(aid, au) {
   items = pOrder(eveOf(aid) !== aid ? items : fbFirst(items), m);   /* bandregel: eerst je eigen poster van de band, dan die van de avond */
   var np = items.length;
   fot.forEach(function (p) { items.push({ k: "Foto", p: p, aid: aid }); });
-  PV = items;
+  PV = items; PVBOX = aid;
   box.innerHTML = items.map(function (it, i) { return '<button class="pst" data-pv="' + i + '"><img data-pp="' + esc(it.p) + '" alt="' + it.k + '">' + (i < np ? '<span class="ptag">' + (it.k === "Eigen" ? "Poster" : it.k) + "</span>" : "") + "</button>"; }).join("") +
     fil.map(function (f, i) { return '<button class="pst padd afile" data-afile="' + i + '"><b>📄</b><span>' + esc(f.n) + '</span><i class="fdel" data-afdel="' + i + '" aria-label="Weghalen">✕</i></button>'; }).join("") +
     '<label class="pst padd"><input type="file" accept="image/*" data-apst hidden><b>＋</b><span>Poster</span></label>' +
@@ -2210,7 +2210,7 @@ function loadPosters(c) {
     items = pOrder(fbFirst(items), m);
     var np = items.length, fot = (m.fot || []).slice(0, 4);
     fot.forEach(function (p) { items.push({ k: "Foto", p: p }); });
-    PV = items;
+    PV = items; PVBOX = null;
     var tile = function (it, i) { return '<button class="pst" data-pv="' + i + '"><img ' + (it.u ? 'src="' + esc(it.u) + '"' : 'data-pp="' + esc(it.p) + '"') + ' alt="' + it.k + '" loading="lazy" onerror="this.parentNode&&this.parentNode.remove()"><span class="ptag">' + it.k + "</span></button>"; };
     $("posters").innerHTML = items.slice(0, np).map(tile).join("") +
       '<label class="pst padd"><input type="file" accept="image/*" data-pup hidden><b>＋</b><span>Poster toevoegen</span></label>';
@@ -2261,9 +2261,11 @@ function openPoster(i) {
   var it = PV[i]; if (!it) return; PVI = i; PVB = null;
   var v = $("pview"), im = v.querySelector("img"); im.src = it.p ? (PBLOB[it.p] || {}).url || "" : it.u;
   var own = it.k === "Eigen" || it.k === "Foto", pd = v.querySelector("[data-pvdel]");
-  pd.hidden = it.k === "Jaarposter" || !marks[it.aid || st.open]; pd.textContent = "Verwijderen";
+  var tid_ = it.aid || st.open, canM = !!marks[tid_] || /^hist\|/.test(String(tid_)) || String(tid_).indexOf("||") > 0;
+  pd.hidden = it.k === "Jaarposter" || !canM; pd.textContent = "Verwijderen";
+  v.querySelector("[data-pvband]").hidden = !(PVBOX && eveOf(PVBOX) !== PVBOX && it.aid && it.aid !== PVBOX && it.p && it.k !== "Foto");
   v.querySelector("[data-pvprom]").hidden = it.k !== "Foto";
-  v.querySelector("[data-pvfirst]").hidden = i === 0 || it.k === "Foto" || it.k === "Jaarposter" || !marks[it.aid || st.open];
+  v.querySelector("[data-pvfirst]").hidden = i === 0 || it.k === "Foto" || it.k === "Jaarposter" || !canM;
   v.querySelector("[data-pvnext]").hidden = it.k !== "Jaarposter";
   v.querySelector("[data-pvsrc]").hidden = !it.src; if (it.src) v.querySelector("[data-pvsrc]").href = it.src;
   v.hidden = false; try { history.pushState({ pv: 1 }, ""); } catch (e) {}
@@ -2343,6 +2345,13 @@ function promotePoster() {   /* eigen foto wordt (eerste) poster */
   afterPoster(id, it.aid);
 }
 function unhidePosters(id) { var m = marks[id]; if (!m) return; delete m.phide; save("ca-marks", marks); syncSoon(); if (st.open === id && $("sheet").classList.contains("on")) openSheet(id); else render(); }
+var PVBOX = null;   /* het concert/de band waarvan de posters nu getoond worden (Historie) */
+function bandPosterNow() {   /* poster van de avond/het festival wordt de (eerste) poster van deze band */
+  var it = PV[PVI], id = PVBOX; if (!it || !it.p || !id) return; ensureHistMark(id); var m = marks[id]; if (!m) return;
+  m.pst = [it.p].concat((m.pst || []).filter(function (x) { return x !== it.p; }));
+  m.pord = [it.p].concat((m.pord || []).filter(function (x) { return x !== it.p; })).slice(0, 30);
+  save("ca-marks", marks); syncSoon(); afterPoster(id, id);
+}
 function firstPosterNow() {   /* deze poster vooraan: ook het plaatje in Mijn concerten */
   var it0 = PV[PVI]; if (it0 && it0.aid && !marks[it0.aid]) ensureHistMark(it0.aid);
   var it = PV[PVI], id = it && it.aid || st.open, m = marks[id], k = it && (it.p || it.u); if (!k || !m) return;
@@ -2356,13 +2365,13 @@ function delPoster() {
     if (!confirm(it.k === "Gemaakt" ? "De gemaakte poster verwijderen? Er wordt voor dit concert geen nieuwe meer gemaakt." : "Deze poster verwijderen?")) return;
     if (it.p) {
       m.pdel = (m.pdel || []).concat([it.p]); if (it.k === "Gemaakt") m.nogen = true;
-      ghApi("/contents/" + it.p).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { if (j && j.sha) ghApi("/contents/" + it.p, { method: "DELETE", body: JSON.stringify({ message: "poster weg", sha: j.sha }) }); }).catch(function () {});
+      if (!/^posters\/fb\//.test(it.p) && !Object.keys(marks).some(function (k2) { return (marks[k2].pst || []).indexOf(it.p) >= 0; })) ghApi("/contents/" + it.p).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { if (j && j.sha) ghApi("/contents/" + it.p, { method: "DELETE", body: JSON.stringify({ message: "poster weg", sha: j.sha }) }); }).catch(function () {});
     } else m.phide = (m.phide || []).concat([it.u]);   /* afbeelding op de site van de zaal: alleen niet meer tonen */
     save("ca-marks", marks); afterPoster(id, it.aid); return;
   }
   if (!confirm(k === "fot" ? "Deze foto verwijderen?" : "Deze poster verwijderen?")) return;
   m[k] = (m[k] || []).filter(function (p) { return p !== it.p; }); if (!m[k].length) delete m[k]; save("ca-marks", marks);
-  ghApi("/contents/" + it.p).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { if (j && j.sha) ghApi("/contents/" + it.p, { method: "DELETE", body: JSON.stringify({ message: "poster weg", sha: j.sha }) }); }).catch(function () {});
+  if (!/^posters\/(fb|auto)\//.test(it.p)) ghApi("/contents/" + it.p).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { if (j && j.sha) ghApi("/contents/" + it.p, { method: "DELETE", body: JSON.stringify({ message: "poster weg", sha: j.sha }) }); }).catch(function () {});
   if (it.aid) { closePoster(); render(); syncSoon(); return; }
   closePoster(); openSheet(id);
   if (k === "fot") setTimeout(function () { posterRequest(id); }, 8000);   /* gemaakte poster opnieuw, met de volgende foto of zonder */
@@ -2438,6 +2447,7 @@ $("pview").addEventListener("click", function (e) {
   if (e.target.closest("[data-pvnext]")) { openYearPoster(true); return; }
   if (e.target.closest("[data-pvprom]")) { promotePoster(); return; }
   if (e.target.closest("[data-pvfirst]")) { firstPosterNow(); return; }
+  if (e.target.closest("[data-pvband]")) { bandPosterNow(); return; }
   if (e.target.closest("[data-pvshare]")) sharePoster(); else if (e.target.closest("[data-pvdel]")) delPoster(); else if (e.target.closest("[data-pvclose]") || e.target === this) closePoster();
 });
 $("panel").addEventListener("change", function (e) {

@@ -22,7 +22,7 @@
 "good": 32
 },
 "bibelot": {
-"good": 67
+"good": 64
 },
 "bird": {
 "good": 28
@@ -242,8 +242,7 @@
 "good": 68
 },
 "littledevil": {
-"good": 17,
-"since": "2026-11-15"
+"good": 17
 },
 "lockkeepers": {
 "good": 11
@@ -346,7 +345,7 @@
 "good": 19
 },
 "ticketmaster": {
-"good": 686
+"good": 688
 },
 "tivoli": {
 "good": 324
@@ -367,7 +366,7 @@
 "good": 11
 },
 "vera": {
-"good": 49
+"good": 50
 },
 "victorie": {
 "good": 100

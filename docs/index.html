@@ -129,6 +129,16 @@ header.sc{border-bottom-color:var(--line)}
 nav [data-tab].dot{position:relative}nav [data-tab].dot::after{content:"";position:absolute;top:8px;left:calc(50% + 8px);width:8px;height:8px;border-radius:50%;background:var(--red)}
 .ys{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 6px}.ys div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 8px;display:flex;align-items:baseline;justify-content:center;gap:4px;min-width:0}.ys b{font:800 16px var(--f-d)}.ys span{font-size:11.5px;color:var(--muted);white-space:nowrap}
 .ypbtn{width:auto;padding:8px 14px;font-size:13.5px;margin:0 0 12px}
+.prijs{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:10px 0 4px;font-size:13.5px;color:var(--muted)}
+.prijs span{color:var(--fg)}.prijs input{width:90px;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);font:inherit}
+.prijs i{font-size:12px;color:var(--faint);font-style:normal;flex-basis:100%}
+#fview{position:fixed;inset:0;z-index:300;background:#111;display:flex;flex-direction:column}
+#fview .fvh{display:flex;align-items:center;gap:8px;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top));background:var(--bg2);border-bottom:1px solid var(--line)}
+#fview .fvh b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;color:var(--fg)}
+#fview .fvx{background:none;border:0;color:var(--fg);font-size:22px;padding:4px 8px;cursor:pointer}
+#fview .fvb{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;align-items:center;gap:10px;padding:10px 0 30px}
+#fview .fvb canvas,#fview .fvb img{max-width:100%;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.5)}
+#fview .fvmsg{color:#ccc;padding:30px 20px;text-align:center}
 .t10{display:flex;gap:8px;overflow-x:auto;margin:6px 0 12px;padding-bottom:4px;scrollbar-width:thin}
 .t10 button{flex:0 0 86px;background:none;border:0;padding:0;color:var(--fg);text-align:left;cursor:pointer;font:inherit}
 .t10 .ti{width:86px;height:114px;border-radius:9px;background:var(--card) center/cover no-repeat;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font:700 28px var(--f-d);color:var(--faint);position:relative;font-style:normal}
@@ -1346,7 +1356,17 @@ function setlistHtml(aid, artist, city, d, names) {
     '<textarea data-sl rows="3" placeholder="Plak hier de setlist (één nummer per regel) of de link ernaar">' + esc(sl) + "</textarea>";
 }
 /* foto's en bestanden bij een gezien-concert: in je privé sync-opslag (posters/fotos/ en bestanden/) */
-function afilesHtml(aid) { return '<div class="hl" style="margin:12px 0 4px">Posters, foto\'s en bestanden</div><div class="posters afiles" data-afiles="' + esc(aid) + '"></div><div class="pstat" data-afstat></div>'; }
+function euro(v) { return "€ " + (Math.round(v * 100) / 100).toFixed(2).replace(".", ","); }
+function prijsHtml(id) { var v = (marks[id] || {}).prijs; return '<label class="prijs">Wat betaalde je? <span>€</span><input type="text" inputmode="decimal" placeholder="0,00" data-prijs="' + esc(id) + '" value="' + (typeof v === "number" ? String(v.toFixed(2)).replace(".", ",") : "") + '"><i>alle kaartjes samen, met kosten</i></label>'; }
+document.addEventListener("change", function (e) {
+  var pi = e.target.closest && e.target.closest("[data-prijs]"); if (!pi) return;
+  var id = pi.getAttribute("data-prijs"), t = String(pi.value || "").replace(/[^\d,.]/g, ""), v = parseFloat(t.indexOf(",") >= 0 ? t.replace(/\./g, "").replace(",", ".") : t);
+  ensureHistMark(id); if (!marks[id]) return;
+  if (isNaN(v)) delete marks[id].prijs; else marks[id].prijs = Math.round(v * 100) / 100;
+  pi.value = typeof marks[id].prijs === "number" ? marks[id].prijs.toFixed(2).replace(".", ",") : "";
+  save("ca-marks", marks); syncSoon();
+});
+function afilesHtml(aid) { return prijsHtml(aid) + '<div class="hl" style="margin:12px 0 4px">Posters, foto\'s en bestanden</div><div class="posters afiles" data-afiles="' + esc(aid) + '"></div><div class="pstat" data-afstat></div>'; }
 function loadAFiles(aid, au) {
   var box = document.querySelector("[data-afiles]"); if (!box || box.getAttribute("data-afiles") !== aid) return;
   var m = marks[aid] || {}, fot = m.fot || [], fil = m.fil || [], ok = SYNC && SYNC.token, hide = m.phide || [], gone = hide.concat(m.pdel || []);
@@ -1412,9 +1432,41 @@ function openAFile(aid, i) {
   var o = PBLOB[f.p], say = function (t) { var s_ = document.querySelector("[data-afstat]"); if (s_) s_.textContent = t; };
   if (!o) { say("Nog aan het laden… tik zo nog eens."); ghRaw(f.p).then(function () { say(""); }).catch(function () { say("Dit bestand is niet (meer) te vinden."); }); return; }
   var type = AMIME[(f.p.split(".").pop() || "").toLowerCase()] || "application/octet-stream", b = new Blob([o.blob], { type: type });
-  if (window.AndroidApp && AndroidApp.shareImage) { var fr = new FileReader(); fr.onload = function () { AndroidApp.shareImage(String(fr.result).split(",")[1], type, f.n); }; fr.readAsDataURL(b); return; }
-  var a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = f.n; a.target = "_blank"; document.body.appendChild(a); a.click(); a.remove();
+  if (type === "application/pdf" || /^image\//.test(type)) { viewFile(b, type, f.n); return; }
+  shareFile(b, type, f.n);
 }
+function shareFile(b, type, name) {
+  if (window.AndroidApp && AndroidApp.shareImage) { var fr = new FileReader(); fr.onload = function () { AndroidApp.shareImage(String(fr.result).split(",")[1], type, name); }; fr.readAsDataURL(b); return; }
+  var a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = name; a.target = "_blank"; document.body.appendChild(a); a.click(); a.remove();
+}
+/* kaartjesviewer: pdf (met pdf.js, alle pagina's onder elkaar) of foto, schermvullend; 'terug' sluit hem */
+var FV = null;
+function viewFile(b, type, name) {
+  closeFile(true);
+  var box = document.createElement("div"); box.id = "fview";
+  box.innerHTML = '<div class="fvh"><b>' + esc(name) + '</b><button class="btn" data-fvshare>Delen / opslaan</button><button class="fvx" data-fvclose aria-label="Sluiten">✕</button></div><div class="fvb"><p class="fvmsg">Kaartje openen…</p></div>';
+  document.body.appendChild(box); document.body.style.overflow = "hidden";
+  FV = { b: b, type: type, name: name }; try { history.pushState({ fv: 1 }, ""); } catch (e) {}
+  box.querySelector("[data-fvshare]").onclick = function () { shareFile(b, type, name); };
+  box.querySelector("[data-fvclose]").onclick = function () { history.back(); };
+  var body = box.querySelector(".fvb");
+  if (/^image\//.test(type)) { body.innerHTML = '<img alt="" src="' + URL.createObjectURL(b) + '">'; return; }
+  var V = "3.11.174", lib = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/" + V + "/";
+  (window.pdfjsLib ? Promise.resolve() : loadScript(lib + "pdf.min.js")).then(function () {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = lib + "pdf.worker.min.js";
+    return b.arrayBuffer().then(function (buf) { return pdfjsLib.getDocument({ data: buf }).promise; });
+  }).then(function (pdf) {
+    if (FV === null || !document.getElementById("fview")) return;
+    body.innerHTML = ""; var w = Math.min(body.clientWidth || innerWidth, 900), chain = Promise.resolve();
+    for (var i = 1; i <= Math.min(pdf.numPages, 12); i++) (function (n) { chain = chain.then(function () { return pdf.getPage(n).then(function (pg) {
+      var vp0 = pg.getViewport({ scale: 1 }), sc = w / vp0.width * (window.devicePixelRatio || 1), vp = pg.getViewport({ scale: sc });
+      var cv = document.createElement("canvas"); cv.width = vp.width; cv.height = vp.height; cv.style.width = w + "px"; body.appendChild(cv);
+      return pg.render({ canvasContext: cv.getContext("2d"), viewport: vp }).promise; }); }); })(i);
+    return chain;
+  }).catch(function () { body.innerHTML = '<p class="fvmsg">Dit kaartje kan hier niet getoond worden. Gebruik <b>Delen / opslaan</b> om het in een andere app te openen.</p>'; });
+}
+function closeFile(quiet) { var el = document.getElementById("fview"); if (el) { el.remove(); document.body.style.overflow = ""; } FV = null; }
+window.addEventListener("popstate", function () { if (document.getElementById("fview")) closeFile(); });
 function delAFile(aid, i) {
   var m = marks[aid], f = m && (m.fil || [])[i]; if (!f || !confirm('"' + f.n + '" weghalen?')) return;
   m.fil.splice(i, 1); if (!m.fil.length) delete m.fil; save("ca-marks", marks); render(); syncSoon();
@@ -1468,11 +1520,13 @@ function yearSummary(list, y, all, range) {   /* range: blok van jaren, dan zond
   var topk = function (o) { var k = Object.keys(o).sort(function (a, b) { return o[b] - o[a]; })[0]; return k ? [k, o[k]] : null; };
   var tz = topk(zv), ta = topk(ar), best = list.filter(function (e) { return typeof e.r === "number"; }).sort(function (a, b) { return b.r - a.r; })[0];
   var fset = {}; list.forEach(function (e) { if (e.fn || e.acts.some(function (x) { return x[1] === "F"; })) fset[(festLabel(e) || e.fn || e.loc + " " + e.d.slice(0, 4)).toLowerCase()] = 1; });
+  var pt = 0, pn = 0; list.forEach(function (e) { var pv = (marks[eveId(e)] || {}).prijs; if (typeof pv === "number" && pv > 0) { pt += pv; pn++; } });
   var fd = Object.keys(fset).length;   /* aantal festivals (een festival van drie dagen telt één keer) */
   /* een festivaldag telt als één concert: 54 concerten (daarvan 2 festivaldagen); compact, op één regel */
   return '<div class="ys"><div><b>' + list.length + "</b><span>concerten</span></div><div><b>" + Object.keys(zv).length + "</b><span>zalen</span></div><div><b>" + (fd || Object.keys(zc).length) + "</b><span>" + (fd ? (fd === 1 ? "festival" : "festivals") : "steden") + "</span></div></div>" +
     '<div class="yl">' + (tz ? "Meest bezocht: <b>" + esc(tz[0]) + "</b> (" + tz[1] + "×)<br>" : "") + (ta && ta[1] > 1 ? "Vaakst gezien: <b>" + esc(ta[0]) + "</b> (" + ta[1] + "×)<br>" : "") +
     (list.every(function (e) { return e.d.slice(0, 4) === (list[0] || e).d.slice(0, 4); }) && (function () { var t = list.filter(function (e) { return RPOS[e.d + "|" + e.loc] === 1; })[0]; return t ? "Nummer 1 van je jaarlijst: <b>" + esc(t.acts.filter(function (x) { return x[1] !== "V"; }).map(function (x) { return x[0]; }).join(" & ") || t.loc) + "</b><br>" : ""; })() || "") +
+    (pn ? "Uitgegeven aan kaartjes: <b>" + euro(pt) + "</b> (" + pn + (pn === 1 ? " concert" : " concerten") + (pn > 1 ? ", gemiddeld " + euro(pt / pn) : "") + ")<br>" : "") +
     (best ? "Hoogste cijfer: <b>" + esc(best.acts.filter(function (x) { return x[1] !== "V"; }).map(function (x) { return x[0]; }).join(" & ") || best.loc) + "</b> (★ " + String(best.r).replace(".", ",") + ")<br>" : "") +
     (newv.length && !range ? "Voor het eerst: <b>" + (st.yfirst ? newv : newv.slice(0, 6)).map(esc).join(", ") + "</b>" + (newv.length > 6 && !st.yfirst ? ' <button class="lnk" data-yfirst style="display:inline">en nog ' + (newv.length - 6) + " ›</button>" : "") : "") + "</div>" + top10(list);
 }
@@ -2237,7 +2291,7 @@ function openSheet(id) {
     '<a class="btn" href="' + esc(c.u) + '" target="_blank" rel="noopener">Zaal ↗</a>' +
     '<a class="btn" href="' + esc(c.k || c.ka || "https://www.ticketswap.nl/search?q=" + encodeURIComponent(c.n)) + '" target="_blank" rel="noopener">TicketSwap ↗</a>' +
     '<a class="btn wide" href="' + esc(gcal(c)) + '" target="_blank" rel="noopener">📅 Zet in Google Agenda</a></div>' + lineupHtml(c) +
-    (tk ? '<div class="hl" style="margin-top:16px">Kaartjes en bestanden</div><div class="posters afiles">' + ((marks[id] || {}).fil || []).map(function (f, i) {
+    (tk ? '<div class="hl" style="margin-top:16px">Kaartjes en bestanden</div>' + prijsHtml(id) + '<div class="posters afiles">' + ((marks[id] || {}).fil || []).map(function (f, i) {
         return '<button class="pst padd afile" data-tkfile="' + i + '"><b>📄</b><span>' + esc(f.n) + '</span><i class="fdel" data-tkdel="' + i + '" aria-label="Weghalen">✕</i></button>'; }).join("") +
       '<label class="pst padd"><input type="file" multiple data-tkup hidden><b>📎</b><span>Kaartje of<br>bestand</span></label></div><div class="pstat" data-afstat></div>' : "") +
     (tk ? '<div class="hl" style="margin-top:16px">Posters</div><div id="posters" class="posters"><span style="color:var(--faint);font-size:13px">Laden…</span></div><div id="pstat" class="pstat"></div>' +

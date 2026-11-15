@@ -31,8 +31,7 @@
 "good": 8
 },
 "boerderij": {
-"good": 67,
-"since": "2026-11-15"
+"good": 67
 },
 "bolwerk": {
 "good": 47
@@ -83,8 +82,7 @@
 "good": 25
 },
 "dynamo": {
-"good": 39,
-"since": "2026-11-15"
+"good": 39
 },
 "effenaar": {
 "good": 99
@@ -129,7 +127,7 @@
 "good": 0
 },
 "fest_itg": {
-"good": 0
+"good": 1
 },
 "fest_itgwo": {
 "good": 1
@@ -168,7 +166,7 @@
 "good": 1
 },
 "fest_soh": {
-"good": 0
+"good": 1
 },
 "fest_suikerrock": {
 "good": 1
@@ -192,8 +190,7 @@
 "good": 0
 },
 "fluor": {
-"good": 55,
-"since": "2026-11-15"
+"good": 55
 },
 "gashouder": {
 "good": 26
@@ -217,8 +214,7 @@
 "good": 64
 },
 "helvete": {
-"good": 18,
-"since": "2026-11-15"
+"good": 18
 },
 "hof": {
 "good": 25
@@ -261,7 +257,7 @@
 "good": 2
 },
 "manifesto": {
-"good": 16
+"good": 15
 },
 "meester": {
 "good": 15
@@ -313,8 +309,7 @@
 "good": 148
 },
 "pul": {
-"good": 55,
-"since": "2026-11-15"
+"good": 54
 },
 "qfactory": {
 "good": 36
@@ -344,8 +339,7 @@
 "good": 190
 },
 "studiogonz": {
-"good": 15,
-"since": "2026-11-15"
+"good": 15
 },
 "tbeest": {
 "good": 19
@@ -393,8 +387,7 @@
 "good": 14
 },
 "walhalla": {
-"good": 39,
-"since": "2026-11-15"
+"good": 39
 },
 "worm": {
 "good": 10

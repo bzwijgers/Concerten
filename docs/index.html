@@ -1347,7 +1347,7 @@ function loadAFiles(aid, au) {
   if (ok && au === undefined) loadAuto().then(function (a) { loadAFiles(aid, (a.marks || {})[aid] || null); });
   var items = (m.pst || []).map(function (p) { return { k: "Eigen", p: p, aid: aid }; });
   (au && au.img || []).filter(function (x) { return x.k === "fb"; }).concat((au && au.img || []).filter(function (x) { return x.k !== "fb"; })).forEach(function (x) { if (gone.indexOf(x.p) < 0 && !(m.nogen && x.k === "gen")) items.push({ k: x.k === "gen" ? "Gemaakt" : x.k === "zaal" ? "Zaal" : x.k === "fb" ? "Facebook" : "Artiest", p: x.p, src: x.src, aid: aid }); });
-  items = pOrder(items, m);
+  items = pOrder(fbFirst(items), m);
   var np = items.length;
   fot.forEach(function (p) { items.push({ k: "Foto", p: p, aid: aid }); });
   PV = items;
@@ -2047,7 +2047,7 @@ function loadPosters(c) {
       add({ k: "Zaal", u: IMGS[c.u] });
       ALL.forEach(function (x) { if (x !== c && x.d === c.d && nice(x.n).toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 10) === key) add({ k: "Zaal", u: IMGS[x.u] }); });
     }
-    items = pOrder(items, m);
+    items = pOrder(fbFirst(items), m);
     var np = items.length, fot = (m.fot || []).slice(0, 4);
     fot.forEach(function (p) { items.push({ k: "Foto", p: p }); });
     PV = items;
@@ -2132,31 +2132,38 @@ function pOrder(items, m) {
   var o = m && m.pord || [], ix = function (it) { var i = o.indexOf(it.p || it.u); return i < 0 ? 1e3 : i; };
   return items.map(function (it, n) { return [it, n]; }).sort(function (a, b) { return ix(a[0]) - ix(b[0]) || a[1] - b[1]; }).map(function (x) { return x[0]; });
 }
+function fbFirst(L) { return L.filter(function (it) { return it.k === "Facebook" || it.fb; }).concat(L.filter(function (it) { return !(it.k === "Facebook" || it.fb); })); }   /* je Facebook-poster is de poster van het concert (tenzij je zelf de volgorde koos) */
 /* eerste poster van een concert (eigen of gemaakt/gevonden, niet verborgen, jouw volgorde) */
 function firstPoster(id) {
   var m = marks[id] || {};
   var hide = (m.phide || []).concat(m.pdel || []), au = ((AUTO || {}).marks || {})[id], items = (m.pst || []).map(function (p) { return { p: p }; });
-  (au && au.img || []).forEach(function (x) { if (x.k === "fb") items.push({ p: x.p }); });
+  (au && au.img || []).forEach(function (x) { if (x.k === "fb") items.push({ p: x.p, fb: 1 }); });
   (au && au.img || []).forEach(function (x) { if (x.k === "gen" && !m.nogen) items.push({ p: x.p }); });
   (au && au.img || []).forEach(function (x) { if (x.k !== "gen" && x.k !== "fb") items.push({ p: x.p }); });
-  items = pOrder(items.filter(function (it) { return hide.indexOf(it.p) < 0; }), m);
+  items = pOrder(fbFirst(items.filter(function (it) { return hide.indexOf(it.p) < 0; })), m);
   return items[0] || null;
 }
 /* Mijn concerten: je eerste poster als plaatje bij het concert (in plaats van het zaallogo) */
 function mineThumbs() {
-  var sel = st.tab === "mine" ? "[data-id]" : st.tab === "agenda" ? ".dayc [data-id]" : "";
+  var sel = st.tab === "mine" ? "[data-id]" : st.tab === "agenda" ? ".dayc [data-id]" : st.tab === "a" ? ".arow[data-aid]" : "";
   if (!sel || !SYNC || !SYNC.token || !$("main").querySelector(sel)) return;
   if (!AUTO) { loadAuto().then(function () { if (AUTO) mineThumbs(); }); return; }
-  [].forEach.call($("main").querySelectorAll(sel), function (el) {
-    var fp = firstPoster(el.getAttribute("data-id")); if (!fp) return;
+  var one = function (el) {
+    var fp = firstPoster(el.getAttribute("data-id") || el.getAttribute("data-aid")); if (!fp) return;
     ghRaw(fp.p).then(function (o) {
       var bg = el.querySelector(".bgimg"); if (bg) bg.style.backgroundImage = "url(" + o.url + ")";
       var lw = el.querySelector(".lgw,.lt"); if (!lw) return;
       var sp = document.createElement("span"); sp.className = lw.className.replace(/\blt\b/, "lgw") + " ok pth"; sp.innerHTML = '<img class="lg" alt="" src="' + o.url + '">';
       lw.parentNode.replaceChild(sp, lw);
     }).catch(function () {});
-  });
+  };
+  var els = [].slice.call($("main").querySelectorAll(sel));
+  if (st.tab !== "a" || !window.IntersectionObserver) { els.forEach(one); return; }
+  if (THO) THO.disconnect();
+  THO = new IntersectionObserver(function (es) { es.forEach(function (x) { if (x.isIntersecting) { THO.unobserve(x.target); one(x.target); } }); }, { rootMargin: "400px 0px" });
+  els.forEach(function (el) { var id = el.getAttribute("data-aid"); if (firstPoster(id)) THO.observe(el); });
 }
+var THO = null;
 function afterPoster(id, aid) {   /* viewer dicht via 'terug' (de kaart blijft open), daarna de kaart of Historie opnieuw tekenen */
   syncSoon();
   var done = function () { if (aid) render(); else openSheet(id); };

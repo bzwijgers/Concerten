@@ -1280,7 +1280,7 @@ function renderHist(yseg) {
       'Het bestand blijft op dit apparaat; er gaat niets naar internet. Doe dit op elk apparaat waar je het wilt zien.<br><br><label class="btn pri" style="display:inline-flex;cursor:pointer">Archief inlezen<input type="file" accept=".xlsx,.xls,.csv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain,application/octet-stream" data-himport hidden></label></div>';
   var list = histEvenings();
   var view = yseg + '<div class="seg" style="margin-top:8px">' + [["lijst", "Concerten"], ["art", "Artiesten"], ["fest", "Festivals"], ["kaart", "Kaart"], ["wereld", "Wereld"]].map(function (o) { return '<button data-aview="' + o[0] + '" aria-pressed="' + (st.aview === o[0]) + '">' + o[1] + "</button>"; }).join("") + "</div>";
-  var foot = st.ayear === "arch" ? '<div class="note">Ingelezen: ' + HIST.rows + " regels, " + HIST.ev.length + " avonden en festivaldagen (" + HIST.at.slice(0, 10) + '). <label class="lnk" style="display:inline">Opnieuw inlezen<input type="file" accept=".xlsx,.xls,.csv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain,application/octet-stream" data-himport hidden></label> · <button class="lnk" data-hclear style="display:inline">Wissen</button></div>' : "";
+  var foot = st.ayear === "arch" ? '<div class="note">Ingelezen: ' + HIST.rows + " regels, " + HIST.ev.length + " avonden en festivaldagen (" + HIST.at.slice(0, 10) + '). <label class="lnk" style="display:inline">Opnieuw inlezen<input type="file" accept=".xlsx,.xls,.csv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain,application/octet-stream" data-himport hidden></label> · <button class="lnk" data-hclear style="display:inline">Wissen</button></div>' + backupNote() : "";
   if (st.aview === "cijfers") return head + histCharts(list) + foot;
   if (st.aview === "kaart" || st.aview === "wereld") {
     var per = {}, abroad = {}, akc = {};
@@ -1931,6 +1931,16 @@ function openTop10() {
     PV = [{ k: "Jaarposter", top: 1, u: URL.createObjectURL(b), name: "Mijn Top 10 van " + y0.label }]; PVB = b; openPoster(0); }); };
   try { Promise.all([document.fonts.load('400 100px Anton'), document.fonts.load('700 30px "Instrument Sans"'), document.fonts.load('500 24px "Instrument Sans"')]).then(go, go); } catch (e) { go(); }
 }
+/* laatste backup (de pc-taak 'Concertagenda backup' schrijft backup.json in je prive-opslag) */
+var BK = null, BKat = 0;
+function backupNote() {
+  if (!SYNC || !SYNC.token) return "";
+  if (!BKat || Date.now() - BKat > 3600000) { BKat = Date.now(); ghGet("backup.json").then(function (r) { if (!r) return; try { BK = JSON.parse(String(r.txt).replace(/^\ufeff/, "")); } catch (e) { return; } if (st.tab === "a") { var y = scrollY; render(); window.scrollTo(0, y); } }).catch(function () {}); }
+  if (!BK || !BK.dag) return '<div class="note">Nog geen automatische backup gemaakt.</div>';
+  var d = parse(BK.dag), age = Math.round((Date.now() - d.getTime()) / 864e5), old = age > 40;
+  return '<div class="note"' + (old || !BK.d ? ' style="color:var(--red)"' : "") + '>Laatste backup: ' + d.getDate() + " " + MON[d.getMonth()] + " " + d.getFullYear() +
+    " · D: " + (BK.d ? "✓" : "✗") + " · pCloud " + (BK.pcloud ? "✓" : "✗ (pCloud Drive niet actief)") + (old ? " · al " + age + " dagen geleden: zet je pc aan" : "") + "</div>";
+}
 var YPV = 0;
 function openYearPoster(next) {
   if (next) YPV++; else YPV = 0;
@@ -2035,7 +2045,7 @@ function renderArchive() {
   var dchip = '<div class="chips ychips" style="margin-top:6px">' + dbtn + "</div>";
   var head = tabs + ychips + dchip;
   var imp = '<input type="file" accept=".xlsx,.xls,.csv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain,application/octet-stream" data-himport hidden>';
-  var foot = HIST && HIST.ev ? '<div class="note">Je eigen lijst: ' + HIST.rows + " regels, " + HIST.ev.length + " avonden en festivaldagen (ingelezen " + HIST.at.slice(0, 10) + '). <label class="lnk" style="display:inline">Opnieuw inlezen' + imp + '</label> · <button class="lnk" data-hclear style="display:inline">Wissen</button></div>'
+  var foot = HIST && HIST.ev ? '<div class="note">Je eigen lijst: ' + HIST.rows + " regels, " + HIST.ev.length + " avonden en festivaldagen (ingelezen " + HIST.at.slice(0, 10) + '). <label class="lnk" style="display:inline">Opnieuw inlezen' + imp + '</label> · <button class="lnk" data-hclear style="display:inline">Wissen</button></div>' + backupNote()
     : '<div class="note">Heb je een eigen lijst van eerdere concerten (Excel of CSV met artiest, H/V/F, locatie, plaats, datum, land)? <label class="lnk" style="display:inline">Lees hem hier in' + imp + "</label>; daarna staat hij op al je gekoppelde apparaten.</div>";
   if (!all.length) return head + '<div class="empty">Concerten waarvoor je een kaartje had, komen hier na afloop vanzelf.</div>' + foot;
   if (st.aview === "cijfers") return head + histCharts(list) + foot;

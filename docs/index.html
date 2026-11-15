@@ -1202,10 +1202,10 @@ function splitFest(L) {
   });
   return out;
 }
-var FESTEV = {};
+var FESTPOST = {};
 function festRowH(G) {
   var ds = G.ds.slice().sort(), d0 = ds[0], ue = (G.eids || []).filter(function (x, i, a) { return a.indexOf(x) === i; });
-  var fid = ue.length === 1 ? ue[0] : "hist|" + d0 + "|" + G.label + "|" + G.city, fm = marks[fid]; if (ue.length > 1) FESTEV[fid] = ue.filter(function (x) { return x !== fid; });
+  var fid = ue.length === 1 ? ue[0] : "hist|" + d0 + "|" + G.label + "|" + G.city, fm = marks[fid]; if (ue.length > 1) FESTPOST[fid] = ue.filter(function (x) { return x !== fid; });
   var a = parse(d0), b = parse(ds[ds.length - 1]);
   var dt = d0 === ds[ds.length - 1] ? b.getDate() + " " + MONL[b.getMonth()] + " " + b.getFullYear() : a.getMonth() === b.getMonth() ? a.getDate() + "–" + b.getDate() + " " + MONL[b.getMonth()] + " " + b.getFullYear() : a.getDate() + " " + MONL[a.getMonth()] + " – " + b.getDate() + " " + MONL[b.getMonth()] + " " + b.getFullYear();
   return appRow({ id: fid, s: { n: G.label, d: d0, v: venueKeyFor(G.loc, G.city) || "", u: "" }, rv: (fm && fm.rv) || {} }, G.bands, G.loc, G.label, dt + " · " + G.city).replace('class="arow', 'class="arow fhrow');
@@ -1450,7 +1450,7 @@ function loadAFiles(aid, au) {
   if (ok && au === undefined) loadAuto().then(function (a) { loadAFiles(aid, (a.marks || {})[aid] || null); });
   var items = (m.pst || []).map(function (p) { return { k: "Eigen", p: p, aid: aid }; });
   (au && au.img || []).filter(function (x) { return x.k === "fb"; }).concat((au && au.img || []).filter(function (x) { return x.k !== "fb"; })).forEach(function (x) { if (gone.indexOf(x.p) < 0 && !(m.nogen && x.k === "gen")) items.push({ k: x.k === "gen" ? "Gemaakt" : x.k === "zaal" ? "Zaal" : x.k === "fb" ? "Facebook" : "Artiest", p: x.p, src: x.src, aid: aid }); });
-  (FESTEV[aid] || (eveOf(aid) !== aid ? [eveOf(aid)] : [])).forEach(function (eid) { if (eid === aid) return; var m2 = marks[eid] || {}, g2 = (m2.phide || []).concat(m2.pdel || []), a2 = ((AUTO || {}).marks || {})[eid];
+  (FESTPOST[aid] || (eveOf(aid) !== aid ? [eveOf(aid)] : [])).forEach(function (eid) { if (eid === aid) return; var m2 = marks[eid] || {}, g2 = (m2.phide || []).concat(m2.pdel || []), a2 = ((AUTO || {}).marks || {})[eid];
     (m2.pst || []).forEach(function (p) { items.push({ k: "Eigen", p: p, aid: eid }); });
     (a2 && a2.img || []).forEach(function (x) { if (g2.indexOf(x.p) < 0 && x.k !== "gen") items.push({ k: x.k === "fb" ? "Facebook" : x.k === "zaal" ? "Zaal" : "Artiest", p: x.p, src: x.src, aid: eid }); }); });
   items = pOrder(eveOf(aid) !== aid ? items : fbFirst(items), m);   /* bandregel: eerst je eigen poster van de band, dan die van de avond */
@@ -2347,7 +2347,7 @@ function pOrder(items, m) {
 function fbFirst(L) { return L.filter(function (it) { return it.k === "Facebook" || it.fb; }).concat(L.filter(function (it) { return !(it.k === "Facebook" || it.fb); })); }   /* je Facebook-poster is de poster van het concert (tenzij je zelf de volgorde koos) */
 /* eerste poster van een concert (eigen of gemaakt/gevonden, niet verborgen, jouw volgorde) */
 function firstPoster(id, sub) {
-  if (!sub && FESTEV[id] && !(marks[id] || {}).pst) { for (var fi = 0; fi < FESTEV[id].length; fi++) { if (FESTEV[id][fi] === id) continue; var fp_ = firstPoster(FESTEV[id][fi], true); if (fp_) return fp_; } }
+  if (!sub && FESTPOST[id] && !(marks[id] || {}).pst) { for (var fi = 0; fi < FESTPOST[id].length; fi++) { if (FESTPOST[id][fi] === id) continue; var fp_ = firstPoster(FESTPOST[id][fi], true); if (fp_) return fp_; } }
   var m = marks[id] || {};
   var hide = (m.phide || []).concat(m.pdel || []), au = ((AUTO || {}).marks || {})[id], items = (m.pst || []).map(function (p) { return { p: p }; });
   (au && au.img || []).forEach(function (x) { if (x.k === "fb") items.push({ p: x.p, fb: 1 }); });

@@ -129,6 +129,12 @@ header.sc{border-bottom-color:var(--line)}
 nav [data-tab].dot{position:relative}nav [data-tab].dot::after{content:"";position:absolute;top:8px;left:calc(50% + 8px);width:8px;height:8px;border-radius:50%;background:var(--red)}
 .ys{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 6px}.ys div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 8px;display:flex;align-items:baseline;justify-content:center;gap:4px;min-width:0}.ys b{font:800 16px var(--f-d)}.ys span{font-size:11.5px;color:var(--muted);white-space:nowrap}
 .ypbtn{width:auto;padding:8px 14px;font-size:13.5px;margin:0 0 12px}
+.t10{display:flex;gap:8px;overflow-x:auto;margin:6px 0 12px;padding-bottom:4px;scrollbar-width:thin}
+.t10 button{flex:0 0 86px;background:none;border:0;padding:0;color:var(--fg);text-align:left;cursor:pointer;font:inherit}
+.t10 .ti{width:86px;height:114px;border-radius:9px;background:var(--card) center/cover no-repeat;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font:700 28px var(--f-d);color:var(--faint);position:relative;font-style:normal}
+.t10 .ti.has{color:transparent}
+.t10 .ti b{position:absolute;left:5px;top:5px;background:rgba(0,0,0,.72);color:var(--gold);font:700 12px var(--f-d);padding:1px 6px;border-radius:6px}
+.t10 span{font-size:11.5px;line-height:1.25;margin-top:4px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .yl{font-size:13.5px;color:var(--muted);margin:2px 0 10px;line-height:1.55}.yl b{color:var(--fg)}
 .sub{font:700 11px var(--f-b);text-transform:uppercase;letter-spacing:.08em;color:var(--faint);margin:14px 0 4px;padding-top:10px;border-top:1px solid var(--line)}
 .bd.sn{background:rgba(142,155,196,.2);color:#b9c3e6}.bd.ot{background:rgba(255,255,255,.06);color:var(--faint)}
@@ -1468,7 +1474,18 @@ function yearSummary(list, y, all, range) {   /* range: blok van jaren, dan zond
     '<div class="yl">' + (tz ? "Meest bezocht: <b>" + esc(tz[0]) + "</b> (" + tz[1] + "×)<br>" : "") + (ta && ta[1] > 1 ? "Vaakst gezien: <b>" + esc(ta[0]) + "</b> (" + ta[1] + "×)<br>" : "") +
     (list.every(function (e) { return e.d.slice(0, 4) === (list[0] || e).d.slice(0, 4); }) && (function () { var t = list.filter(function (e) { return RPOS[e.d + "|" + e.loc] === 1; })[0]; return t ? "Nummer 1 van je jaarlijst: <b>" + esc(t.acts.filter(function (x) { return x[1] !== "V"; }).map(function (x) { return x[0]; }).join(" & ") || t.loc) + "</b><br>" : ""; })() || "") +
     (best ? "Hoogste cijfer: <b>" + esc(best.acts.filter(function (x) { return x[1] !== "V"; }).map(function (x) { return x[0]; }).join(" & ") || best.loc) + "</b> (★ " + String(best.r).replace(".", ",") + ")<br>" : "") +
-    (newv.length && !range ? "Voor het eerst: <b>" + (st.yfirst ? newv : newv.slice(0, 6)).map(esc).join(", ") + "</b>" + (newv.length > 6 && !st.yfirst ? ' <button class="lnk" data-yfirst style="display:inline">en nog ' + (newv.length - 6) + " ›</button>" : "") : "") + "</div>";
+    (newv.length && !range ? "Voor het eerst: <b>" + (st.yfirst ? newv : newv.slice(0, 6)).map(esc).join(", ") + "</b>" + (newv.length > 6 && !st.yfirst ? ' <button class="lnk" data-yfirst style="display:inline">en nog ' + (newv.length - 6) + " ›</button>" : "") : "") + "</div>" + top10(list);
+}
+function eveId(e) { return e.src === "a" ? e.id : e.mid || histId(e); }
+/* je top 10 van één jaar (uit je jaarlijst, anders je cijfers), met de eerste poster; tik = naar het concert */
+function top10(list) {
+  if (!list.length || !list.every(function (e) { return e.d.slice(0, 4) === list[0].d.slice(0, 4); })) return "";
+  var L = list.filter(function (e) { return RPOS[e.d + "|" + e.loc]; }).sort(function (a, b) { return RPOS[a.d + "|" + a.loc] - RPOS[b.d + "|" + b.loc]; });
+  if (!L.length) L = list.filter(function (e) { return typeof e.r === "number"; }).sort(function (a, b) { return b.r - a.r || (a.d < b.d ? -1 : 1); });
+  if (L.length < 3) return "";
+  return '<div class="hl" style="margin:2px 0 0">Top 10</div><div class="t10">' + L.slice(0, 10).map(function (e, i) {
+    var nm = e.acts.filter(function (x) { return x[1] !== "V"; }).map(function (x) { return x[0]; }).join(" & ") || e.fn || e.loc;
+    return '<button data-t10="' + esc(eveId(e)) + '"><i class="ti">' + esc(nice(nm).charAt(0)) + "<b>" + (i + 1) + "</b></i><span>" + esc(nm) + "</span></button>"; }).join("") + "</div>";
 }
 /* jaarposter: één deelbaar beeld van een jaar, blok of periode uit Historie; wordt op het apparaat getekend (je archief gaat nergens heen) */
 var YPL = null;
@@ -2158,6 +2175,7 @@ function mineThumbs() {
     }).catch(function () {});
   };
   var els = [].slice.call($("main").querySelectorAll(sel));
+  [].forEach.call($("main").querySelectorAll("[data-t10]"), function (b) { var fp = firstPoster(b.getAttribute("data-t10")); if (fp) ghRaw(fp.p).then(function (o) { var ti = b.querySelector(".ti"); if (ti) { ti.style.backgroundImage = "url(" + o.url + ")"; ti.classList.add("has"); } }).catch(function () {}); });
   if (st.tab !== "a" || !window.IntersectionObserver) { els.forEach(one); return; }
   if (THO) THO.disconnect();
   THO = new IntersectionObserver(function (es) { es.forEach(function (x) { if (x.isIntersecting) { THO.unobserve(x.target); one(x.target); } }); }, { rootMargin: "400px 0px" });
@@ -2377,6 +2395,9 @@ $("main").addEventListener("click", function (e) {
       }).catch(function () { var s_ = document.querySelector("[data-afstat]"); if (s_) s_.textContent = "Geen foto gevonden om te plakken. Kopieer eerst een foto en tik dan op 'Foto plakken'."; }); return; }
     return; }
   var bdm = t.closest("[data-band]"); if (bdm) { openBand(bdm.getAttribute("data-band")); return; }
+  var tt = t.closest("[data-t10]");
+  if (tt) { var tid = tt.getAttribute("data-t10"); ensureHistMark(tid); st.aopen = tid; st.aconfirm = null; render();
+    var row = [].filter.call($("main").querySelectorAll("[data-aid]"), function (x) { return x.getAttribute("data-aid") === tid; })[0]; if (row) row.scrollIntoView({ block: "start", behavior: "smooth" }); return; }
   var ar = t.closest("[data-aid]");
   if (ar) {   /* archief: openen, cijfer, verwijderen */
     var aid = ar.getAttribute("data-aid"), rb = t.closest("[data-rate]"); ensureHistMark(aid);

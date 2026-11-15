@@ -139,6 +139,8 @@ nav [data-tab].dot{position:relative}nav [data-tab].dot::after{content:"";positi
 #fview .fvb{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;align-items:center;gap:10px;padding:10px 0 30px}
 #fview .fvb canvas,#fview .fvb img{max-width:100%;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.5)}
 #fview .fvmsg{color:#ccc;padding:30px 20px;text-align:center}
+.arow.fhrow{border-left:3px solid var(--blue);margin-top:10px}
+.arow.fband{margin-left:16px;border-left:1px dashed var(--line)}
 .fhead{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px;margin:14px 0 2px;padding:6px 10px;border-left:3px solid var(--blue);background:var(--card);border-radius:6px;font-size:13px}.fhead b{color:var(--fg)}.fhead span:last-child{color:var(--muted)}
 .fparts div{display:flex;flex-direction:column;padding:5px 0;border-bottom:1px solid var(--line);font-size:13.5px}.fparts span{color:var(--muted);font-size:12.5px}.fparts b{font-weight:600;color:var(--fg)}
 .t10{display:flex;gap:8px;overflow-x:auto;margin:6px 0 12px;padding-bottom:4px;scrollbar-width:thin}
@@ -1181,12 +1183,18 @@ function splitFest(L) {
     var bands = fest ? e.acts.filter(function (a) { return a[1] !== "V" && String(a[0] || "").trim(); }) : [];
     if (!bands.length) { out.push(e); return; }
     var lab = festLabel(e) || e.loc, gk = lab + "|" + String(e.city || "").toLowerCase(), G = grp[gk];
-    if (!G || !G.ds.some(function (d) { return Math.abs(Date.parse(d) - Date.parse(e.d)) <= 6 * 864e5; })) G = grp[gk] = { label: lab, city: e.city, ds: [], n: 0, k: gk + "|" + e.d };
+    if (!G || !G.ds.some(function (d) { return Math.abs(Date.parse(d) - Date.parse(e.d)) <= 6 * 864e5; })) G = grp[gk] = { label: lab, city: e.city, cc: e.cc, loc: e.loc, ds: [], n: 0, bands: [], k: gk + "|" + e.d };
     G.ds.push(e.d);
     bands.forEach(function (a) { var eid = histId(e), rid = eid + "|" + a[0], bm = marks[rid];
-      G.n++; out.push({ d: e.d, loc: e.loc, city: e.city, cc: e.cc, acts: [[a[0], "H"]], fn: e.fn, src: "x", band: a[0], eid: eid, rid: rid, fg: G, r: bm && bm.rv ? bm.rv.r : undefined }); });
+      G.n++; G.bands.push([a[0], "F"]); out.push({ d: e.d, loc: e.loc, city: e.city, cc: e.cc, acts: [[a[0], "H"]], fn: e.fn, src: "x", band: a[0], eid: eid, rid: rid, fg: G, r: bm && bm.rv ? bm.rv.r : undefined }); });
   });
   return out;
+}
+function festRowH(G) {
+  var ds = G.ds.slice().sort(), d0 = ds[0], fid = "hist|" + d0 + "|" + G.label + "|" + G.city, fm = marks[fid];
+  var a = parse(d0), b = parse(ds[ds.length - 1]);
+  var dt = d0 === ds[ds.length - 1] ? b.getDate() + " " + MONL[b.getMonth()] + " " + b.getFullYear() : a.getMonth() === b.getMonth() ? a.getDate() + "–" + b.getDate() + " " + MONL[b.getMonth()] + " " + b.getFullYear() : a.getDate() + " " + MONL[a.getMonth()] + " – " + b.getDate() + " " + MONL[b.getMonth()] + " " + b.getFullYear();
+  return appRow({ id: fid, s: { n: G.label, d: d0, v: venueKeyFor(G.loc, G.city) || "", u: "" }, rv: (fm && fm.rv) || {} }, G.bands, G.loc, G.label, dt + " · " + G.city).replace('class="arow', 'class="arow fhrow');
 }
 function fgHead(G) {
   var ds = G.ds.slice().sort(), a = parse(ds[0]), b = parse(ds[ds.length - 1]);
@@ -2005,9 +2013,11 @@ function renderArchive() {
     if (e.src === "a" && marks[e.id] && e.festPart) { /* andere dagen van hetzelfde festival: al in de festivalregel */ }
     else if (e.src === "a" && marks[e.id]) html += appRow({ id: e.id, s: marks[e.id].s, rv: marks[e.id].rv || {} });
     else if (e.band) { var bm_ = marks[e.rid], dd_ = parse(e.d);
-      if ((srt === "d" || srt === "o") && e.fg !== lastG) html += fgHead(e.fg);
-      html += appRow({ id: e.rid, s: { n: e.band, d: e.d, v: venueKeyFor(e.loc, e.city) || "", u: "" }, rv: (bm_ && bm_.rv) || {} }, e.acts, e.loc, e.band,
-        (e.fg ? e.fg.label + " · " : "") + DOW[dd_.getDay()] + " " + dd_.getDate() + " " + MON[dd_.getMonth()] + " · " + e.loc); }
+      var grouped_ = (srt === "d" || srt === "o") && !!e.fg;
+      if (grouped_ && e.fg !== lastG) html += festRowH(e.fg);
+      var br_ = appRow({ id: e.rid, s: { n: e.band, d: e.d, v: venueKeyFor(e.loc, e.city) || "", u: "" }, rv: (bm_ && bm_.rv) || {} }, e.acts, e.loc, e.band,
+        (e.fg && !grouped_ ? e.fg.label + " · " : "") + DOW[dd_.getDay()] + " " + dd_.getDate() + " " + MON[dd_.getMonth()] + " · " + e.loc);
+      html += grouped_ ? br_.replace('class="arow', 'class="arow fband') : br_; }
     else if (e.parts) { var fid = histId(e), fm = marks[fid];
       html += appRow({ id: fid, s: { n: e.fn, d: e.d, v: venueKeyFor(e.loc, e.city) || "", u: "" }, rv: (fm && fm.rv) || {} }, e.acts, e.loc, e.fn, festSub(e)); }
     else if (!e.mid && e.src !== "a") { var hid = histId(e), hm = marks[hid];

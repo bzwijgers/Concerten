@@ -1,6 +1,6 @@
-@bzwijgers, ochtendcontrole 2026-11-13:
+@bzwijgers, ochtendcontrole 2026-11-15:
 
-- Concertgebouw: het programma las prima, maar er zijn maar 2 à 3 popconcerten (de rest is klassiek). Het alarm sloeg aan omdat 2 onder de grens van 3 lag, waarna een nood-methode 22 concerten (ook klassiek) ophaalde. Ik heb de grens voor deze zaal op 1 gezet; de gewone methode levert nu 2 popconcerten.
-- Melkweg: vanochtend opgehaald (270 concerten) en in de agenda gezet.
+- Helvete (Oberhausen): de agendapagina toonde nog maar 12 concerten en de rest zat achter de knop "Weitere laden". Daardoor misten er concerten van na 20 november. De scraper vraagt die extra pagina's nu ook op bij de site zelf. Levert nu 24 concerten (was 8) tot en met februari 2027.
+- Melkweg is vanmorgen apart opgehaald (266 concerten) en doorgegeven aan de update.
 
-Alles is weer in orde.
+Alles is in orde; er loopt een nieuwe update zodat Helvete vandaag al compleet in de agenda staat.

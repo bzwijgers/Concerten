@@ -1346,7 +1346,7 @@ function loadAFiles(aid, au) {
   var m = marks[aid] || {}, fot = m.fot || [], fil = m.fil || [], ok = SYNC && SYNC.token, hide = m.phide || [], gone = hide.concat(m.pdel || []);
   if (ok && au === undefined) loadAuto().then(function (a) { loadAFiles(aid, (a.marks || {})[aid] || null); });
   var items = (m.pst || []).map(function (p) { return { k: "Eigen", p: p, aid: aid }; });
-  (au && au.img || []).forEach(function (x) { if (gone.indexOf(x.p) < 0 && !(m.nogen && x.k === "gen")) items.push({ k: x.k === "gen" ? "Gemaakt" : x.k === "zaal" ? "Zaal" : "Artiest", p: x.p, src: x.src, aid: aid }); });
+  (au && au.img || []).filter(function (x) { return x.k === "fb"; }).concat((au && au.img || []).filter(function (x) { return x.k !== "fb"; })).forEach(function (x) { if (gone.indexOf(x.p) < 0 && !(m.nogen && x.k === "gen")) items.push({ k: x.k === "gen" ? "Gemaakt" : x.k === "zaal" ? "Zaal" : x.k === "fb" ? "Facebook" : "Artiest", p: x.p, src: x.src, aid: aid }); });
   items = pOrder(items, m);
   var np = items.length;
   fot.forEach(function (p) { items.push({ k: "Foto", p: p, aid: aid }); });
@@ -2012,7 +2012,20 @@ function ghRaw(path) {   /* afbeelding uit je privé-opslag; bewaard op het appa
 function loadAuto(force) {
   if (!SYNC || !SYNC.token) return Promise.resolve({});
   if (AUTO && !force && Date.now() - AUTOat < 300000) return Promise.resolve(AUTO);
-  return ghGet("posters/auto.json").then(function (r) { AUTO = r ? JSON.parse(r.txt) : {}; AUTOat = Date.now(); return AUTO; }).catch(function () { return AUTO || {}; });
+  return Promise.all([ghGet("posters/auto.json"), ghGet("posters/fb.json").catch(function () { return null; })]).then(function (rs) {
+    var A = rs[0] ? JSON.parse(rs[0].txt) : {}; A.marks = A.marks || {};
+    if (rs[1]) { try { mergeFb(A, JSON.parse(rs[1].txt)); } catch (e) {} }
+    AUTO = A; AUTOat = Date.now(); return AUTO;
+  }).catch(function () { return AUTO || {}; });
+}
+/* Facebook-posters: per avond uit je Historie; ook bij hetzelfde concert als het (ook) in de app staat */
+function mergeFb(A, F) {
+  var byd = {}, fm = F.marks || {};
+  Object.keys(fm).forEach(function (h) { var d = h.split("|")[1]; (byd[d] = byd[d] || []).push(h); });
+  var put = function (id, list) { var e = A.marks[id] = A.marks[id] || {}; e.img = e.img || []; list.forEach(function (p) { if (!e.img.some(function (x) { return x.p === p; })) e.img.push({ p: p, k: "fb" }); }); };
+  Object.keys(fm).forEach(function (h) { put(h, fm[h]); });
+  Object.keys(marks).forEach(function (id) { var m = marks[id]; if (!m.s || !m.s.d || !byd[m.s.d] || id.indexOf("hist|") === 0) return; var v = VENUES[m.s.v] || {};
+    byd[m.s.d].forEach(function (h) { if (!v.city || h.split("|")[3].toLowerCase() === String(v.city).toLowerCase()) put(id, fm[h]); }); });
 }
 function posterRequest(id) {   /* vraagt je sync-opslag om (opnieuw) posters van de artiest te zoeken */
   if (!SYNC || !SYNC.token) return;
@@ -2026,8 +2039,9 @@ function loadPosters(c) {
     IMGS = res[0]; var au = (res[1].marks || {})[id] || null; if (!$("posters") || st.open !== id) return;
     var hide = m.phide || [], gone = hide.concat(m.pdel || []), items = [], seen = {}, add = function (it) { var k = it.p || it.u; if (k && !seen[k] && gone.indexOf(k) < 0) { seen[k] = 1; items.push(it); } };
     (m.pst || []).forEach(function (p) { add({ k: "Eigen", p: p }); });
+    (au && au.img || []).forEach(function (x) { if (x.k === "fb") add({ k: "Facebook", p: x.p }); });
     (au && au.img || []).forEach(function (x) { if (x.k === "gen" && !m.nogen) add({ k: "Gemaakt", p: x.p }); });
-    (au && au.img || []).forEach(function (x) { if (x.k !== "gen") add({ k: x.k === "zaal" ? "Zaal" : "Artiest", p: x.p, src: x.src }); });
+    (au && au.img || []).forEach(function (x) { if (x.k !== "gen") add({ k: x.k === "zaal" ? "Zaal" : x.k === "fb" ? "Facebook" : "Artiest", p: x.p, src: x.src }); });
     if (!(au && au.img || []).some(function (x) { return x.k === "zaal"; })) {
       var key = nice(c.n).toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 10);
       add({ k: "Zaal", u: IMGS[c.u] });
@@ -2120,10 +2134,11 @@ function pOrder(items, m) {
 }
 /* eerste poster van een concert (eigen of gemaakt/gevonden, niet verborgen, jouw volgorde) */
 function firstPoster(id) {
-  var m = marks[id]; if (!m) return null;
+  var m = marks[id] || {};
   var hide = (m.phide || []).concat(m.pdel || []), au = ((AUTO || {}).marks || {})[id], items = (m.pst || []).map(function (p) { return { p: p }; });
+  (au && au.img || []).forEach(function (x) { if (x.k === "fb") items.push({ p: x.p }); });
   (au && au.img || []).forEach(function (x) { if (x.k === "gen" && !m.nogen) items.push({ p: x.p }); });
-  (au && au.img || []).forEach(function (x) { if (x.k !== "gen") items.push({ p: x.p }); });
+  (au && au.img || []).forEach(function (x) { if (x.k !== "gen" && x.k !== "fb") items.push({ p: x.p }); });
   items = pOrder(items.filter(function (it) { return hide.indexOf(it.p) < 0; }), m);
   return items[0] || null;
 }
@@ -2164,6 +2179,7 @@ function firstPosterNow() {   /* deze poster vooraan: ook het plaatje in Mijn co
   afterPoster(id, it.aid);
 }
 function delPoster() {
+  var it0 = PV[PVI], id0 = it0 && it0.aid || st.open; if (id0 && !marks[id0]) ensureHistMark(id0);
   var it = PV[PVI], id = it && it.aid || st.open, m = marks[id], k = it && it.k === "Foto" ? "fot" : "pst"; if (!it || it.k === "Jaarposter" || !m) return;
   if (it.k !== "Eigen" && it.k !== "Foto") {   /* gemaakt of gevonden: weg uit je opslag, en de postertaak haalt hem niet terug */
     if (!confirm(it.k === "Gemaakt" ? "De gemaakte poster verwijderen? Er wordt voor dit concert geen nieuwe meer gemaakt." : "Deze poster verwijderen?")) return;

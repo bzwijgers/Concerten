@@ -1357,7 +1357,7 @@ function setlistHtml(aid, artist, city, d, names) {
 }
 /* foto's en bestanden bij een gezien-concert: in je privé sync-opslag (posters/fotos/ en bestanden/) */
 function euro(v) { return "€ " + (Math.round(v * 100) / 100).toFixed(2).replace(".", ","); }
-function prijsHtml(id) { var v = (marks[id] || {}).prijs; return '<label class="prijs">Wat betaalde je? <span>€</span><input type="text" inputmode="decimal" placeholder="0,00" data-prijs="' + esc(id) + '" value="' + (typeof v === "number" ? String(v.toFixed(2)).replace(".", ",") : "") + '"><i>alle kaartjes samen, met kosten</i></label>'; }
+function prijsHtml(id) { var v = (marks[id] || {}).prijs; return '<label class="prijs">Prijs van je kaartje <span>€</span><input type="text" inputmode="decimal" placeholder="0,00" data-prijs="' + esc(id) + '" value="' + (typeof v === "number" ? String(v.toFixed(2)).replace(".", ",") : "") + '"><i>één kaartje (het jouwe), inclusief kosten</i></label>'; }
 document.addEventListener("change", function (e) {
   var pi = e.target.closest && e.target.closest("[data-prijs]"); if (!pi) return;
   var id = pi.getAttribute("data-prijs"), t = String(pi.value || "").replace(/[^\d,.]/g, ""), v = parseFloat(t.indexOf(",") >= 0 ? t.replace(/\./g, "").replace(",", ".") : t);

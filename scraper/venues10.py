@@ -7,10 +7,10 @@ from common import *
 DE_MONTHS = {"jan": 1, "feb": 2, "mär": 3, "mar": 3, "apr": 4, "mai": 5, "jun": 6, "jul": 7, "aug": 8, "sep": 9, "okt": 10, "nov": 11, "dez": 12}
 
 
-def _ld(key, url, skip=None):
+def _ld(key, url, skip=None, html_=None):
     """schema.org-evenementen van een lijstpagina; datums soms zonder voorloopnul ('2026-11-5T18:30+1:00')."""
     out = []
-    for o in ld_events(fetch(url)):
+    for o in ld_events(html_ if html_ is not None else fetch(url)):
         m = re.match(r"(\d{4})-(\d{1,2})-(\d{1,2})(?:T(\d{1,2}):(\d\d))?", str(o.get("startDate", "")))
         name = clean(o.get("name", ""))
         if not m or not name or cancelled(o) or (skip and re.search(skip, name, re.I)): continue
@@ -30,7 +30,26 @@ def altenberg():   # alleen de categorie 'Konzerte'; poetry slam en kabarett sta
 
 
 def helvete():   # metalclub; muziekwedstrijd (SPH Music Masters) telt niet als concert
-    return _ld("helvete", "https://helvete.de/events/", r"music masters|\bparty\b|karaoke|quiz|^halloween$")
+    # de lijstpagina toont maar 12 evenementen; de rest komt via de knop 'Weitere laden' (admin-ajax van de site zelf)
+    skip = r"music masters|\bparty\b|karaoke|quiz|^halloween$"
+    out = _ld("helvete", "https://helvete.de/events/", skip)
+    start, off = date.today().isoformat(), 0
+    m = re.search(r'start_date: "([\d-]+)",\s*end_date: "([\d-]+)",\s*offset: "(\d+)"', fetch("https://helvete.de/events/"))
+    if m: start, off = m.group(2), int(m.group(3))
+    atts = "atts%5Bsk-options%5D%5Blist%5D%5Bstyle%5D=classic&atts%5Bsk-options%5D%5Blist%5D%5Bstart_date_type%5D=start_current_month&atts%5Bshow_past_events%5D=1&atts%5Binstance_id%5D=mec1&atts%5Bid%5D=mec1"
+    for _ in range(15):
+        try:
+            req = urllib.request.Request("https://helvete.de/wp-admin/admin-ajax.php", headers={"User-Agent": UA},
+                data=f"action=mec_list_load_more&mec_start_date={start}&mec_offset={off}&atts={atts}&current_month_divider={start[:4]}{start[5:7]}&apply_sf_date=0".encode())
+            with urllib.request.urlopen(req, timeout=40) as r: j = json.loads(r.read().decode("utf-8", "replace"))
+        except Exception: break
+        out += _ld("helvete", "https://helvete.de/events/", skip, j.get("html", ""))
+        if not j.get("has_more_event") or not j.get("end_date"): break
+        start, off = j["end_date"], int(j.get("offset") or 0)
+    seen, res = set(), []
+    for e in out:
+        if (e["d"], e["n"]) not in seen: seen.add((e["d"], e["n"])); res.append(e)
+    return res
 
 
 def kulttempel():

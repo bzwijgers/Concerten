@@ -21,7 +21,7 @@ SITES = {
 }
 BASES = {k: re.match(r"https?://[^/]+", v[0][0]).group(0) for k, v in SITES.items()}
 # agenda's met paginering: (eerste paginanummer, maximum)
-PAGED = {"ab": (2, 30), "trix": (2, 10), "depot": (1, 12), "kreun": (1, 10)}
+PAGED = {"ab": (2, 30), "trix": (2, 10), "depot": (1, 12), "kreun": (2, 10)}
 # agenda's waarvan de sitemap alle concertpagina's bevat
 SITEMAP = {"ha": "https://www.haconcerts.be/sitemap.xml", "reflektor": "https://reflektor.be/sitemap.xml"}
 

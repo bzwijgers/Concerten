@@ -1,13 +1,13 @@
 {
 "_last": [],
 "ab": {
-"good": 223
+"good": 224
 },
 "acu": {
 "good": 12
 },
 "afasdome": {
-"good": 29
+"good": 30
 },
 "altenberg": {
 "good": 12
@@ -34,13 +34,13 @@
 "good": 66
 },
 "bolwerk": {
-"good": 47
+"good": 48
 },
 "bos": {
 "good": 39
 },
 "bosuil": {
-"good": 59
+"good": 60
 },
 "botanique": {
 "good": 3
@@ -58,7 +58,7 @@
 "good": 13
 },
 "casino": {
-"good": 13
+"good": 14
 },
 "cinetol": {
 "good": 47
@@ -70,10 +70,10 @@
 "good": 24
 },
 "dbs": {
-"good": 47
+"good": 48
 },
 "depot": {
-"good": 95
+"good": 96
 },
 "doornroosje": {
 "good": 190
@@ -88,10 +88,10 @@
 "good": 99
 },
 "ekko": {
-"good": 58
+"good": 59
 },
 "engel": {
-"good": 97
+"good": 100
 },
 "fest_alcatraz": {
 "good": 1
@@ -193,7 +193,7 @@
 "good": 55
 },
 "gashouder": {
-"good": 25
+"good": 26
 },
 "gebouwt": {
 "good": 56
@@ -217,7 +217,7 @@
 "good": 18
 },
 "hof": {
-"good": 25
+"good": 26
 },
 "iduna": {
 "good": 39
@@ -238,19 +238,19 @@
 "good": 54
 },
 "lantaren": {
-"good": 67
+"good": 68
 },
 "littledevil": {
-"good": 16
+"good": 17
 },
 "lockkeepers": {
 "good": 11
 },
 "lottoarena": {
-"good": 18
+"good": 19
 },
 "luxor": {
-"good": 121
+"good": 123
 },
 "maassilo": {
 "good": 1
@@ -262,10 +262,10 @@
 "good": 15
 },
 "melkweg": {
-"good": 266
+"good": 257
 },
 "metropool": {
-"good": 137
+"good": 138
 },
 "mezz": {
 "good": 134
@@ -274,7 +274,7 @@
 "good": 57
 },
 "muziekgieterij": {
-"good": 94
+"good": 95
 },
 "n9": {
 "good": 18
@@ -283,7 +283,7 @@
 "good": 79
 },
 "nobel": {
-"good": 99
+"good": 100
 },
 "nor": {},
 "o13": {
@@ -299,19 +299,19 @@
 "good": 63
 },
 "paard": {
-"good": 145
+"good": 146
 },
 "paradiso": {
-"good": 419
+"good": 420
 },
 "patronaat": {
-"good": 146
+"good": 147
 },
 "pul": {
 "good": 54
 },
 "qfactory": {
-"good": 36
+"good": 37
 },
 "reflektor": {
 "good": 68
@@ -323,7 +323,7 @@
 "good": 119
 },
 "rwa": {
-"good": 20
+"good": 21
 },
 "simplon": {
 "good": 51
@@ -335,7 +335,7 @@
 "good": 22
 },
 "spot": {
-"good": 188
+"good": 190
 },
 "studiogonz": {
 "good": 15
@@ -344,7 +344,7 @@
 "good": 19
 },
 "ticketmaster": {
-"good": 682
+"good": 692
 },
 "tivoli": {
 "good": 324

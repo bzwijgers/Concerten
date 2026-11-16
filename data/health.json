@@ -1,7 +1,5 @@
 {
-"_last": [
-"kreun"
-],
+"_last": [],
 "ab": {
 "good": 223
 },
@@ -231,8 +229,7 @@
 "good": 6
 },
 "kreun": {
-"good": 55,
-"since": "2026-11-15"
+"good": 52
 },
 "kroepoek": {
 "good": 27
@@ -311,7 +308,7 @@
 "good": 146
 },
 "pul": {
-"good": 55
+"good": 54
 },
 "qfactory": {
 "good": 36

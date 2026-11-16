@@ -1,6 +1,6 @@
-@bzwijgers, ochtendcontrole 2026-11-15:
+@bzwijgers, ochtendcontrole 2026-11-16:
 
-- Helvete (Oberhausen): de agendapagina toonde nog maar 12 concerten en de rest zat achter de knop "Weitere laden". Daardoor misten er concerten van na 20 november. De scraper vraagt die extra pagina's nu ook op bij de site zelf. Levert nu 24 concerten (was 8) tot en met februari 2027.
-- Melkweg is vanmorgen apart opgehaald (266 concerten) en doorgegeven aan de update.
+- **De Kreun**: leverde nog maar 13 concerten in plaats van 55. De agenda van Wilde Westen toont pagina 1 nu ook zonder paginanummer, waardoor het scraper-programma te vroeg stopte met bladeren. Ik laat het bladeren nu bij pagina 2 beginnen; De Kreun levert nu weer 55 concerten. Een nieuwe update is gestart zodat dit vandaag nog in de agenda staat.
+- **Melkweg**: vanochtend opgehaald (259 concerten) en doorgegeven aan de update.
 
-Alles is in orde; er loopt een nieuwe update zodat Helvete vandaag al compleet in de agenda staat.
+Alles is weer in orde, behalve dat de nieuwe update nog even moet draaien.

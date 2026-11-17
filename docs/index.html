@@ -1276,7 +1276,7 @@ function histRow(e) {
     (fold && open ? '<div class="s" style="white-space:normal;color:var(--fg);margin-top:6px;line-height:1.5">' + all.map(function (a) { return esc(a[0]); }).join("<br>") + "</div>" : "") + "</div>" +
     (typeof e.r === "number" ? '<div class="tm" style="color:var(--gold)">★ ' + String(e.r).replace(".", ",") + "</div>" : "") + "</div>";
 }
-var ZALIAS = [[/^(heineken music hall|afas live)$/i, "AFAS Live", "incl. Heineken Music Hall"], [/^(nighttown|watt)\b/i, "Watt", "incl. Nighttown"]];
+var ZALIAS = [[/^(heineken music hall|afas live)$/i, "AFAS Live", "incl. Heineken Music Hall"], [/^(nighttown|watt)\b/i, "Nighttown", "incl. Watt"]];
 function zaalSom(loc) { var l = String(loc || "").trim(); for (var i = 0; i < ZALIAS.length; i++) if (ZALIAS[i][0].test(l)) return { l: ZALIAS[i][1], x: ZALIAS[i][2] }; return { l: l, x: "" }; }
 function festOnce() { var seen = {}; return function (e) {   /* true = deze avond telt mee voor de zaal; festivaldagen van dezelfde editie maar één keer */
   if (!(e.fn || e.acts.some(function (x) { return x[1] === "F"; }))) return true;

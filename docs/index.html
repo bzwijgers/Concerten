@@ -1456,21 +1456,22 @@ function loadSetlists() {
 function setlistHtml(aid, artist, city, d, names) {
   var m = marks[aid] || {}, sl = m.sl || "", url = (sl.match(/https?:\/\/\S+/) || [""])[0];
   loadSetlists();
-  var got = !sl && SETL && d ? (names || [artist]).map(function (n) { return SETL[d + "|" + normA(n)]; }).filter(function (x) { return x && x.s && x.s.length; }) : [];
+  var own = sl.split("\n").some(function (x) { x = x.trim(); return x && !/^https?:\/\//.test(x); }), lk = SETL && SETL["mark|" + aid];
+  var got = own ? [] : lk && lk.s && lk.s.length && url.indexOf(lk.id) > 0 ? [lk] : !sl && SETL && d ? (names || [artist]).map(function (n) { return SETL[d + "|" + normA(n)]; }).filter(function (x) { return x && x.s && x.s.length; }) : [];
   if (got.length) return '<div class="hl" style="margin:12px 0 4px">Setlist</div>' + got.map(function (x) {
       var nr = 0;
-      return (got.length > 1 ? '<div class="bnwhy" style="margin:8px 0 2px">' + esc(x.a) + "</div>" : "") + x.s.map(function (p) {
+      return (got.length > 1 || (x.link && normA(x.a) !== normA(artist)) ? '<div class="bnwhy" style="margin:8px 0 2px">' + esc(x.a) + "</div>" : "") + x.s.map(function (p) {
         return (p[0] ? '<div class="slset">' + esc(p[0]) + "</div>" : "") + '<ol class="slist" start="' + (nr + 1) + '">' + p[1].map(function (t) { nr++; return "<li>" + esc(t) + "</li>"; }).join("") + "</ol>"; }).join("") +
         '<a class="lnk" href="' + esc(x.u) + '" target="_blank" rel="noopener">Setlist via setlist.fm ↗</a>'; }).join("") +
-    '<textarea data-sl rows="2" placeholder="Klopt deze niet? Plak hier je eigen setlist of de link ernaar">' + "</textarea>";
+    '<textarea data-sl rows="2" placeholder="Klopt deze niet? Plak hier je eigen setlist of de link ernaar">' + esc(sl) + "</textarea>";
   var lnk = function (u, t) { return '<a class="btn" href="' + esc(u) + '" target="_blank" rel="noopener">' + t + " ↗</a>"; };
   var songs = sl.split("\n").map(function (x) { return x.trim(); }).filter(function (x) { return x && !/^https?:\/\//.test(x); });
   return '<div class="hl" style="margin:12px 0 4px">Setlist</div>' +
     (artist ? '<div class="acts slinks">' + lnk("https://www.setlist.fm/search?query=" + encodeURIComponent(artist + (city ? " " + city : "")), "setlist.fm") +
       lnk("https://www.concertarchives.org/search?q=" + encodeURIComponent(artist), "Concert Archives") + lnk("https://www.setlisting.com/setlists", "Setlisting") + "</div>" : "") +
-    (url ? '<a class="lnk" href="' + esc(url) + '" target="_blank" rel="noopener">Open de setlist ↗</a>' : "") +
+    (url ? '<a class="lnk" href="' + esc(url) + '" target="_blank" rel="noopener">Open de setlist ↗</a>' + (/setlist\.fm\/setlist\//i.test(url) && !songs.length ? '<div class="s" style="white-space:normal">De nummers worden vannacht van setlist.fm opgehaald en staan er morgen bij.</div>' : "") : "") +
     (songs.length ? '<ol class="slist">' + songs.map(function (x) { return "<li>" + esc(x.replace(/^\d+[.)]\s*/, "")) + "</li>"; }).join("") + "</ol>" : "") +
-    '<textarea data-sl rows="3" placeholder="Plak hier de setlist (één nummer per regel) of de link ernaar">' + esc(sl) + "</textarea>";
+    '<textarea data-sl rows="3" placeholder="Plak hier de setlist (één nummer per regel) of de link van setlist.fm">' + esc(sl) + "</textarea>";
 }
 /* foto's en bestanden bij een gezien-concert: in je privé sync-opslag (posters/fotos/ en bestanden/) */
 function euro(v) { return "€ " + (Math.round(v * 100) / 100).toFixed(2).replace(".", ","); }

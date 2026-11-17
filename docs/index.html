@@ -1206,7 +1206,14 @@ function splitFest(L) {
     }
     var fest = e.src !== "a" && !e.mid && (e.fn || e.acts.some(function (x) { return x[1] === "F"; }));
     var bands = fest ? e.acts.filter(function (a) { return a[1] !== "V" && String(a[0] || "").trim(); }) : [];
-    if (!bands.length) { out.push(e); return; }
+    if (!bands.length) {
+      /* concert met meer acts (voorprogramma, co-headliner): elke act een eigen regel; de avond (cijfer, posters, kaartjes) blijft bij de eerste hoofdact */
+      var acts_ = e.acts.filter(function (a) { return String(a[0] || "").trim(); }), main_ = acts_.filter(function (a) { return a[1] !== "V"; })[0] || acts_[0];
+      if (fest || e.src === "a" || e.mid || acts_.length < 2) { out.push(e); return; }
+      var eid_ = histId(e); out.push(Object.assign({}, e, { acts: [main_], solo: 1 }));
+      acts_.filter(function (a) { return a !== main_; }).forEach(function (a) { var rid = eid_ + "|" + a[0], bm = marks[rid];
+        out.push({ d: e.d, loc: e.loc, city: e.city, cc: e.cc, acts: [[a[0], "H"]], src: "x", band: a[0], eid: eid_, rid: rid, vp: (a[1] === "V" ? "voorprogramma van " : "met ") + main_[0], r: bm && bm.rv ? bm.rv.r : undefined }); });
+      return; }
     var lab = festLabel(e) || e.loc, gk = lab + "|" + String(e.city || "").toLowerCase() + (festLabel(e) ? "" : "|" + e.d), G = grp[gk];
     if (!G || !G.ds.some(function (d) { return Math.abs(Date.parse(d) - Date.parse(e.d)) <= 6 * 864e5; })) G = grp[gk] = { label: lab, city: e.city, cc: e.cc, loc: e.loc, ds: [], n: 0, bands: [], eids: [], k: gk + "|" + e.d };
     G.ds.push(e.d); G.eids.push(histId(e));
@@ -1254,7 +1261,8 @@ function listRow(e, grouped, ttl, sub) {   /* ttl/sub: bij Artiesten een voorpro
   if (e.src === "a" && marks[e.id]) return appRow({ id: e.id, s: marks[e.id].s, rv: marks[e.id].rv || {} }, undefined, undefined, ttl, sub);
   if (e.band) { var bm_ = marks[e.rid], dd_ = parse(e.d);
     var br_ = appRow({ id: e.rid, s: { n: e.band, d: e.d, v: venueKeyFor(e.loc, e.city) || "", u: "" }, rv: (bm_ && bm_.rv) || {} }, e.acts, e.loc, e.band,
-      (e.fg && !grouped ? e.fg.label + " · " : "") + DOW[dd_.getDay()] + " " + dd_.getDate() + " " + MON[dd_.getMonth()] + " · " + e.loc);
+      e.vp ? e.vp + " · " + dd_.getDate() + " " + MONL[dd_.getMonth()] + " " + dd_.getFullYear() + " · " + e.loc
+        : (e.fg && !grouped ? e.fg.label + " · " : "") + DOW[dd_.getDay()] + " " + dd_.getDate() + " " + MON[dd_.getMonth()] + " · " + e.loc);
     return grouped ? br_.replace('class="arow', 'class="arow fband') : br_; }
   if (e.parts) { var fid = histId(e), fm = marks[fid];
     return appRow({ id: fid, s: { n: e.fn, d: e.d, v: venueKeyFor(e.loc, e.city) || "", u: "" }, rv: (fm && fm.rv) || {} }, e.acts, e.loc, e.fn, festSub(e)); }
@@ -2126,7 +2134,7 @@ function renderArchive() {
   if (["d", "o", "n", "t", "r"].indexOf(srt) < 0) srt = "d";
   var name0 = function (e) { return nice(e.fn || (e.acts[0] || [e.loc])[0]); };
   var L = splitFest(list);
-  if (srt === "o") L.reverse();
+  if (srt === "o") { L = L.map(function (e, i) { return [e, i]; }).sort(function (a, b) { return a[0].d < b[0].d ? -1 : a[0].d > b[0].d ? 1 : a[1] - b[1]; }).map(function (x) { return x[0]; }); }   /* oudste eerst; hoofdact vóór zijn voorprogramma */
   if (srt === "n") L.sort(function (a, b) { return name0(a).localeCompare(name0(b), "nl"); });
   if (srt === "t") { var tk_ = function (e) { var p_ = rpos(e); return p_ ? p_ : typeof e.r === "number" ? 1000 + (10 - e.r) * 10 : 5000; };
     L.sort(function (a, b) { return a.d.slice(0, 4) !== b.d.slice(0, 4) ? (a.d < b.d ? 1 : -1) : tk_(a) - tk_(b) || (a.d < b.d ? 1 : -1); }); }
@@ -2141,8 +2149,8 @@ function renderArchive() {
   var shown = L.slice(0, st.hlimit || 300), lastY = "", html = "", lastG = null;
   shown.forEach(function (e) {
     if ((srt === "d" || srt === "o" || srt === "t") && (!st.hyear || isRange) && e.d.slice(0, 4) !== lastY) { lastY = e.d.slice(0, 4); html += '<div class="yhead"><b>' + lastY + "</b><span>" + years[lastY] + "</span></div>"; }
-    var grouped_ = (srt === "d" || srt === "o") && !!e.band && !!e.fg;
-    if (grouped_ && e.fg !== lastG) html += e.fg.app ? appRow({ id: e.fg.fid, s: marks[e.fg.fid].s, rv: marks[e.fg.fid].rv || {} }).replace('class="arow', 'class="arow fhrow') : festRowH(e.fg);
+    var grouped_ = (srt === "d" || srt === "o") && !!e.band && (!!e.fg || !!e.vp);
+    if (grouped_ && e.fg && e.fg !== lastG) html += e.fg.app ? appRow({ id: e.fg.fid, s: marks[e.fg.fid].s, rv: marks[e.fg.fid].rv || {} }).replace('class="arow', 'class="arow fhrow') : festRowH(e.fg);
     html += listRow(e, grouped_);
     lastG = e.fg || null;
   });

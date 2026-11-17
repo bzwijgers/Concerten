@@ -143,6 +143,7 @@ nav [data-tab].dot{position:relative}nav [data-tab].dot::after{content:"";positi
 .arow.fband{margin-left:16px;border-left:1px dashed var(--line)}
 .fhead{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px;margin:14px 0 2px;padding:6px 10px;border-left:3px solid var(--blue);background:var(--card);border-radius:6px;font-size:13px}.fhead b{color:var(--fg)}.fhead span:last-child{color:var(--muted)}
 .fparts div{display:flex;flex-direction:column;padding:5px 0;border-bottom:1px solid var(--line);font-size:13.5px}.fparts span{color:var(--muted);font-size:12.5px}.fparts b{font-weight:600;color:var(--fg)}
+.tourset{margin:8px 2px 2px;font-size:13.5px}.tourset summary{cursor:pointer;color:var(--fg);font-weight:600;padding:6px 0}.tourset ol{margin:2px 0 6px 22px;padding:0;color:var(--muted);line-height:1.5}
 .t10{display:flex;gap:8px;overflow-x:auto;margin:6px 0 12px;padding-bottom:4px;scrollbar-width:thin}
 .t10 button{flex:0 0 86px;background:none;border:0;padding:0;color:var(--fg);text-align:left;cursor:pointer;font:inherit}
 .t10 .ti{width:86px;height:114px;border-radius:9px;background:var(--card) center/cover no-repeat;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font:700 28px var(--f-d);color:var(--faint);position:relative;font-style:normal}
@@ -812,6 +813,17 @@ function ticketList() {
   return out.sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; });
 }
 /* concertdag: vandaag (en morgen) bovenaan de agenda, met route en je kaartjes */
+/* concertdag: laatste setlist van de band op de tour (tour.json in je privé-opslag, elke ochtend bijgewerkt) */
+var TOUR = null, TOURat = 0;
+function tourSet(id) {
+  if (SYNC && SYNC.token && (!TOURat || Date.now() - TOURat > 1800000)) { TOURat = Date.now();
+    ghGet("tour.json").then(function (r) { TOUR = r ? JSON.parse(String(r.txt).replace(/^\ufeff/, "")) : {}; if (st.tab === "agenda" && document.querySelector(".dayc")) { var y = scrollY; render(); window.scrollTo(0, y); } }).catch(function () { TOUR = TOUR || {}; }); }
+  var t = (TOUR || {})[id]; if (!t || !t.s || !t.s.length) return "";
+  var d = parse(t.d), n = 0; t.s.forEach(function (x) { n += x[1].length; });
+  return '<details class="tourset"><summary>🎵 Laatste setlist: ' + d.getDate() + " " + MON[d.getMonth()] + (t.c ? ", " + esc(t.c) : "") + " · " + n + " nummers</summary>" +
+    t.s.map(function (x) { return (x[0] ? '<div class="hl" style="margin:8px 0 2px">' + esc(x[0]) + "</div>" : "") + "<ol>" + x[1].map(function (sg) { return "<li>" + esc(sg) + "</li>"; }).join("") + "</ol>"; }).join("") +
+    (t.u ? '<a class="lnk" href="' + esc(t.u) + '" target="_blank" rel="noopener">Op setlist.fm ↗</a>' : "") + "</details>";
+}
 function dayCards() {
   var tm = iso(new Date(NOW.getTime() + 864e5));
   return ticketList().filter(function (c) { return c.d === TODAY || c.d === tm; }).map(function (c) {
@@ -820,7 +832,7 @@ function dayCards() {
     return '<div class="dayc" style="margin-top:12px">' + card(c, true) +
       '<div class="acts dayacts"><a class="btn pri" href="https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent((otherVenue(c) || v).label + ", " + v.city) + '" target="_blank" rel="noopener">🧭 Route</a>' +
       fil.slice(0, 3).map(function (f, i) { return '<button class="btn" data-dfile="' + esc(c.id) + '" data-i="' + i + '">🎟 ' + esc(f.n.length > 18 ? f.n.slice(0, 16) + "…" : f.n) + "</button>"; }).join("") +
-      (fil.length ? "" : '<button class="btn" data-dopen="' + esc(c.id) + '">🎟 Kaartje toevoegen</button>') + "</div></div>";
+      (fil.length ? "" : '<button class="btn" data-dopen="' + esc(c.id) + '">🎟 Kaartje toevoegen</button>') + "</div>" + tourSet(c.id) + "</div>";
   }).join("");
 }
 function renderAgenda() {

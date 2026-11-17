@@ -1968,14 +1968,15 @@ function openYearPoster(next) {
 /* uit de opgehaalde setlists: wat je het vaakst live hoorde, covers en de langste setlist (volgt de gekozen periode) */
 function setlistStats(list) {
   if (!SETL) return "";
-  var nEv = 0, nSongs = 0, songs = {}, top = null, NOCOV = /^(reprise|live|acoustic|akoestisch|intro|outro|part|pt\.?|version|remix|edit|demo|medley|instrumental)\b/i;
+  var nEv = 0, nSongs = 0, songs = {}, top = null, bands = {}, NOCOV = /^(reprise|live|acoustic|akoestisch|intro|outro|part|pt\.?|version|remix|edit|demo|medley|instrumental)\b/i;
   list.forEach(function (e) {
     var any = false, had = {};
     e.acts.forEach(function (x) {
       var k = normA(String(x[0] || "")), sl = k && !had[k] ? SETL[e.d + "|" + k] : null; had[k] = 1;
       if (!sl || !sl.s || !sl.s.length) return;
-      var cnt = 0, who = nice(sl.a); any = true;
+      var cnt = 0, who = nice(sl.a); any = true; var bb = bands[k] = bands[k] || { a: who, n: 0 }; bb.n++;
       sl.s.forEach(function (p) { p[1].forEach(function (t) {
+        if (/^((drum|bass|guitar|gitaar|keyboard|piano|organ|sax|violin)s?\s+)?solo(?![a-z])|^(intro|outro|jam|tape|band intro|introductions?)(?![a-z])/i.test(t)) return;   /* solo's, intro's en jams tellen niet als nummer */
         var m = t.match(/^(.+?) \(([^()]+)\)$/), org = m && !NOCOV.test(m[2]) ? m[2] : "", title = org ? m[1] : t, sk = k + "|" + title.toLowerCase();
         var o = songs[sk] = songs[sk] || { n: 0, t: title, a: who, c: org }; o.n++; cnt++; }); });
       nSongs += cnt;
@@ -1985,11 +1986,18 @@ function setlistStats(list) {
   });
   if (!nEv) return "";
   var all = Object.keys(songs).map(function (k) { return songs[k]; }).sort(function (a, b) { return b.n - a.n || a.t.localeCompare(b.t, "nl"); });
+  /* per band (3 of meer concerten met setlist): verschillende nummers en het vaakst gehoorde nummer */
+  var byB = {}; Object.keys(songs).forEach(function (sk) { var b0 = sk.slice(0, sk.indexOf("|")); (byB[b0] = byB[b0] || []).push(songs[sk]); });
+  var per = Object.keys(bands).filter(function (k) { return bands[k].n >= 3; }).map(function (k) {
+    var mine = (byB[k] || []).sort(function (a, b) { return b.n - a.n || a.t.localeCompare(b.t, "nl"); });
+    return { a: bands[k].a, n: bands[k].n, d: mine.length, t: mine[0] }; }).sort(function (a, b) { return b.n - a.n || b.d - a.d; }).slice(0, 12);
   var most = all.filter(function (o) { return o.n >= 2; }).slice(0, 10), cov = all.filter(function (o) { return o.c; }).slice(0, 10), mx = most.length ? most[0].n : 1;
-  var html = '<div class="hl" style="margin-top:20px">Setlists</div><div class="hcap">' + nEv + " van de " + list.length + " concerten met setlist · " + nSongs + " nummers" +
+  var html = '<div class="hl" style="margin-top:20px">Setlists</div><div class="hcap">' + nEv + " van de " + list.length + " concerten met setlist · " + nSongs + " nummers (" + all.length + " verschillende)" +
     (top ? " · langste: " + esc(top.a) + " (" + top.n + " nummers, " + top.y + ")" : "") + "</div>";
   if (most.length) html += '<div class="hl" style="margin-top:20px">Vaakst live gehoord</div>' + most.map(function (o) {
     return '<div class="hrow"><div class="hrt"><b>' + esc(o.t) + "</b><span>" + esc(o.a) + '</span></div><div class="hrb"><i style="width:' + Math.round(o.n / mx * 100) + '%"></i></div><em>' + o.n + "×</em></div>"; }).join("");
+  if (per.length) html += '<div class="hl" style="margin-top:20px">Per band</div>' + per.map(function (o) {
+    return '<div class="hrow"><div class="hrt" style="flex:1"><b>' + esc(o.a) + "</b><span>" + o.n + " keer met setlist · " + o.d + " verschillende nummers" + (o.t && o.t.n >= 2 ? " · vaakst: " + esc(o.t.t) + " (" + o.t.n + "×)" : "") + "</span></div></div>"; }).join("");
   if (cov.length) html += '<div class="hl" style="margin-top:20px">Covers die je hoorde</div>' + cov.map(function (o) {
     return '<div class="hrow"><div class="hrt" style="flex:1"><b>' + esc(o.t) + "</b><span>van " + esc(o.c) + ", gespeeld door " + esc(o.a) + "</span></div><em>" + o.n + "×</em></div>"; }).join("");
   return html;

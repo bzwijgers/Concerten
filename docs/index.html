@@ -1600,7 +1600,7 @@ function yearSummary(list, y, all, range) {   /* range: blok van jaren, dan zond
   var topk = function (o) { var k = Object.keys(o).sort(function (a, b) { return o[b] - o[a]; })[0]; return k ? [k, o[k]] : null; };
   var tz = topk(zv), ta = topk(ar), best = list.filter(function (e) { return typeof e.r === "number"; }).sort(function (a, b) { return b.r - a.r; })[0];
   var fset = {}; list.forEach(function (e) { if (e.fn || e.acts.some(function (x) { return x[1] === "F"; })) fset[(festLabel(e) || e.fn || e.loc + " " + e.d.slice(0, 4)).toLowerCase()] = 1; });
-  var pt = 0, pn = 0; list.forEach(function (e) { var pv = (marks[eveId(e)] || {}).prijs; if (typeof pv === "number" && pv > 0) { pt += pv; pn++; } });
+  var pt = 0, pn = 0, PRIJS_VANAF = "2026"; (list.every(function (e) { return e.d >= PRIJS_VANAF; }) ? list : []).forEach(function (e) {   /* tot en met 2025 ontbreken nog te veel prijzen: geen totaal */ var pv = (marks[eveId(e)] || {}).prijs; if (typeof pv === "number" && pv > 0) { pt += pv; pn++; } });
   var fd = Object.keys(fset).length;   /* aantal festivals (een festival van drie dagen telt één keer) */
   /* een festivaldag telt als één concert: 54 concerten (daarvan 2 festivaldagen); compact, op één regel */
   return '<div class="ys"><div><b>' + list.length + "</b><span>concerten</span></div><div><b>" + Object.keys(zv).length + "</b><span>zalen</span></div><div><b>" + (fd || Object.keys(zc).length) + "</b><span>" + (fd ? (fd === 1 ? "festival" : "festivals") : "steden") + "</span></div></div>" +
@@ -1917,7 +1917,7 @@ function top10Image(list, year) {
     [[555, 280], [810, 280], [555, 595], [810, 595]].forEach(function (q, k) { tile(k + 1, q[0], q[1], 235, 305); });
     [0, 1, 2, 3, 4].forEach(function (k) { tile(k + 5, 60 + k * 196, 930, 176, 236); });
     /* onderaan: je jaar in cijfers */
-    var zv = {}, pt = 0; list.forEach(function (e) { if (e.loc) zv[e.loc] = 1; var pv = (marks[eveId(e)] || {}).prijs; if (typeof pv === "number" && pv > 0) pt += pv; });
+    var zv = {}, pt = 0, allNew = list.every(function (e) { return e.d >= "2026"; }); list.forEach(function (e) { if (e.loc) zv[e.loc] = 1; var pv = (marks[eveId(e)] || {}).prijs; if (allNew && typeof pv === "number" && pv > 0) pt += pv; });
     var nb = splitFest(list).length, line = list.length + " concerten · " + (nb > list.length ? nb + " optredens · " : "") + Object.keys(zv).length + " zalen" + (pt ? " · " + euro(pt).replace(",00", "") + " aan kaartjes" : "");
     g.fillStyle = "rgba(255,255,255,.12)"; g.fillRect(60, 1200, W - 120, 2);
     g.fillStyle = "#fff"; g.font = "600 30px " + FB; g.fillText(fit(line, W - 120, "600 30px " + FB), 60, 1258);

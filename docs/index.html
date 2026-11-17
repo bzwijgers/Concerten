@@ -129,6 +129,7 @@ header.sc{border-bottom-color:var(--line)}
 nav [data-tab].dot{position:relative}nav [data-tab].dot::after{content:"";position:absolute;top:8px;left:calc(50% + 8px);width:8px;height:8px;border-radius:50%;background:var(--red)}
 .ys{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 6px}.ys div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 8px;display:flex;align-items:baseline;justify-content:center;gap:4px;min-width:0}.ys b{font:800 16px var(--f-d)}.ys span{font-size:11.5px;color:var(--muted);white-space:nowrap}
 .ypbtn{width:auto;padding:8px 14px;font-size:13.5px;margin:0 0 12px}
+.bd.club{background:rgba(232,180,74,.16);color:var(--gold)}.clubk{margin-top:2px}.clubk input{width:auto}
 .prijs{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:10px 0 4px;font-size:13.5px;color:var(--muted)}
 .prijs span{color:var(--fg)}.prijs input{width:90px;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);font:inherit}
 .prijs i{font-size:12px;color:var(--faint);font-style:normal;flex-basis:100%}
@@ -1161,7 +1162,7 @@ function histEvenings() {
   if (st.hfrom) out = out.filter(function (e) { return e.d >= st.hfrom; });
   if (st.hto) out = out.filter(function (e) { return e.d <= st.hto; });
   var q = st.q.trim().toLowerCase();
-  if (q) out = out.filter(function (e) { return qhit(e.acts.map(function (a) { return a[0]; }).join(" ") + " " + (e.fn || "") + " " + dateWords(e.d) + " " + e.loc + " " + e.city, q); });
+  if (q) out = out.filter(function (e) { var cm = marks[e.src === "a" ? e.id : e.mid || histId(e)] || {}; return qhit(e.acts.map(function (a) { return a[0]; }).join(" ") + " " + (e.fn || "") + " " + dateWords(e.d) + " " + e.loc + " " + e.city + (cm.club ? " clubkaart" : ""), q); });
   return out.sort(function (a, b) { return a.d < b.d ? 1 : -1; });
 }
 function flag(cc) { return !cc || cc === "NL" || cc.length !== 2 ? "" : " " + String.fromCodePoint(0x1F1E6 + cc.charCodeAt(0) - 65, 0x1F1E6 + cc.charCodeAt(1) - 65); }
@@ -1395,7 +1396,7 @@ function appRow(a, xacts, xloc, xtitle, xsub) { if (!xacts && !xloc && isFestMar
       if (fa.length && !xtitle) { var fh = hs.filter(function (x) { return x[1] !== "F"; }); xtitle = fh.length ? fh.map(function (x) { return x[0]; }).join(" & ") : nice(a.s.n); hs = []; }
       for (var i = 1; i <= 10; i++) { var f = typeof r === "number" ? (r >= i ? "full" : r >= i - 0.5 ? "half" : "") : "";
         stars += '<button class="rs ' + f + '" data-rate="' + i + '" aria-label="' + i + ' van 10"><svg viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/></svg></button>'; }
-      return '<div class="arow' + (open ? " open" : "") + '" data-aid="' + esc(a.id) + '"><div class="ev" data-aopen>' + lg({ v: a.s.v, n: a.s.n, th: "" }) + '<div class="b"><div class="n">' + esc(xtitle || (hs.length ? hs.map(function (x) { return x[0]; }).join(" & ") : nice(a.s.n))) + '</div><div class="s">' + (fa.length ? '<span class="bd fe">festival</span>' : "") + (xsub ? esc(xsub) : d.getDate() + " " + MONL[d.getMonth()] + " " + d.getFullYear() + " · " + esc(xloc || v.label) + flag(v.cc)) + "</div>" +
+      return '<div class="arow' + (open ? " open" : "") + '" data-aid="' + esc(a.id) + '"><div class="ev" data-aopen>' + lg({ v: a.s.v, n: a.s.n, th: "" }) + '<div class="b"><div class="n">' + esc(xtitle || (hs.length ? hs.map(function (x) { return x[0]; }).join(" & ") : nice(a.s.n))) + '</div><div class="s">' + (fa.length ? '<span class="bd fe">festival</span>' : "") + ((marks[a.id] || {}).club ? '<span class="bd club">clubkaart</span>' : "") + (xsub ? esc(xsub) : d.getDate() + " " + MONL[d.getMonth()] + " " + d.getFullYear() + " · " + esc(xloc || v.label) + flag(v.cc)) + "</div>" +
         (fa.length ? '<div class="s">' + fa.length + (fa.length === 1 ? " band" : " bands") + " gezien</div>" : "") +
         (vs.length ? '<div class="s">met: ' + esc(vs.map(function (x) { return x[0]; }).join(", ")) + "</div>" : "") +
         (a.rv.txt && !open ? '<div class="s" style="white-space:normal;font-style:italic">“' + esc(a.rv.txt) + "”</div>" : "") + '</div><div class="tm" style="color:var(--gold)">' + (typeof r === "number" ? "★ " + String(r).replace(".", ",") : (RPOS[a.id] || RPOS[a.s.d + "|" + (xloc || v.label)]) ? '<span class="rk" title="plaats in je jaarlijst">#' + (RPOS[a.id] || RPOS[a.s.d + "|" + (xloc || v.label)]) + "</span>" : "–") + "</div></div>" +
@@ -1451,8 +1452,10 @@ function setlistHtml(aid, artist, city, d, names) {
 }
 /* foto's en bestanden bij een gezien-concert: in je privé sync-opslag (posters/fotos/ en bestanden/) */
 function euro(v) { return "€ " + (Math.round(v * 100) / 100).toFixed(2).replace(".", ","); }
-function prijsHtml(id) { var v = (marks[id] || {}).prijs; return '<label class="prijs">Prijs van je kaartje <span>€</span><input type="text" inputmode="decimal" placeholder="0,00" data-prijs="' + esc(id) + '" value="' + (typeof v === "number" ? String(v.toFixed(2)).replace(".", ",") : "") + '"><i>één kaartje (het jouwe), inclusief kosten</i></label>'; }
+function prijsHtml(id) { var v = (marks[id] || {}).prijs; return '<label class="prijs">Prijs van je kaartje <span>€</span><input type="text" inputmode="decimal" placeholder="0,00" data-prijs="' + esc(id) + '" value="' + (typeof v === "number" ? String(v.toFixed(2)).replace(".", ",") : "") + '"><i>één kaartje (het jouwe), inclusief kosten</i></label><label class="prijs clubk"><input type="checkbox" data-club="' + esc(id) + '"' + ((marks[id] || {}).club ? " checked" : "") + '> Clubkaart (Rotown; concert zat in je clubkaart)</label>'; }
 document.addEventListener("change", function (e) {
+  var ck = e.target.closest && e.target.closest("[data-club]");
+  if (ck) { var cid = ck.getAttribute("data-club"); ensureHistMark(cid); if (!marks[cid]) return; if (ck.checked) { marks[cid].club = true; marks[cid].prijs = 0; } else delete marks[cid].club; save("ca-marks", marks); syncSoon(); var y0 = scrollY; render(); window.scrollTo(0, y0); return; }
   var pi = e.target.closest && e.target.closest("[data-prijs]"); if (!pi) return;
   var id = pi.getAttribute("data-prijs"), t = String(pi.value || "").replace(/[^\d,.]/g, ""), v = parseFloat(t.indexOf(",") >= 0 ? t.replace(/\./g, "").replace(",", ".") : t);
   ensureHistMark(id); if (!marks[id]) return;

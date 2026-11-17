@@ -1249,9 +1249,9 @@ function mergeFest(L) {
   }).sort(function (a, b) { return a.d < b.d ? 1 : a.d > b.d ? -1 : 0; });
 }
 /* één regel in de lijst (ook gebruikt bij Artiesten): uitklappen, cijfer, setlist, posters */
-function listRow(e, grouped) {
+function listRow(e, grouped, ttl, sub) {   /* ttl/sub: bij Artiesten een voorprogramma onder zijn eigen naam */
   if (e.src === "a" && marks[e.id] && e.festPart) return "";   /* andere dagen van hetzelfde festival: al in de festivalregel */
-  if (e.src === "a" && marks[e.id]) return appRow({ id: e.id, s: marks[e.id].s, rv: marks[e.id].rv || {} });
+  if (e.src === "a" && marks[e.id]) return appRow({ id: e.id, s: marks[e.id].s, rv: marks[e.id].rv || {} }, undefined, undefined, ttl, sub);
   if (e.band) { var bm_ = marks[e.rid], dd_ = parse(e.d);
     var br_ = appRow({ id: e.rid, s: { n: e.band, d: e.d, v: venueKeyFor(e.loc, e.city) || "", u: "" }, rv: (bm_ && bm_.rv) || {} }, e.acts, e.loc, e.band,
       (e.fg && !grouped ? e.fg.label + " · " : "") + DOW[dd_.getDay()] + " " + dd_.getDate() + " " + MON[dd_.getMonth()] + " · " + e.loc);
@@ -1259,8 +1259,8 @@ function listRow(e, grouped) {
   if (e.parts) { var fid = histId(e), fm = marks[fid];
     return appRow({ id: fid, s: { n: e.fn, d: e.d, v: venueKeyFor(e.loc, e.city) || "", u: "" }, rv: (fm && fm.rv) || {} }, e.acts, e.loc, e.fn, festSub(e)); }
   if (!e.mid && e.src !== "a") { var hid = histId(e), hm = marks[hid];
-    return appRow({ id: hid, s: { n: (e.acts[0] || [e.loc])[0], d: e.d, v: venueKeyFor(e.loc, e.city) || "", u: "" }, rv: (hm && hm.rv) || {} }, e.d >= "2026" ? null : e.acts, e.loc, (e.fn || e.acts.some(function (x) { return x[1] === "F"; })) ? festLabel(e) || e.loc : ""); }
-  if (e.mid && marks[e.mid]) return appRow({ id: e.mid, s: marks[e.mid].s, rv: marks[e.mid].rv || {} }, e.d >= "2026" ? null : e.acts, e.loc);   /* ook in je eigen lijst: beoordelen kan, artiesten uit je lijst */
+    return appRow({ id: hid, s: { n: (e.acts[0] || [e.loc])[0], d: e.d, v: venueKeyFor(e.loc, e.city) || "", u: "" }, rv: (hm && hm.rv) || {} }, e.d >= "2026" ? null : e.acts, e.loc, ttl || ((e.fn || e.acts.some(function (x) { return x[1] === "F"; })) ? festLabel(e) || e.loc : ""), sub); }
+  if (e.mid && marks[e.mid]) return appRow({ id: e.mid, s: marks[e.mid].s, rv: marks[e.mid].rv || {} }, e.d >= "2026" ? null : e.acts, e.loc, ttl, sub);   /* ook in je eigen lijst: beoordelen kan, artiesten uit je lijst */
   return histRow(e);
 }
 var FRANGE = {}, FPARTS = {};
@@ -1345,8 +1345,11 @@ function artView(list, srt) {
   /* de regels zoals in Concerten (festivalbands apart), te vinden op datum + artiest: uitklappen, setlist en cijfer werken dan ook hier */
   splitFest(list).forEach(function (r) { (r.band ? [[r.band]] : r.acts || []).forEach(function (a) { var k = r.d + "|" + normA(a[0]); if (!RW[k]) RW[k] = r; }); });
   list.forEach(function (e) { e.acts.forEach(function (a) { var k = nice(a[0]), o = A[k.toLowerCase()] = A[k.toLowerCase()] || { n: k, x: [] };
-    o.x.push({ d: e.d, loc: e.loc, city: e.city, cc: e.cc, r: a[1], fn: e.fn, h: a[1] === "V" ? supportOf(e.acts) : "", row: RW[e.d + "|" + normA(a[0])] }); }); });
-  var rowOf = function (x) { var h_ = x.row ? listRow(x.row, false) : ""; return h_ || null; };
+    o.x.push({ n: a[0], d: e.d, loc: e.loc, city: e.city, cc: e.cc, r: a[1], fn: e.fn, h: a[1] === "V" ? supportOf(e.acts) : "", row: RW[e.d + "|" + normA(a[0])] }); }); });
+  var rowOf = function (x) { if (!x.row) return null;
+    var hd_ = (x.row.acts || []).filter(function (a) { return a[1] !== "V"; }).map(function (a) { return a[0]; }).join(" & "), d_ = parse(x.d);
+    var h_ = x.r === "V" && !x.row.band ? listRow(x.row, false, nice(x.n), "voorprogramma" + (hd_ ? " van " + hd_ : "") + " · " + d_.getDate() + " " + MONL[d_.getMonth()] + " " + d_.getFullYear() + " · " + x.loc) : listRow(x.row, false);
+    return h_ || null; };
   var arr = Object.keys(A).map(function (k) { var o = A[k]; o.x.sort(function (a, b) { return a.d < b.d ? 1 : -1; }); return o; });
   var q = st.q.trim().toLowerCase();   /* zoek je op een naam, dan alleen die artiest(en), niet iedereen die die avond speelde */
   if (q) { var byName = arr.filter(function (o) { return o.n.toLowerCase().indexOf(q) >= 0; }); if (byName.length) arr = byName; }
@@ -1417,7 +1420,7 @@ function appRow(a, xacts, xloc, xtitle, xsub) { if (!xacts && !xloc && isFestMar
         stars += '<button class="rs ' + f + '" data-rate="' + i + '" aria-label="' + i + ' van 10"><svg viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/></svg></button>'; }
       return '<div class="arow' + (open ? " open" : "") + '" data-aid="' + esc(a.id) + '"><div class="ev" data-aopen>' + lg({ v: a.s.v, n: a.s.n, th: "" }) + '<div class="b"><div class="n">' + esc(xtitle || (hs.length ? hs.map(function (x) { return x[0]; }).join(" & ") : nice(a.s.n))) + '</div><div class="s">' + (fa.length ? '<span class="bd fe">festival</span>' : "") + ((marks[a.id] || {}).club ? '<span class="bd club">clubkaart</span>' : "") + (xsub ? esc(xsub) : d.getDate() + " " + MONL[d.getMonth()] + " " + d.getFullYear() + " · " + esc(xloc || v.label) + flag(v.cc)) + "</div>" +
         (fa.length ? '<div class="s">' + fa.length + (fa.length === 1 ? " band" : " bands") + " gezien</div>" : "") +
-        (vs.length ? '<div class="s">met: ' + esc(vs.map(function (x) { return x[0]; }).join(", ")) + "</div>" : "") +
+        (vs.filter(function (x) { return nice(x[0]) !== xtitle; }).length ? '<div class="s">met: ' + esc(vs.filter(function (x) { return nice(x[0]) !== xtitle; }).map(function (x) { return x[0]; }).join(", ")) + "</div>" : "") +
         (a.rv.txt && !open ? '<div class="s" style="white-space:normal;font-style:italic">“' + esc(a.rv.txt) + "”</div>" : "") + '</div><div class="tm" style="color:var(--gold)">' + (typeof r === "number" ? "★ " + String(r).replace(".", ",") : (RPOS[a.id] || RPOS[a.s.d + "|" + (xloc || v.label)]) ? '<span class="rk" title="plaats in je jaarlijst">#' + (RPOS[a.id] || RPOS[a.s.d + "|" + (xloc || v.label)]) + "</span>" : "–") + "</div></div>" +
         (open ? '<div class="aedit"><div class="rate">' + stars + '<button class="rz' + (r === 0 ? " on" : "") + '" data-rate="0">0</button></div>' + festPartsHtml(a.id) + prevSeenHtml(sa0.map(function (x) { return x[0]; }), a.s.d, FRANGE[a.id]) +
           (xacts ? '<p style="color:var(--faint);font-size:12.5px;margin:8px 0 0">Artiesten komen uit je eigen lijst.</p>' : '<div class="hl" style="margin:12px 0 4px">Wie zag je?</div>' + al.map(function (x, i) {

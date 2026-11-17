@@ -1275,6 +1275,11 @@ function histRow(e) {
     (fold && open ? '<div class="s" style="white-space:normal;color:var(--fg);margin-top:6px;line-height:1.5">' + all.map(function (a) { return esc(a[0]); }).join("<br>") + "</div>" : "") + "</div>" +
     (typeof e.r === "number" ? '<div class="tm" style="color:var(--gold)">★ ' + String(e.r).replace(".", ",") + "</div>" : "") + "</div>";
 }
+var ZALIAS = [[/^(heineken music hall|afas live)$/i, "AFAS Live", "incl. Heineken Music Hall"], [/^(nighttown|watt)\b/i, "Watt", "incl. Nighttown"]];
+function zaalSom(loc) { var l = String(loc || "").trim(); for (var i = 0; i < ZALIAS.length; i++) if (ZALIAS[i][0].test(l)) return { l: ZALIAS[i][1], x: ZALIAS[i][2] }; return { l: l, x: "" }; }
+function festOnce() { var seen = {}; return function (e) {   /* true = deze avond telt mee voor de zaal; festivaldagen van dezelfde editie maar één keer */
+  if (!(e.fn || e.acts.some(function (x) { return x[1] === "F"; }))) return true;
+  var k = (festLabel(e) || e.loc + " " + e.d.slice(0, 4)).toLowerCase() + "|" + zaalSom(e.loc).l.toLowerCase(); if (seen[k]) return false; seen[k] = 1; return true; }; }
 function histStats(list) {
   var zalen = {}, steden = {}, landen = {}, art = {}, av = 0, fd = 0;
   list.forEach(function (e) { var fest = !!e.fn || e.acts.some(function (a) { return a[1] === "F"; }); if (fest) fd++; else av++;
@@ -1606,7 +1611,7 @@ function rankPositions(all) {
 function yearSummary(list, y, all, range) {   /* range: blok van jaren, dan zonder "Voor het eerst" */
   var zv = {}, zc = {}, ar = {}, before = {}, newv = [];
   all.forEach(function (e) { if (e.d.slice(0, 4) < y) before[e.loc.toLowerCase().replace(/^(de|het|the)\s+/, "")] = 1; });
-  list.forEach(function (e) { var lc = String(e.loc || "").trim(); if (lc) zv[lc] = (zv[lc] || 0) + 1; zc[e.city] = 1;   /* lege zaal- of bandnamen tellen niet mee */
+  var zOnce1 = festOnce(); list.forEach(function (e) { var lc = zaalSom(e.loc).l; if (lc && zOnce1(e)) zv[lc] = (zv[lc] || 0) + 1; zc[e.city] = 1;   /* lege zaal- of bandnamen tellen niet mee */
     var had = {}; e.acts.forEach(function (x) { var an = String(x[0] || "").trim(), ak = normA(an); if (!an || !ak || had[ak]) return; had[ak] = 1; ar[an] = (ar[an] || 0) + 1; });
     var lk = e.loc.toLowerCase().replace(/^(de|het|the)\s+/, ""); if (!before[lk] && newv.indexOf(e.loc) < 0) newv.push(e.loc); });
   var topk = function (o) { var k = Object.keys(o).sort(function (a, b) { return o[b] - o[a]; })[0]; return k ? [k, o[k]] : null; };
@@ -1651,7 +1656,7 @@ function yearPoster(list, label, full, ver) {
   /* cijfers */
   var zv = {}, st_ = {}, ld = {}, fests = {};
   list.forEach(function (e) {
-    var lc = String(e.loc || "").trim(); if (lc) zv[lc] = 1; if (e.city) st_[e.city] = 1; ld[e.cc || "NL"] = 1;
+    var lc = zaalSom(e.loc).l; if (lc) zv[lc] = 1; if (e.city) st_[e.city] = 1; ld[e.cc || "NL"] = 1;
     if (isFest(e)) fests[(festLabel(e) || e.fn || e.loc + " " + e.d.slice(0, 4)).toLowerCase()] = 1;
   });
   var fit = function (txt, font, size, maxW) { do { g.font = font.replace("#", size); if (g.measureText(txt).width <= maxW) break; size -= 3; } while (size > 16); return size; };
@@ -1987,17 +1992,18 @@ function setlistStats(list) {
   if (!nEv) return "";
   var all = Object.keys(songs).map(function (k) { return songs[k]; }).sort(function (a, b) { return b.n - a.n || a.t.localeCompare(b.t, "nl"); });
   /* per band (3 of meer concerten met setlist): verschillende nummers en het vaakst gehoorde nummer */
+  var seenN = {}; list.forEach(function (e) { var h1 = {}; e.acts.forEach(function (x) { var k1 = normA(String(x[0] || "")); if (k1 && !h1[k1]) { h1[k1] = 1; seenN[k1] = (seenN[k1] || 0) + 1; } }); });
   var byB = {}; Object.keys(songs).forEach(function (sk) { var b0 = sk.slice(0, sk.indexOf("|")); (byB[b0] = byB[b0] || []).push(songs[sk]); });
   var per = Object.keys(bands).filter(function (k) { return bands[k].n >= 3; }).map(function (k) {
     var mine = (byB[k] || []).sort(function (a, b) { return b.n - a.n || a.t.localeCompare(b.t, "nl"); });
-    return { a: bands[k].a, n: bands[k].n, d: mine.length, t: mine[0] }; }).sort(function (a, b) { return b.n - a.n || b.d - a.d; }).slice(0, 12);
+    return { a: bands[k].a, n: bands[k].n, g: Math.max(seenN[k] || 0, bands[k].n), d: mine.length, t: mine[0], tt: mine.filter(function (x) { return mine[0] && x.n === mine[0].n; }) }; }).sort(function (a, b) { return b.n - a.n || b.d - a.d; }).slice(0, 12);
   var most = all.filter(function (o) { return o.n >= 2; }).slice(0, 10), cov = all.filter(function (o) { return o.c; }).slice(0, 10), mx = most.length ? most[0].n : 1;
   var html = '<div class="hl" style="margin-top:20px">Setlists</div><div class="hcap">' + nEv + " van de " + list.length + " concerten met setlist · " + nSongs + " nummers (" + all.length + " verschillende)" +
     (top ? " · langste: " + esc(top.a) + " (" + top.n + " nummers, " + top.y + ")" : "") + "</div>";
   if (most.length) html += '<div class="hl" style="margin-top:20px">Vaakst live gehoord</div>' + most.map(function (o) {
     return '<div class="hrow"><div class="hrt"><b>' + esc(o.t) + "</b><span>" + esc(o.a) + '</span></div><div class="hrb"><i style="width:' + Math.round(o.n / mx * 100) + '%"></i></div><em>' + o.n + "×</em></div>"; }).join("");
   if (per.length) html += '<div class="hl" style="margin-top:20px">Per band</div>' + per.map(function (o) {
-    return '<div class="hrow"><div class="hrt" style="flex:1"><b>' + esc(o.a) + "</b><span>" + o.n + " keer met setlist · " + o.d + " verschillende nummers" + (o.t && o.t.n >= 2 ? " · vaakst: " + esc(o.t.t) + " (" + o.t.n + "×)" : "") + "</span></div></div>"; }).join("");
+    return '<div class="hrow"><div class="hrt" style="flex:1"><b>' + esc(o.a) + "</b><span>" + o.g + "× gezien" + (o.g > o.n ? ", " + o.n + " met setlist" : "") + " · " + o.d + " verschillende nummers" + (o.t && o.t.n >= 2 ? " · vaakst: " + esc(o.tt.slice(0, 3).map(function (x) { return x.t; }).join(", ")) + (o.tt.length > 3 ? " …" : "") + " (" + o.t.n + "×)" : "") + "</span></div></div>"; }).join("");
   if (cov.length) html += '<div class="hl" style="margin-top:20px">Covers die je hoorde</div>' + cov.map(function (o) {
     return '<div class="hrow"><div class="hrt" style="flex:1"><b>' + esc(o.t) + "</b><span>van " + esc(o.c) + ", gespeeld door " + esc(o.a) + "</span></div><em>" + o.n + "×</em></div>"; }).join("");
   return html;
@@ -2005,12 +2011,12 @@ function setlistStats(list) {
 function histCharts(list) {
   loadSetlists();
   if (!list.length) return '<div class="empty">Geen concerten in deze periode.</div>';
-  var yrs = {}, mon = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], zaal = {}, band = {};
+  var yrs = {}, mon = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], zaal = {}, band = {}, zOnce = festOnce();
   list.forEach(function (e) {
     var y = e.d.slice(0, 4), fe = !!e.fn || e.acts.some(function (x) { return x[1] === "F"; });
     var o = yrs[y] = yrs[y] || { n: 0, f: 0 }; o.n++; if (fe) o.f++;
     mon[+e.d.slice(5, 7) - 1]++;
-    var lc = String(e.loc || "").trim(); if (lc) { var z = zaal[lc + "|" + e.city] = zaal[lc + "|" + e.city] || { n: 0, a: y, b: y, l: lc, c: e.city }; z.n++; if (y < z.a) z.a = y; if (y > z.b) z.b = y; }
+    var zs = zaalSom(e.loc), lc = zs.l; if (lc && zOnce(e)) { var z = zaal[lc + "|" + e.city] = zaal[lc + "|" + e.city] || { n: 0, a: y, b: y, l: lc, c: e.city, x: zs.x }; z.n++; if (zs.x && String(e.loc).trim().toLowerCase() !== lc.toLowerCase()) z.m = true; if (y < z.a) z.a = y; if (y > z.b) z.b = y; }
     var had = {}; e.acts.forEach(function (x) { var nm = String(x[0] || "").trim(), k = normA(nm); if (!nm || !k || had[k]) return; had[k] = 1;
       var b = band[k] = band[k] || { n: 0, a: e.d, b: e.d, nm: nice(nm) }; b.n++; if (e.d < b.a) b.a = e.d; if (e.d > b.b) b.b = e.d; });
   });
@@ -2029,7 +2035,7 @@ function histCharts(list) {
     bars(mon.map(function (v, i) { return { v: v, tip: MONL[i] + ": " + v + (v === 1 ? " concert" : " concerten"), k: MN[i] }; }), maxM, function (it) { return it.k; }) + '<div class="hread" data-hread></div>';
   var zl = Object.keys(zaal).map(function (k) { return zaal[k]; }).sort(function (a, b) { return b.n - a.n || a.l.localeCompare(b.l, "nl"); }).slice(0, 10), zmax = zl.length ? zl[0].n : 1;
   html += '<div class="hl" style="margin-top:20px">Meest bezochte zalen</div>' + zl.map(function (z) {
-    return '<div class="hrow"><div class="hrt"><b>' + esc(z.l) + '</b><span>' + esc(z.c) + " · " + (z.a === z.b ? z.a : z.a + "–" + z.b) + '</span></div><div class="hrb"><i style="width:' + Math.round(z.n / zmax * 100) + '%"></i></div><em>' + z.n + "×</em></div>"; }).join("");
+    return '<div class="hrow"><div class="hrt"><b>' + esc(z.l) + '</b><span>' + esc(z.c) + " · " + (z.a === z.b ? z.a : z.a + "–" + z.b) + (z.m ? " · samengeteld, " + esc(z.x) : "") + '</span></div><div class="hrb"><i style="width:' + Math.round(z.n / zmax * 100) + '%"></i></div><em>' + z.n + "×</em></div>"; }).join("");
   var dy = function (d) { return parse(d).getFullYear(); };
   var tr = Object.keys(band).map(function (k) { return band[k]; }).filter(function (b) { return b.n >= 2 && dy(b.b) > dy(b.a); })
     .sort(function (a, b) { return (dy(b.b) - dy(b.a)) - (dy(a.b) - dy(a.a)) || b.n - a.n; }).slice(0, 10);

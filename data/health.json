@@ -1,7 +1,9 @@
 {
-"_last": [],
+"_last": [
+"bitterzoet"
+],
 "ab": {
-"good": 226
+"good": 225
 },
 "acu": {
 "good": 12
@@ -19,13 +21,13 @@
 "good": 9
 },
 "baroeg": {
-"good": 34
+"good": 33
 },
 "bibelot": {
 "good": 65
 },
 "bird": {
-"good": 27
+"good": 28
 },
 "bitterzoet": {
 "good": 7,
@@ -38,7 +40,7 @@
 "good": 48
 },
 "bos": {
-"good": 43
+"good": 46
 },
 "bosuil": {
 "good": 61
@@ -56,13 +58,13 @@
 "good": 26
 },
 "capsloc": {
-"good": 13
+"good": 12
 },
 "casino": {
 "good": 14
 },
 "cinetol": {
-"good": 48
+"good": 51
 },
 "concertgebouw": {
 "good": 2
@@ -71,25 +73,25 @@
 "good": 24
 },
 "dbs": {
-"good": 49
+"good": 48
 },
 "depot": {
 "good": 97
 },
 "doornroosje": {
-"good": 191
+"good": 190
 },
 "druckluft": {
 "good": 23
 },
 "dynamo": {
-"good": 40
+"good": 39
 },
 "effenaar": {
 "good": 102
 },
 "ekko": {
-"good": 60
+"good": 61
 },
 "engel": {
 "good": 99
@@ -194,13 +196,13 @@
 "good": 56
 },
 "gashouder": {
-"good": 27
+"good": 28
 },
 "gebouwt": {
 "good": 57
 },
 "gigant": {
-"good": 34
+"good": 35
 },
 "grenswerk": {
 "good": 49
@@ -209,7 +211,7 @@
 "good": 74
 },
 "hedon": {
-"good": 113
+"good": 114
 },
 "helling": {
 "good": 66
@@ -218,10 +220,10 @@
 "good": 18
 },
 "hof": {
-"good": 27
+"good": 26
 },
 "iduna": {
-"good": 39
+"good": 40
 },
 "kade": {
 "good": 10
@@ -266,29 +268,29 @@
 "good": 257
 },
 "metropool": {
-"good": 140
+"good": 139
 },
 "mezz": {
-"good": 136
+"good": 137
 },
 "musicon": {
-"good": 56
+"good": 55
 },
 "muziekgieterij": {
-"good": 94
+"good": 95
 },
 "n9": {
 "good": 18
 },
 "neushoorn": {
-"good": 81
+"good": 82
 },
 "nobel": {
 "good": 103
 },
 "nor": {},
 "o13": {
-"good": 142
+"good": 141
 },
 "occii": {
 "good": 19
@@ -300,10 +302,10 @@
 "good": 64
 },
 "paard": {
-"good": 146
+"good": 148
 },
 "paradiso": {
-"good": 428
+"good": 426
 },
 "patronaat": {
 "good": 149
@@ -312,10 +314,10 @@
 "good": 57
 },
 "qfactory": {
-"good": 38
+"good": 37
 },
 "reflektor": {
-"good": 69
+"good": 70
 },
 "roma": {
 "good": 20
@@ -333,10 +335,10 @@
 "good": 24
 },
 "sowhat": {
-"good": 22
+"good": 24
 },
 "spot": {
-"good": 193
+"good": 191
 },
 "studiogonz": {
 "good": 15
@@ -354,16 +356,16 @@
 "good": 15
 },
 "trix": {
-"good": 113
+"good": 112
 },
 "turbinenhalle": {
-"good": 50
+"good": 49
 },
 "v11": {
 "good": 19
 },
 "vanpolanen": {
-"good": 11
+"good": 10
 },
 "vera": {
 "good": 50
@@ -381,7 +383,7 @@
 "good": 66
 },
 "vorstin": {
-"good": 57
+"good": 56
 },
 "w2": {
 "good": 14

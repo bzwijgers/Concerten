@@ -3,7 +3,7 @@
 "bitterzoet"
 ],
 "ab": {
-"good": 225
+"good": 222
 },
 "acu": {
 "good": 12
@@ -27,7 +27,7 @@
 "good": 65
 },
 "bird": {
-"good": 28
+"good": 29
 },
 "bitterzoet": {
 "good": 7,
@@ -37,7 +37,7 @@
 "good": 65
 },
 "bolwerk": {
-"good": 48
+"good": 49
 },
 "bos": {
 "good": 46
@@ -52,7 +52,7 @@
 "good": 24
 },
 "burgerweeshuis": {
-"good": 54
+"good": 55
 },
 "cacao": {
 "good": 26
@@ -79,19 +79,19 @@
 "good": 97
 },
 "doornroosje": {
-"good": 190
+"good": 192
 },
 "druckluft": {
 "good": 23
 },
 "dynamo": {
-"good": 39
+"good": 40
 },
 "effenaar": {
 "good": 102
 },
 "ekko": {
-"good": 61
+"good": 64
 },
 "engel": {
 "good": 99
@@ -193,7 +193,7 @@
 "good": 0
 },
 "fluor": {
-"good": 56
+"good": 57
 },
 "gashouder": {
 "good": 28
@@ -211,10 +211,10 @@
 "good": 74
 },
 "hedon": {
-"good": 114
+"good": 117
 },
 "helling": {
-"good": 66
+"good": 68
 },
 "helvete": {
 "good": 18
@@ -232,7 +232,7 @@
 "good": 9
 },
 "kreun": {
-"good": 54
+"good": 62
 },
 "kroepoek": {
 "good": 28
@@ -253,7 +253,7 @@
 "good": 19
 },
 "luxor": {
-"good": 125
+"good": 126
 },
 "maassilo": {
 "good": 1
@@ -268,13 +268,13 @@
 "good": 257
 },
 "metropool": {
-"good": 139
+"good": 140
 },
 "mezz": {
-"good": 137
+"good": 139
 },
 "musicon": {
-"good": 55
+"good": 56
 },
 "muziekgieterij": {
 "good": 95
@@ -286,7 +286,7 @@
 "good": 82
 },
 "nobel": {
-"good": 103
+"good": 104
 },
 "nor": {},
 "o13": {
@@ -302,34 +302,34 @@
 "good": 64
 },
 "paard": {
-"good": 148
+"good": 150
 },
 "paradiso": {
-"good": 426
+"good": 430
 },
 "patronaat": {
 "good": 149
 },
 "pul": {
-"good": 57
+"good": 58
 },
 "qfactory": {
-"good": 37
+"good": 38
 },
 "reflektor": {
-"good": 70
+"good": 71
 },
 "roma": {
-"good": 20
+"good": 21
 },
 "rotown": {
-"good": 120
+"good": 123
 },
 "rwa": {
 "good": 22
 },
 "simplon": {
-"good": 51
+"good": 53
 },
 "sounddog": {
 "good": 24
@@ -338,7 +338,7 @@
 "good": 24
 },
 "spot": {
-"good": 191
+"good": 192
 },
 "studiogonz": {
 "good": 15
@@ -347,7 +347,7 @@
 "good": 19
 },
 "ticketmaster": {
-"good": 687
+"good": 690
 },
 "tivoli": {
 "good": 324
@@ -356,13 +356,13 @@
 "good": 15
 },
 "trix": {
-"good": 112
+"good": 113
 },
 "turbinenhalle": {
 "good": 49
 },
 "v11": {
-"good": 19
+"good": 20
 },
 "vanpolanen": {
 "good": 10
@@ -371,7 +371,7 @@
 "good": 50
 },
 "victorie": {
-"good": 99
+"good": 100
 },
 "vierad": {
 "good": 15

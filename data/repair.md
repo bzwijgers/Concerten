@@ -1,6 +1,6 @@
-@bzwijgers, ochtendcontrole 2026-11-16:
+@bzwijgers, ochtendcontrole 2026-11-18:
 
-- **De Kreun**: leverde nog maar 13 concerten in plaats van 55. De agenda van Wilde Westen toont pagina 1 nu ook zonder paginanummer, waardoor het scraper-programma te vroeg stopte met bladeren. Ik laat het bladeren nu bij pagina 2 beginnen; De Kreun levert nu weer 55 concerten. Een nieuwe update is gestart zodat dit vandaag nog in de agenda staat.
-- **Melkweg**: vanochtend opgehaald (259 concerten) en doorgegeven aan de update.
+- **Bitterzoet**: de agenda levert 0 concerten sinds 17 november. De site van Bitterzoet geeft nu "403 Forbidden" via Cloudflare (bescherming tegen automatisch bezoek). Dat omzeil ik niet, dus ik heb de code niet aangepast. De laatst bekende Bitterzoet-concerten blijven in de agenda staan. Mogelijke oplossing: ophalen via je eigen pc, zoals bij Tivoli en Bibelot, of wachten tot de blokkade weer weg is.
+- **Melkweg**: vanochtend opgehaald (268 concerten) en in de agenda gezet.
 
-Alles is weer in orde, behalve dat de nieuwe update nog even moet draaien.
+Niet alles is in orde: alleen Bitterzoet blijft voorlopig achter.

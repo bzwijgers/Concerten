@@ -3,7 +3,7 @@
 "bitterzoet"
 ],
 "ab": {
-"good": 225
+"good": 227
 },
 "acu": {
 "good": 11
@@ -24,7 +24,7 @@
 "good": 33
 },
 "bibelot": {
-"good": 67
+"good": 68
 },
 "bird": {
 "good": 25
@@ -70,31 +70,31 @@
 "good": 2
 },
 "corneel": {
-"good": 24
+"good": 25
 },
 "dbs": {
-"good": 48
+"good": 49
 },
 "depot": {
-"good": 96
+"good": 99
 },
 "doornroosje": {
 "good": 191
 },
 "druckluft": {
-"good": 23
+"good": 24
 },
 "dynamo": {
 "good": 39
 },
 "effenaar": {
-"good": 102
+"good": 104
 },
 "ekko": {
 "good": 59
 },
 "engel": {
-"good": 102
+"good": 103
 },
 "fest_alcatraz": {
 "good": 1
@@ -136,8 +136,7 @@
 "good": 1
 },
 "fest_jera": {
-"good": 1,
-"since": "2026-11-20"
+"good": 1
 },
 "fest_lgw": {
 "good": 1
@@ -194,16 +193,16 @@
 "good": 0
 },
 "fluor": {
-"good": 57
+"good": 60
 },
 "gashouder": {
 "good": 28
 },
 "gebouwt": {
-"good": 58
+"good": 59
 },
 "gigant": {
-"good": 35
+"good": 36
 },
 "grenswerk": {
 "good": 49
@@ -254,7 +253,7 @@
 "good": 20
 },
 "luxor": {
-"good": 126
+"good": 127
 },
 "maassilo": {
 "good": 1
@@ -272,19 +271,19 @@
 "good": 142
 },
 "mezz": {
-"good": 139
+"good": 142
 },
 "musicon": {
 "good": 55
 },
 "muziekgieterij": {
-"good": 91
+"good": 93
 },
 "n9": {
 "good": 18
 },
 "neushoorn": {
-"good": 83
+"good": 84
 },
 "nobel": {
 "good": 102
@@ -303,22 +302,22 @@
 "good": 64
 },
 "paard": {
-"good": 142
+"good": 144
 },
 "paradiso": {
-"good": 426
+"good": 427
 },
 "patronaat": {
 "good": 145
 },
 "pul": {
-"good": 59
+"good": 60
 },
 "qfactory": {
 "good": 38
 },
 "reflektor": {
-"good": 68
+"good": 70
 },
 "roma": {
 "good": 21
@@ -336,19 +335,19 @@
 "good": 23
 },
 "sowhat": {
-"good": 25
+"good": 26
 },
 "spot": {
-"good": 192
+"good": 193
 },
 "studiogonz": {
-"good": 15
+"good": 14
 },
 "tbeest": {
-"good": 20
+"good": 19
 },
 "ticketmaster": {
-"good": 684
+"good": 688
 },
 "tivoli": {
 "good": 324

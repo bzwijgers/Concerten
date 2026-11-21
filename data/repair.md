@@ -1,6 +1,6 @@
-@bzwijgers, ochtendcontrole 2026-11-18:
+@bzwijgers, ochtendcontrole 2026-11-21:
 
-- **Bitterzoet**: de agenda levert 0 concerten sinds 17 november. De site van Bitterzoet geeft nu "403 Forbidden" via Cloudflare (bescherming tegen automatisch bezoek). Dat omzeil ik niet, dus ik heb de code niet aangepast. De laatst bekende Bitterzoet-concerten blijven in de agenda staan. Mogelijke oplossing: ophalen via je eigen pc, zoals bij Tivoli en Bibelot, of wachten tot de blokkade weer weg is.
-- **Melkweg**: vanochtend opgehaald (268 concerten) en in de agenda gezet.
+- **Melkweg**: met succes opgehaald (271 concerten) en doorgegeven aan de agenda.
+- **Bitterzoet**: levert sinds 17 november geen concerten meer. De site van Bitterzoet weigert nu automatische bezoeken (melding "403 Forbidden", ook bij mijn eigen controle). Dat ga ik niet omzeilen, dus ik heb niets aan de code veranderd. De laatst bekende concerten blijven in de agenda staan. Mogelijk moet Bitterzoet naar de lijst van zalen die op jouw eigen pc worden opgehaald, of kun je ze vragen automatische bezoeken toe te staan.
 
-Niet alles is in orde: alleen Bitterzoet blijft voorlopig achter.
+Alles is verder in orde; alleen Bitterzoet vraagt om een beslissing van jou.

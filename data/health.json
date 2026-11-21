@@ -21,7 +21,7 @@
 "good": 9
 },
 "baroeg": {
-"good": 32
+"good": 33
 },
 "bibelot": {
 "good": 66
@@ -73,7 +73,7 @@
 "good": 24
 },
 "dbs": {
-"good": 48
+"good": 49
 },
 "depot": {
 "good": 98
@@ -217,7 +217,7 @@
 "good": 63
 },
 "helvete": {
-"good": 18
+"good": 19
 },
 "hof": {
 "good": 26
@@ -300,7 +300,8 @@
 "good": 4
 },
 "p3": {
-"good": 63
+"good": 63,
+"since": "2026-11-21"
 },
 "paard": {
 "good": 139

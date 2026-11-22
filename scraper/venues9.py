@@ -58,14 +58,22 @@ def maassilo():
     from datetime import date
     mons = {"jan": 1, "feb": 2, "mrt": 3, "mar": 3, "apr": 4, "mei": 5, "jun": 6, "jul": 7, "aug": 8, "sep": 9, "okt": 10, "nov": 11, "dec": 12}
     out, seen, today = [], set(), date.today()
+    # de genrepagina's tonen ook voorbije concerten; het jaar volgt uit de publicatiedatum van het bericht (eigen openbare lijst van de site)
+    pub = {}
+    try:
+        for x in json.loads(fetch("https://maassilo.com/wp-json/wp/v2/agenda?per_page=100&_fields=link,date")):
+            pub[x["link"]] = date.fromisoformat(x["date"][:10])
+    except Exception as ex: print("maassilo publicatiedata mislukt", ex)
     for g in ("concert", "rock", "hiphop", "afro-beat"):
-        page = fetch("https://maassilo.com/agenda/?genre%5B%5D=" + g)
+        page = fetch(f"https://maassilo.com/genres/{g}/")
         for m in re.finditer(r'href="?(https://maassilo\.com/agenda/[^\s">]+)"?[^>]*>\s*<div class="?x-core-title"?>\s*<span class="?x-core-title--pre"?>\s*(\d{1,2}) ([a-z]{3})[a-z]*\s*</span>\s*<span class="?x-core-title--title"?>([^<]+)</span>', page):
             u, dd, mm, title = m.group(1), int(m.group(2)), mons.get(m.group(3).lower()), html.unescape(m.group(4)).strip()
             if not mm or u in seen: continue
             seen.add(u)
-            y = today.year if (mm, dd) >= (today.month, today.day) else today.year + 1      # het jaar staat er niet bij
-            out.append(ev("maassilo", date(y, mm, dd).isoformat(), title, u))
+            ref = pub.get(u, today)      # het jaar staat er niet bij: op of na de publicatiedatum
+            y = ref.year if (mm, dd) >= (ref.month, ref.day) else ref.year + 1
+            d = date(y, mm, dd)
+            if d >= today: out.append(ev("maassilo", d.isoformat(), title, u))
     return out
 def lockkeepers():
     """The Lock Keepers (Maassluis): de agendapagina noemt elk concert als tekst, bv.

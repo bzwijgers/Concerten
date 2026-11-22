@@ -1,8 +1,6 @@
 {
 "_last": [
-"bitterzoet",
-"maassilo",
-"p3"
+"bitterzoet"
 ],
 "ab": {
 "good": 222
@@ -39,7 +37,7 @@
 "good": 63
 },
 "bolwerk": {
-"good": 47
+"good": 46
 },
 "bos": {
 "good": 35
@@ -258,8 +256,7 @@
 "good": 122
 },
 "maassilo": {
-"good": 1,
-"since": "2026-11-21"
+"good": 0
 },
 "manifesto": {
 "good": 14
@@ -302,8 +299,7 @@
 "good": 4
 },
 "p3": {
-"good": 63,
-"since": "2026-11-21"
+"good": 62
 },
 "paard": {
 "good": 135
@@ -315,7 +311,7 @@
 "good": 140
 },
 "pul": {
-"good": 58
+"good": 57
 },
 "qfactory": {
 "good": 35
@@ -372,7 +368,7 @@
 "good": 11
 },
 "vera": {
-"good": 48
+"good": 50
 },
 "victorie": {
 "good": 95

@@ -411,6 +411,7 @@ function lineupHtml(c) {
 }
 /* namen in een titel ('A + B & C - Tour'), genormaliseerd: om concerten van één band te vinden */
 function actKeys(c) {
+  if (TRIB.test(c.n)) return [normA(c.n)];   /* tribute: alleen de volledige naam, nooit de artiest erin */
   var t = String(c.n), head = t.split(/\s+[-–—]\s+/)[0];
   return [t, head].concat(head.split(/\s+(?:\+|&|w\/|with|met|x|support:?|feat\.?|ft\.?)\s+|\s*[,/|:]\s+/i), bandsOf(c)).map(normA).filter(function (k) { return k && !SEEN_STOP.test(k); });
 }
@@ -435,9 +436,12 @@ function openBand(name) {
 }
 /* artiesten in een titel: alleen het deel vóór ' - ' of ':' (daarna staat meestal de tour of 'live with band'),
    gesplitst op +, &, ',', w/, with, met; losse woorden als 'live' of 'band' tellen niet */
+/* tribute-acts horen niet bij de echte artiest: niet als 'die zag je al', niet bij hun concerten, niet in de zoekresultaten op die artiest */
+var TRIB = /\b(tribute|tributeband|eerbetoon|hommage|homage|salute to|plays the music of|the music of|celebrating the music|a celebration of)\b/i;
 var SEEN_STOP = /^(live|band|live band|full band|with band|met band|friends|special guests?|guests?|support|tour|solo|acoustic|unplugged|trio|quartet|kwartet|quintet|orchestra|orkest|dj|dj set|x|en|and|more|e a|ea|try out|tryout|premiere|release|album release|europe|europe tour|world tour)$/;
 function seenOf(c) {
   var t = String(c.n), whole = normA(t), best = null;
+  if (TRIB.test(t)) { var ow = SEEN[whole]; return ow ? { n: ow.n, last: ow.last, x: ow.x, a: t.trim() } : null; }   /* tribute: telt niet als de echte artiest */
   var head = t.split(/\s+[-–—]\s+/)[0];
   var parts = [t, head].concat(head.split(/\s+(?:\+|&|w\/|with|met|x|support:?|feat\.?|ft\.?)\s+|\s*[,/|:]\s+/i));
   parts.forEach(function (p) { var k = normA(p); if (!k || (k !== whole && (SEEN_STOP.test(k) || k.length < 3))) return; var o = SEEN[k]; if (o && (!best || o.n > best.n)) best = { n: o.n, last: o.last, x: o.x, a: p.trim() }; });
@@ -1171,7 +1175,7 @@ function histEvenings() {
   if (st.hfrom) out = out.filter(function (e) { return e.d >= st.hfrom; });
   if (st.hto) out = out.filter(function (e) { return e.d <= st.hto; });
   var q = st.q.trim().toLowerCase();
-  if (q) out = out.filter(function (e) { var cm = marks[e.src === "a" ? e.id : e.mid || histId(e)] || {}; return qhit(e.acts.map(function (a) { return a[0]; }).join(" ") + " " + (e.fn || "") + " " + dateWords(e.d) + " " + e.loc + " " + e.city + (cm.club ? " clubkaart" : ""), q); });
+  if (q) out = out.filter(function (e) { var cm = marks[e.src === "a" ? e.id : e.mid || histId(e)] || {}; return qhit(e.acts.filter(function (a) { return !TRIB.test(a[0]) || /tribute/.test(q); }).map(function (a) { return a[0]; }).join(" ") + " " + (e.fn || "") + " " + dateWords(e.d) + " " + e.loc + " " + e.city + (cm.club ? " clubkaart" : ""), q); });
   return out.sort(function (a, b) { return a.d < b.d ? 1 : -1; });
 }
 function flag(cc) { return !cc || cc === "NL" || cc.length !== 2 ? "" : " " + String.fromCodePoint(0x1F1E6 + cc.charCodeAt(0) - 65, 0x1F1E6 + cc.charCodeAt(1) - 65); }

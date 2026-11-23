@@ -122,6 +122,10 @@ class MainActivity : AppCompatActivity() {
                 val req = PeriodicWorkRequestBuilder<BandWorker>(6, TimeUnit.HOURS)
                     .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()).build()
                 WorkManager.getInstance(this@MainActivity).enqueueUniquePeriodicWork("bandnews", ExistingPeriodicWorkPolicy.KEEP, req)
+                // wekelijks (vrijdag rond 18 uur): nieuw aangekondigd in je favoriete zalen
+                val zreq = PeriodicWorkRequestBuilder<VenueWorker>(7, TimeUnit.DAYS).setInitialDelay(VenueWorker.untilFriday(), TimeUnit.MILLISECONDS)
+                    .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()).build()
+                WorkManager.getInstance(this@MainActivity).enqueueUniquePeriodicWork("zalennieuw", ExistingPeriodicWorkPolicy.KEEP, zreq)
                 planDays(json)
             }
             @JavascriptInterface fun saveFile(name: String, content: String) {
@@ -175,14 +179,17 @@ class MainActivity : AppCompatActivity() {
                 if (web.canGoBack()) web.goBack() else finish()
             }
         })
-        if (savedInstanceState == null) web.loadUrl(if (intent?.getStringExtra("open") == "bandnews") "$START#bandnews" else START) else web.restoreState(savedInstanceState)
+        val op = intent?.getStringExtra("open")
+        if (savedInstanceState == null) web.loadUrl(if (op in OPENS) "$START#$op" else START) else web.restoreState(savedInstanceState)
     }
 
-    // tik op de melding terwijl de app al open is: lijst 'Nieuw van jouw bands' tonen
+    // tik op een melding terwijl de app al open is: de lijst 'Nieuw van jouw bands' of 'Nieuw in je zalen' tonen
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        if (intent.getStringExtra("open") == "bandnews") web.evaluateJavascript("location.hash='bandnews'", null)
+        val op = intent.getStringExtra("open")
+        if (op in OPENS) web.evaluateJavascript("location.hash='$op'", null)
     }
+    private val OPENS = setOf("bandnews", "zalennieuw")
 
     private fun bars(show: Boolean) {
         val c = WindowCompat.getInsetsController(window, window.decorView)

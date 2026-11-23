@@ -804,8 +804,10 @@ function bandNews() {
   });
   out.sort(function (a, b) { return a.c.first > b.c.first ? -1 : a.c.first < b.c.first ? 1 : a.c.d < b.c.d ? -1 : 1; });
   if (window.AndroidApp && AndroidApp.setWatch) { var skip = ALL.filter(function (c) { return c.d >= TODAY && c.first && c.first !== "base" && c.first >= cut && (c.o || marks[c.id]); }).map(function (c) { return c.id; });
-    var t60 = iso(new Date(NOW.getTime() + 60 * 864e5)), tix = ticketList().filter(function (c) { return c.d <= t60; }).map(function (c) { var v = venue(c); return { d: c.d, n: nice(c.n), w: (otherVenue(c) || v).label + ", " + v.city, t: (c.t || "").replace("deuren ", "") }; });
-    var w = JSON.stringify({ keys: Object.keys(keys).sort(), seen: Object.keys(BNSEEN).concat(skip), tix: tix }); if (w !== BNWATCH) { BNWATCH = w; try { AndroidApp.setWatch(w); } catch (e) {} } }
+    var t60 = iso(new Date(NOW.getTime() + 60 * 864e5)), tix = ticketList().filter(function (c) { return c.d <= t60; }).map(function (c) { var v = venue(c); var tt = travel(v.city);
+      return { d: c.d, n: nice(c.n), w: (otherVenue(c) || v).label + ", " + v.city, t: (c.t || "").replace("deuren ", ""), rt: tt !== null ? "± " + fmtT(tt) + " rijden" : "", note: String((marks[c.id] || {}).note || "").slice(0, 300) }; });
+    var zl = {}; mine.forEach(function (k) { if (VENUES[k]) zl[k] = VENUES[k].label; });   /* wekelijkse melding 'nieuw in je zalen' */
+    var w = JSON.stringify({ keys: Object.keys(keys).sort(), seen: Object.keys(BNSEEN).concat(skip), tix: tix, zalen: zl }); if (w !== BNWATCH) { BNWATCH = w; try { AndroidApp.setWatch(w); } catch (e) {} } }
   return out;
 }
 function bandNewsSeen(list) { list.forEach(function (x) { BNSEEN[x.c.id] = TODAY; });
@@ -2972,6 +2974,10 @@ Promise.all([fetch("app.js", { cache: "no-cache" }).then(function (r) { return r
   /* geopend vanuit de melding 'Nieuw van jouw bands' (Android) */
   var bnHash = function () { if (location.hash === "#bandnews") { try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} if (bandNews().length) openBandNews(); } };
   bnHash(); window.addEventListener("hashchange", bnHash);
+  /* geopend vanuit de wekelijkse melding 'Nieuw in je zalen' (Android): lijst Nieuw, alleen je zalen */
+  var znHash = function () { if (location.hash !== "#zalennieuw") return; try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+    closeSheet(); st.tab = "agenda"; setNav(); st.q = ""; $("q").value = ""; st.venue = st.city = st.month = st.from = st.to = ""; st.f = { "new": true, mine: mine.length > 0 }; render(); window.scrollTo(0, 0); };
+  znHash(); window.addEventListener("hashchange", znHash);
   try { var _sy = +sessionStorage.getItem("ca-scroll"); sessionStorage.removeItem("ca-scroll"); if (_sy) setTimeout(function () { window.scrollTo(0, _sy); }, 60); } catch (e) {}
   var u = new Date(data.updated);
   try { localStorage.setItem("ca-updated", data.updated); } catch (e) {}

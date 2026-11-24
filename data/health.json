@@ -199,7 +199,8 @@
 "good": 28
 },
 "gebouwt": {
-"good": 57
+"good": 57,
+"since": "2026-11-24"
 },
 "gigant": {
 "good": 35
@@ -380,7 +381,7 @@
 "good": 24
 },
 "vorst": {
-"good": 63
+"good": 62
 },
 "vorstin": {
 "good": 58

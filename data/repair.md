@@ -1,6 +1,7 @@
-@bzwijgers, ochtendcontrole 2026-11-23:
+@bzwijgers, ochtendcontrole 2026-11-24:
 
-- **Bitterzoet**: de website geeft sinds 17 november geen concerten meer, want de hele site (ook de beginpagina) weigert onze bezoeken met "403 Forbidden". Dat gebeurt ook vanuit mijn eigen omgeving, dus het is een blokkade tegen automatisch bezoek en niet een veranderde pagina. Ik heb niets aan de code veranderd, want blokkades omzeilen mag niet. De laatst bekende Bitterzoet-concerten blijven in de agenda staan. Mogelijke oplossing: Bitterzoet toevoegen aan de lijst van zalen die op je eigen pc worden opgehaald (zoals Tivoli), als die ze daar wel doorlaten.
-- **Melkweg**: vanochtend opgehaald (263 concerten) en doorgegeven aan de update.
+- **Melkweg**: opgehaald vanuit de ochtendcontrole (258 concerten), de update gebruikt die lijst.
+- **Concertgebouw**: de site heeft een nieuwe opbouw, waardoor de genres (Pop, Jazz, enz.) niet meer gevonden werden. Daardoor kwam er niets door het popfilter en moest de noodoplossing met ook klassieke concerten bijspringen. Ik heb het lezen van de genres aangepast; nu komen er 18 popconcerten door (o.a. Ben Folds, Joss Stone). Er start een nieuwe update.
+- **Bitterzoet**: geeft sinds 17 november 0 concerten, hun site weigert automatische bezoekers (403 Forbidden). Daar ga ik niet omheen; ik heb niets aangepast. De laatst bekende concerten blijven in de agenda staan. Misschien kun je het op je eigen pc laten ophalen.
 
-Alles is in orde, behalve Bitterzoet.
+Bijna alles in orde; alleen Bitterzoet blijft stuk door de blokkade van de site.

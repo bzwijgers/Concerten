@@ -430,7 +430,7 @@ function openBand(name) {
     (o ? '<div class="seenbox"><b>Je zag ' + esc(name) + " al " + o.n + "×</b>" + o.x.slice().sort(function (a, b) { return a[0] < b[0] ? 1 : -1; }).map(function (x) { return "<div>" + dl(x[0]) + " · " + esc(x[1]) + "</div>"; }).join("") + "</div>"
        : '<p style="color:var(--muted)">Nog niet gezien.</p>') +
     '<div class="hl" style="margin-top:16px">In de agenda · ' + up.length + "</div>" +
-    (up.length ? up.map(function (c) { var d = parse(c.d); return row(c).replace('<div class="tm', '<div class="tm dt">' + d.getDate() + " " + MON[d.getMonth()] + "<small>" + DOW[d.getDay()] + (c.d.slice(0, 4) !== TODAY.slice(0, 4) ? " '" + c.d.slice(2, 4) : "") + '</small></div><div hidden class="tm'); }).join("") : '<p style="color:var(--muted)">Geen komende concerten gevonden.</p>') +
+    (up.length ? up.map(function (c) { var d = parse(c.d); return row(c).replace('<div class="tm', '<div class="tm dt">' + d.getDate() + " " + MON[d.getMonth()] + "<small>" + DOW[d.getDay()] + yr(c.d) + '</small></div><div hidden class="tm'); }).join("") : '<p style="color:var(--muted)">Geen komende concerten gevonden.</p>') +
     '<button class="others" data-bandsearch="' + esc(name) + '" style="margin-top:12px">Zoek "' + esc(name) + '" in de agenda</button></div>';
   showSheet(); $("panel").scrollTop = 0;
 }
@@ -742,7 +742,8 @@ function chips() {
       if (c[0] === "date") return '<button class="chip" data-date aria-pressed="' + !!st.from + '">' + (st.from ? fmtD(st.from) + (st.to && st.to !== st.from ? " – " + fmtD(st.to) : st.to ? "" : " →") + " ✕" : "Datum ▾") + "</button>";
       return '<button class="chip" data-f="' + c[0] + '" aria-pressed="' + !!st.f[c[0]] + '">' + c[1] + "</button>"; }).join("");
 }
-function fmtD(k) { var d = parse(k); return DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()]; }
+function yr(d0) { return String(d0).slice(0, 4) !== TODAY.slice(0, 4) ? " " + String(d0).slice(0, 4) : ""; }   /* jaartal erbij als het niet dit jaar is (verplaatst naar 2028 e.d.) */
+function fmtD(k) { var d = parse(k); return DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()] + yr(k); }
 /* datumkeuze: snelkeuzes of zelf van/tot; alleen 'van' = alles vanaf die dag */
 function fmtDY(k) { var d = parse(k); return d.getDate() + " " + MON[d.getMonth()] + " " + d.getFullYear(); }
 function openHDate() {   /* Historie: van/tot; tot leeg = alles vanaf die dag */
@@ -772,11 +773,11 @@ function openDate() {
 function setDate(a, b) { st.from = a || ""; st.to = b || ""; st.f.today = st.f.weekend = false; st.month = ""; closeSheet(); render(); window.scrollTo(0, 0); }
 function card(c, big) {
   var v = venue(c), d = parse(c.d), days = Math.round((parse(c.d) - parse(TODAY)) / 864e5), tt = travel(v.city);
-  if (!big) return '<div class="mc" data-id="' + esc(c.id) + '">' + lg(c) + '<div><b>' + esc(nice(c.n)) + "</b><span>" + DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()] + " · " + where(c) + "</span></div></div>";
+  if (!big) return '<div class="mc" data-id="' + esc(c.id) + '">' + lg(c) + '<div><b>' + esc(nice(c.n)) + "</b><span>" + DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()] + yr(c.d) + " · " + where(c) + "</span></div></div>";
   var bg = c.th ? "" + c.th : logoSrc(c);
   return '<div class="next" data-id="' + esc(c.id) + '">' + (bg ? '<div class="bgimg" style="background-image:url(' + esc(bg) + ')"></div>' : "") +
     '<div class="cd">' + (days === 0 ? "VANDAAG" : days === 1 ? "MORGEN" : "nog " + days + " dagen") + "</div>" + lg(c) +
-    '<div class="nn">' + esc(nice(c.n)) + '</div><div class="nv">' + DOWL[d.getDay()] + " " + d.getDate() + " " + MONL[d.getMonth()] + (c.t ? " · " + esc(c.t) : "") +
+    '<div class="nn">' + esc(nice(c.n)) + '</div><div class="nv">' + DOWL[d.getDay()] + " " + d.getDate() + " " + MONL[d.getMonth()] + yr(c.d) + (c.t ? " · " + esc(c.t) : "") +
     "<br>" + where(c) + " · " + esc(v.city) + (tt !== null ? " · ± " + fmtT(tt) + " rijden" : "") + "</div></div>";
 }
 function hero() {
@@ -785,7 +786,7 @@ function hero() {
   return "";
 }
 function dayHead(d0, n) { var d = parse(d0);
-  return '<div class="day"><b>' + (d0 === TODAY ? "Vandaag" : DOWL[d.getDay()].replace(/^./, function (x) { return x.toUpperCase(); }) + " " + d.getDate() + " " + MONL[d.getMonth()]) + "</b><span>" + n + " concerten</span></div>"; }
+  return '<div class="day"><b>' + (d0 === TODAY ? "Vandaag" : DOWL[d.getDay()].replace(/^./, function (x) { return x.toUpperCase(); }) + " " + d.getDate() + " " + MONL[d.getMonth()] + yr(d0)) + "</b><span>" + n + " concerten</span></div>"; }
 /* nieuw van jouw bands: de laatste 14 dagen aangekondigd, van een band die je zag of waarvoor je interesse hebt (ook op een festival-line-up);
    blijft staan tot je hem wegtikt. Op Android geeft de app hier ook een melding van (lijst van je bands via AndroidApp.setWatch) */
 var BNSEEN = load("ca-bandnews", {}), BNWATCH = "";
@@ -860,7 +861,7 @@ function renderAgenda() {
   if (!st.q.trim()) html += dayCards();
   var bn = bandNews(); if (st.q.trim() || st.venue || st.city) bn = [];   /* altijd rekenen: dit geeft ook je bands door aan de telefoon */
   if (bn.length) html += '<div class="since"><button data-bandnews class="bn"><b>🔔 ' + (bn.length === 1 ? "Nieuw van " + esc(bn[0].who) : bn.length + " nieuwe concerten van jouw bands") + "</b><span>" +
-    esc(bn.slice(0, 3).map(function (x) { var d = parse(x.c.d); return x.who + " (" + d.getDate() + " " + MON[d.getMonth()] + ", " + venue(x.c).label + ")"; }).join(" · ")) + (bn.length > 3 ? " …" : "") +
+    esc(bn.slice(0, 3).map(function (x) { var d = parse(x.c.d); return x.who + " (" + d.getDate() + " " + MON[d.getMonth()] + yr(x.c.d) + ", " + venue(x.c).label + ")"; }).join(" · ")) + (bn.length > 3 ? " …" : "") +
     '</span></button><button class="x" data-bandnews-off aria-label="Gezien">✕</button></div>';
   var sl = st.sinceList || [];
   if (sl.length && !st.sinceOff && !anyFilter()) {
@@ -900,7 +901,7 @@ function renderAgenda() {
 function isNew(c) { return !!(c.first && c.first !== "base" && c.first >= WEEK_AGO); }
 function rowNew(c) {
   var d = parse(c.d), y = c.d.slice(0, 4) !== TODAY.slice(0, 4);
-  return row(c).replace('<span class="bd nw">nieuw</span>', "").replace(/<div class="tm[^"]*">[\s\S]*?<\/div><\/div>$/, '<div class="tm dt">' + d.getDate() + " " + MON[d.getMonth()] + "<small>" + DOW[d.getDay()] + (y ? " '" + c.d.slice(2, 4) : "") + "</small></div></div>");
+  return row(c).replace('<span class="bd nw">nieuw</span>', "").replace(/<div class="tm[^"]*">[\s\S]*?<\/div><\/div>$/, '<div class="tm dt">' + d.getDate() + " " + MON[d.getMonth()] + "<small>" + DOW[d.getDay()] + yr(c.d) + "</small></div></div>");
 }
 /* Nieuw aangekondigd, geordend van 'voor jou' naar 'de rest':
    voor jou (kaartje, interesse, bands die je zag) · grote zalen en arena's · binnenkort (30 dagen) · per zaal ingeklapt · overig (tributes, open podia, feesten) */
@@ -971,7 +972,7 @@ function renderMine() {
   list.sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; });
   var cntm = function (f) { return Object.keys(marks).filter(function (id) { var m = marks[id]; return m[f] && ((m.s && m.s.d >= TODAY) || ALL.some(function (c) { return c.id === id && c.d >= TODAY; })); }).length; };
   var wl = warnings(), wbox = wl.length ? '<div class="warn"><div class="hl">Let op</div>' + wl.map(function (w) { var d = parse(w.c.d);
-      return '<div class="wr" data-id="' + esc(w.id) + '"><div><b>' + esc(nice(w.c.n)) + "</b> " + esc(w.why) + "<small>" + DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()] + " · " + esc(venue(w.c).label) + '</small></div><button data-wx="' + esc(w.id) + '" data-wk="' + w.key + '" aria-label="Gezien">✕</button></div>'; }).join("") + "</div>" : "";
+      return '<div class="wr" data-id="' + esc(w.id) + '"><div><b>' + esc(nice(w.c.n)) + "</b> " + esc(w.why) + "<small>" + DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()] + yr(w.c.d) + " · " + esc(venue(w.c).label) + '</small></div><button data-wx="' + esc(w.id) + '" data-wk="' + w.key + '" aria-label="Gezien">✕</button></div>'; }).join("") + "</div>" : "";
   var html = wbox + '<div class="seg"><button data-sub="t" aria-pressed="' + (st.sub === "t") + '">Kaartje · ' + cntm("t") + '</button><button data-sub="i" aria-pressed="' + (st.sub === "i") + '">Interesse · ' + cntm("i") + '</button><button data-sub="c" aria-pressed="' + (st.sub === "c") + '">Clubcard</button></div>';
   if (st.sub === "c") {   /* Rotown: concerten met clubcard-korting */
     var cl = ALL.filter(function (c) { return c.d >= TODAY && c.c && c.v === "rotown" && qok(c); }), lc = "";
@@ -1623,7 +1624,7 @@ function delAFile(aid, i) {
 function festRow(a) {   /* festival uit de app: één regel; open = bands per dag en zaal invullen */
   var m = marks[a.id] || { s: a.s }, v = mVen(a.s), r = a.rv.r, open = st.aopen === a.id, days = festDays(m), al = actsOf(m);
   var seen = al.filter(function (x) { return x[2] && x[0]; }), d0 = parse(days[0]), d1 = parse(days[days.length - 1]);
-  var dl = function (k) { var d = parse(k); return DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()]; };
+  var dl = function (k) { var d = parse(k); return DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()] + yr(k); };
   var span = d0.getDate() + (days.length > 1 ? "–" + d1.getDate() : "") + " " + MONL[d1.getMonth()] + " " + d1.getFullYear();
   var zalen = Object.keys(VENUES).filter(function (k) { return VENUES[k].city === v.city && k.indexOf("fest_") && !/^tm-/.test(k); }).map(function (k) { return VENUES[k].label; }).sort();
   var rows = "", byDay = {};
@@ -2509,7 +2510,7 @@ function openSheet(id) {
   $("panel").innerHTML = '<div class="ph" style="' + (big ? "background-image:url(" + esc(big) + ")" : "") + '"><span class="grab"></span></div><div class="pb">' + lg(c) + "<h2>" + esc(nice(c.n)) + "</h2><div>" + badges(c) + "</div>" +
     (!c.la && bandsOf(c).length ? '<div class="bandrow">' + bandsOf(c).map(function (n) { return '<button class="chip" data-band="' + esc(n) + '">' + esc(n) + " ›</button>"; }).join("") + "</div>" : "") +
     (c.seen ? '<div class="seenbox"><b>Je zag <button class="band" data-band="' + esc(nice(c.seen.a)) + '"><u>' + esc(nice(c.seen.a)) + "</u></button> al " + c.seen.n + "×</b>" + c.seen.x.slice().sort(function (a, b) { return a[0] < b[0] ? 1 : -1; }).slice(0, 12).map(function (x) { var dd = parse(x[0]); return "<div>" + dd.getDate() + " " + MON[dd.getMonth()] + " " + dd.getFullYear() + " · " + esc(x[1]) + "</div>"; }).join("") + (c.seen.x.length > 12 ? "<div>… en nog " + (c.seen.x.length - 12) + " keer</div>" : "") + "</div>" : "") +
-    '<div class="facts"><div class="fact"><span>Wanneer</span><b>' + DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()] + (c.t ? " · " + esc(c.t.replace("deuren ", "")) + (/deuren/.test(c.t) ? " deur" : "") : " · tijd volgt") + "</b></div>" +
+    '<div class="facts"><div class="fact"><span>Wanneer</span><b>' + DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()] + yr(c.d) + (c.t ? " · " + esc(c.t.replace("deuren ", "")) + (/deuren/.test(c.t) ? " deur" : "") : " · tijd volgt") + "</b></div>" +
     '<div class="fact"><span>Waar</span><b>' + where(c) + "</b><br><span>" + esc(v.city) + "</span></div>" +
     '<div class="fact"><span>Reistijd</span><b>' + (tt !== null ? "± " + fmtT(tt) : "–") + "</b></div>" +
     (c.s ? '<div class="fact"><span>Status</span><b style="color:var(--red)">uitverkocht</b></div>' : "") + "</div>" +
@@ -2541,7 +2542,7 @@ function openCity(ct) {   /* overzicht: zalen in deze stad, met aantal concerten
   var ks = Object.keys(per).sort(function (a, b) { return per[b] - per[a]; }), tot = ks.reduce(function (t, k) { return t + per[k]; }, 0);
   $("panel").innerHTML = '<div class="pb" style="margin-top:0;padding-top:22px"><h2>' + esc(ct) + '</h2><p style="color:var(--muted);margin:2px 0 10px">' + ks.length + (ks.length === 1 ? " zaal" : " zalen") + " · " + tot + " concerten</p>" +
     ks.map(function (k) { var c = next[k], d = parse(c.d);
-      return '<div class="ev" data-venue="' + esc(k) + '">' + lg(c) + '<div class="b"><div class="n">' + esc(venue(c).label) + '</div><div class="s">volgende: ' + DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()] + " · " + esc(nice(c.n)) + '</div></div><div class="tm">' + per[k] + "<small>concerten</small></div></div>"; }).join("") +
+      return '<div class="ev" data-venue="' + esc(k) + '">' + lg(c) + '<div class="b"><div class="n">' + esc(venue(c).label) + '</div><div class="s">volgende: ' + DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()] + yr(c.d) + " · " + esc(nice(c.n)) + '</div></div><div class="tm">' + per[k] + "<small>concerten</small></div></div>"; }).join("") +
     '<div class="acts" style="margin-top:14px"><button class="btn pri wide" data-cityall="' + esc(ct) + '">Alle concerten in ' + esc(ct) + "</button></div></div>";
   showSheet();
 }

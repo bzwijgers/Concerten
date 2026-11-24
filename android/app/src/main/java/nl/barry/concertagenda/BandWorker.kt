@@ -81,7 +81,8 @@ class BandWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, params) {
     companion object {
         const val CHANNEL = "bandnews"
         private val MON = arrayOf("jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec")
-        fun dayLabel(d: String): String { val p = d.split("-"); return if (p.size == 3) "${p[2].toInt()} ${MON[p[1].toInt() - 1]}" else d }
+        fun dayLabel(d: String): String { val p = d.split("-"); val y = if (p[0] != Calendar.getInstance().get(Calendar.YEAR).toString()) " ${p[0]}" else ""   // jaartal erbij als het niet dit jaar is
+            return if (p.size == 3) "${p[2].toInt()} ${MON[p[1].toInt() - 1]}$y" else d }
         /* zelfde als normA in de app: kleine letters, landcode tussen haakjes weg, 'The' weg, & = and, alleen letters en cijfers */
         fun normA(n: String): String = n.lowercase(Locale.ROOT)
             .replace(Regex("\\s*\\((?:[a-z]{2,3}|[a-z]{2}/[a-z]{2})\\)\\s*"), " ")

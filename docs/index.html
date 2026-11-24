@@ -136,6 +136,7 @@ nav [data-tab].dot{position:relative}nav [data-tab].dot::after{content:"";positi
 .bd.club{background:rgba(232,180,74,.16);color:var(--gold)}.clubk{margin-top:2px}.axrows{margin:0 0 10px 18px;border-left:2px solid var(--line)}.prijs input.pnote{width:auto;flex:1;min-width:160px}.clubk input{width:auto}
 .prijs{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:10px 0 4px;font-size:13.5px;color:var(--muted)}
 .prijs span{color:var(--fg)}.prijs input{width:90px;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);font:inherit}
+.pmiss{margin:2px 0 6px 10px;padding-left:10px;border-left:2px solid var(--line)}.pmiss .lnk{display:block;text-align:left;margin:4px 0}
 .clubfee{width:64px;padding:2px 6px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--fg);font:inherit}
 .prijs i{font-size:12px;color:var(--faint);font-style:normal;flex-basis:100%}
 #fview{position:fixed;inset:0;z-index:300;background:#111;display:flex;flex-direction:column}
@@ -1504,7 +1505,7 @@ function setlistHtml(aid, artist, city, d, names) {
 var CLUBFEE = 35;
 function clubFee(y) { var m = marks["club|" + y]; return m && typeof m.prijs === "number" ? m.prijs : CLUBFEE; }
 function priceSum(list) {
-  var r = { pt: 0, pn: 0, pc: 0, pg: 0, px: 0, fee: 0, years: [] }, cy = {};
+  var r = { pt: 0, pn: 0, pc: 0, pg: 0, px: 0, fee: 0, years: [], miss: [] }, cy = {};
   if (!list.length || !list.every(function (e) { return e.d >= "2026"; })) return r;   /* tot en met 2025 ontbreken de prijzen */
   list.forEach(function (e) { var m0 = marks[eveId(e)] || {}, h0 = e.mid ? marks[histId(e)] || {} : {}, pick = function (f) { return typeof m0[f] === "number" && m0[f] > 0 ? m0[f] : typeof h0[f] === "number" && h0[f] > 0 ? h0[f] : m0[f] !== undefined ? m0[f] : h0[f]; };
     var gift = (typeof m0.pw === "number" && m0.pw > 0 && !(m0.prijs > 0)) || (typeof h0.pw === "number" && h0.pw > 0 && !(h0.prijs > 0) && !(m0.prijs > 0));   /* waarde ingevuld en daar geen prijs: gekregen kaartje */
@@ -1512,7 +1513,7 @@ function priceSum(list) {
     if (typeof pv === "number" && pv > 0 && m.cur !== "USD") { r.pt += pv; r.pn++; }
     else if (typeof m.pw === "number" && m.pw > 0) { r.pt += m.pw; r.pn++; r.pg++; }
     else if (m.club) { r.pc++; cy[e.d.slice(0, 4)] = 1; }
-    else r.px++; });
+    else { r.px++; r.miss.push(e); } });
   r.years = Object.keys(cy).sort(); r.years.forEach(function (y) { r.fee += clubFee(y); }); r.pt += r.fee;
   return r;
 }
@@ -1702,7 +1703,8 @@ function yearSummary(list, y, all, range) {   /* range: blok van jaren, dan zond
     (list.every(function (e) { return e.d.slice(0, 4) === (list[0] || e).d.slice(0, 4); }) && (function () { var t = splitFest(list).filter(function (e) { return rpos(e) === 1; })[0]; return t ? "Nummer 1 van je jaarlijst: <b>" + esc(t.acts.filter(function (x) { return x[1] !== "V"; }).map(function (x) { return x[0]; }).join(" & ") || t.loc) + "</b><br>" : ""; })() || "") +
     (pnc ? "Uitgegeven aan kaartjes: <b>" + euro(PS.pt) + "</b> (" + pnc + (pnc === 1 ? " concert" : " concerten") + (pnc > 1 ? ", gemiddeld " + euro(PS.pt / pnc) : "") + ")" +
       '<br><span style="color:var(--faint)">' + [PS.pc ? "waarvan " + PS.pc + " met clubkaart" + (PS.years.length === 1 ? ' (clubkaart Rotown ' + PS.years[0] + ': € <input class="clubfee" type="text" inputmode="decimal" data-clubfee="' + PS.years[0] + '" value="' + clubFee(PS.years[0]).toFixed(2).replace(".", ",") + '">)' : " (clubkaarten " + euro(PS.fee) + ")") : "",
-        PS.pg ? PS.pg + " gekregen (waarde ingevuld)" : "", PS.px ? PS.px + " zonder prijs" : ""].filter(Boolean).join(" · ") + "</span><br>" : "") +
+        PS.pg ? PS.pg + " gekregen (waarde ingevuld)" : "", PS.px ? '<button class="lnk" data-pmiss style="display:inline">' + PS.px + " zonder prijs " + (st.pmiss ? "▾" : "›") + "</button>" : ""].filter(Boolean).join(" · ") + "</span><br>" +
+      (st.pmiss && PS.px ? '<div class="pmiss">' + PS.miss.map(function (e) { var d = parse(e.d); return '<button class="lnk" data-t10="' + esc(eveId(e)) + '">' + d.getDate() + " " + MON[d.getMonth()] + " · " + esc(e.acts.filter(function (x) { return x[1] !== "V"; }).map(function (x) { return x[0]; }).join(" & ") || e.fn || e.loc) + " · " + esc(e.loc) + " ›</button>"; }).join("") + "</div>" : "") : "") +
     (best ? "Hoogste cijfer: <b>" + esc(best.acts.filter(function (x) { return x[1] !== "V"; }).map(function (x) { return x[0]; }).join(" & ") || best.loc) + "</b> (★ " + String(best.r).replace(".", ",") + ")<br>" : "") +
     (newv.length && !range ? "Voor het eerst: <b>" + (st.yfirst ? newv : newv.slice(0, 6)).map(esc).join(", ") + "</b>" + (newv.length > 6 && !st.yfirst ? ' <button class="lnk" data-yfirst style="display:inline">en nog ' + (newv.length - 6) + " ›</button>" : "") : "") + "</div>" + top10(splitFest(list));
 }
@@ -2687,6 +2689,7 @@ $("main").addEventListener("click", function (e) {
   var hb_ = t.closest("[data-hbar]");
   if (hb_) { var bx = hb_.parentNode; [].forEach.call(bx.querySelectorAll(".hb.on"), function (x) { x.classList.remove("on"); }); hb_.classList.add("on");
     var rd = bx.nextElementSibling; if (rd && rd.hasAttribute("data-hread")) rd.textContent = hb_.getAttribute("data-hbar"); return; }
+  if (t.closest("[data-pmiss]")) { st.pmiss = !st.pmiss; var yp_ = scrollY; render(); window.scrollTo(0, yp_); return; }   /* welke concerten nog zonder prijs */
   if (t.closest("[data-yfirst]")) { st.yfirst = true; var yy_ = scrollY; render(); window.scrollTo(0, yy_); return; }
   if (t.closest("[data-hdate-x]")) { st.hfrom = st.hto = ""; render(); return; }
   if (t.closest("[data-hyear]")) { st.hfrom = st.hto = ""; st.yfirst = false; st.hyear = t.closest("[data-hyear]").getAttribute("data-hyear"); st.hlimit = 300; render(); window.scrollTo(0, 0); return; }

@@ -58,6 +58,9 @@ def _genres(page):
     for block in re.findall(r"genres:\[([^\]]*)\]", page)[:2] + re.findall(r"tags:\[([^\]]*)\]", page)[:2]:
         for t in re.findall(r'title:("[^"]*"|[A-Za-z_$][\w$]*)', block):
             titles.append(json.loads(t) if t.startswith('"') else vs.get(t, ""))
+    if not [t for t in titles if t]:   # nieuwe Nuxt-pagina's: de genres staan gewoon in de pagina onder 'Genre'
+        m = re.search(r"<h3[^>]*>\s*Genres?\s*</h3>\s*<p[^>]*>(.*?)</p>", page, re.S)
+        if m: titles = [t.strip(" ,") for t in re.findall(r"<span><span>([^<]+)</span></span>", m.group(1))]
     return [t for t in titles if t]
 
 

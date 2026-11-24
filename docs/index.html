@@ -1506,7 +1506,8 @@ function clubFee(y) { var m = marks["club|" + y]; return m && typeof m.prijs ===
 function priceSum(list) {
   var r = { pt: 0, pn: 0, pc: 0, pg: 0, px: 0, fee: 0, years: [] }, cy = {};
   if (!list.length || !list.every(function (e) { return e.d >= "2026"; })) return r;   /* tot en met 2025 ontbreken de prijzen */
-  list.forEach(function (e) { var m = marks[eveId(e)] || {}, pv = m.prijs;
+  list.forEach(function (e) { var m0 = marks[eveId(e)] || {}, h0 = e.mid ? marks[histId(e)] || {} : {}, pick = function (f) { return typeof m0[f] === "number" && m0[f] > 0 ? m0[f] : typeof h0[f] === "number" && h0[f] > 0 ? h0[f] : m0[f] !== undefined ? m0[f] : h0[f]; };
+    var m = { prijs: pick("prijs"), pw: pick("pw"), club: m0.club || h0.club, cur: m0.prijs > 0 ? m0.cur : h0.cur || m0.cur }, pv = m.prijs;   /* prijs kan bij de avond uit je lijst staan of bij het concert uit de app */
     if (typeof pv === "number" && pv > 0 && m.cur !== "USD") { r.pt += pv; r.pn++; }
     else if (typeof m.pw === "number" && m.pw > 0) { r.pt += m.pw; r.pn++; r.pg++; }
     else if (m.club) { r.pc++; cy[e.d.slice(0, 4)] = 1; }

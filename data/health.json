@@ -46,7 +46,7 @@
 "good": 59
 },
 "botanique": {
-"good": 3
+"good": 0
 },
 "bridges": {
 "good": 22
@@ -193,7 +193,7 @@
 "good": 0
 },
 "fluor": {
-"good": 56
+"good": 57
 },
 "gashouder": {
 "good": 28
@@ -259,7 +259,7 @@
 "good": 0
 },
 "manifesto": {
-"good": 14
+"good": 15
 },
 "meester": {
 "good": 17
@@ -290,7 +290,7 @@
 },
 "nor": {},
 "o13": {
-"good": 145
+"good": 146
 },
 "occii": {
 "good": 17
@@ -299,7 +299,8 @@
 "good": 4
 },
 "p3": {
-"good": 60
+"good": 60,
+"since": "2026-11-24"
 },
 "paard": {
 "good": 135
@@ -383,7 +384,7 @@
 "good": 63
 },
 "vorstin": {
-"good": 58
+"good": 59
 },
 "w2": {
 "good": 14
@@ -392,6 +393,6 @@
 "good": 38
 },
 "worm": {
-"good": 7
+"good": 8
 }
 }

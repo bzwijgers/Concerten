@@ -3,7 +3,7 @@
 "bitterzoet"
 ],
 "ab": {
-"good": 221
+"good": 225
 },
 "acu": {
 "good": 14
@@ -21,7 +21,7 @@
 "good": 8
 },
 "baroeg": {
-"good": 32
+"good": 33
 },
 "bibelot": {
 "good": 66
@@ -58,7 +58,7 @@
 "good": 22
 },
 "capsloc": {
-"good": 11
+"good": 12
 },
 "casino": {
 "good": 17
@@ -70,7 +70,7 @@
 "good": 18
 },
 "corneel": {
-"good": 23
+"good": 24
 },
 "dbs": {
 "good": 48
@@ -79,16 +79,16 @@
 "good": 98
 },
 "doornroosje": {
-"good": 182
+"good": 184
 },
 "druckluft": {
 "good": 22
 },
 "dynamo": {
-"good": 39
+"good": 38
 },
 "effenaar": {
-"good": 101
+"good": 102
 },
 "ekko": {
 "good": 57
@@ -199,8 +199,7 @@
 "good": 28
 },
 "gebouwt": {
-"good": 57,
-"since": "2026-11-24"
+"good": 57
 },
 "gigant": {
 "good": 35
@@ -215,7 +214,7 @@
 "good": 107
 },
 "helling": {
-"good": 61
+"good": 64
 },
 "helvete": {
 "good": 15
@@ -233,7 +232,7 @@
 "good": 6
 },
 "kreun": {
-"good": 55
+"good": 56
 },
 "kroepoek": {
 "good": 26
@@ -242,7 +241,7 @@
 "good": 52
 },
 "lantaren": {
-"good": 66
+"good": 68
 },
 "littledevil": {
 "good": 18
@@ -263,22 +262,22 @@
 "good": 14
 },
 "meester": {
-"good": 13
+"good": 17
 },
 "melkweg": {
 "good": 256
 },
 "metropool": {
-"good": 135
+"good": 137
 },
 "mezz": {
-"good": 138
+"good": 140
 },
 "musicon": {
-"good": 49
+"good": 50
 },
 "muziekgieterij": {
-"good": 92
+"good": 91
 },
 "n9": {
 "good": 17
@@ -287,11 +286,11 @@
 "good": 83
 },
 "nobel": {
-"good": 94
+"good": 95
 },
 "nor": {},
 "o13": {
-"good": 141
+"good": 145
 },
 "occii": {
 "good": 17
@@ -306,7 +305,7 @@
 "good": 135
 },
 "paradiso": {
-"good": 421
+"good": 427
 },
 "patronaat": {
 "good": 140
@@ -315,7 +314,7 @@
 "good": 58
 },
 "qfactory": {
-"good": 34
+"good": 35
 },
 "reflektor": {
 "good": 69
@@ -330,7 +329,7 @@
 "good": 23
 },
 "simplon": {
-"good": 50
+"good": 51
 },
 "sounddog": {
 "good": 21
@@ -345,10 +344,10 @@
 "good": 15
 },
 "tbeest": {
-"good": 21
+"good": 22
 },
 "ticketmaster": {
-"good": 679
+"good": 685
 },
 "tivoli": {
 "good": 324
@@ -357,10 +356,10 @@
 "good": 7
 },
 "trix": {
-"good": 105
+"good": 104
 },
 "turbinenhalle": {
-"good": 43
+"good": 45
 },
 "v11": {
 "good": 19
@@ -375,13 +374,13 @@
 "good": 95
 },
 "vierad": {
-"good": 14
+"good": 15
 },
 "volt": {
 "good": 24
 },
 "vorst": {
-"good": 62
+"good": 63
 },
 "vorstin": {
 "good": 58

@@ -713,7 +713,7 @@ function isFestEv(c) { return !!venue(c).fest || FESTEV.test(c.n); }
 function anyFilter() { return !!(st.q.trim() || st.venue || st.cc || st.city || st.month || st.from || Object.keys(st.f).some(function (k) { return st.f[k]; })); }
 function badges(c) {
   return (has(c.id, "t") ? '<span class="bd tk">✓ kaartje</span>' : "") + (c.s ? '<span class="bd so">uitverkocht</span>' : "") +
-    (c.c && c.v === "rotown" ? '<span class="bd cl">clubcard</span>' : "") + (isFestEv(c) ? '<span class="bd fe">festival</span>' : "") +
+    (c.c && c.v === "rotown" ? '<span class="bd cl">clubkaart</span>' : "") + (isFestEv(c) ? '<span class="bd fe">festival</span>' : "") +
     (c.first && c.first !== "base" && c.first >= WEEK_AGO ? '<span class="bd nw">nieuw</span>' : "") +
     (c.seen ? '<span class="bd sn">' + c.seen.n + "× gezien</span>" : "") + (c.ls ? '<span class="bd sn">★ ' + c.ls + (c.ls === 1 ? " band" : " bands") + " die je zag</span>" : "") + (c.o ? '<span class="bd ot">geen concert</span>' : "");
 }
@@ -979,10 +979,10 @@ function renderMine() {
   var cntm = function (f) { return Object.keys(marks).filter(function (id) { var m = marks[id]; return m[f] && ((m.s && m.s.d >= TODAY) || ALL.some(function (c) { return c.id === id && c.d >= TODAY; })); }).length; };
   var wl = warnings(), wbox = wl.length ? '<div class="warn"><div class="hl">Let op</div>' + wl.map(function (w) { var d = parse(w.c.d);
       return '<div class="wr" data-id="' + esc(w.id) + '"><div><b>' + esc(nice(w.c.n)) + "</b> " + esc(w.why) + "<small>" + DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()] + yr(w.c.d) + " · " + esc(venue(w.c).label) + '</small></div><button data-wx="' + esc(w.id) + '" data-wk="' + w.key + '" aria-label="Gezien">✕</button></div>'; }).join("") + "</div>" : "";
-  var html = wbox + '<div class="seg"><button data-sub="t" aria-pressed="' + (st.sub === "t") + '">Kaartje · ' + cntm("t") + '</button><button data-sub="i" aria-pressed="' + (st.sub === "i") + '">Interesse · ' + cntm("i") + '</button><button data-sub="c" aria-pressed="' + (st.sub === "c") + '">Clubcard</button></div>';
+  var html = wbox + '<div class="seg"><button data-sub="t" aria-pressed="' + (st.sub === "t") + '">Kaartje · ' + cntm("t") + '</button><button data-sub="i" aria-pressed="' + (st.sub === "i") + '">Interesse · ' + cntm("i") + '</button><button data-sub="c" aria-pressed="' + (st.sub === "c") + '">Rotown clubkaart</button></div>';
   if (st.sub === "c") {   /* Rotown: concerten met clubcard-korting */
     var cl = ALL.filter(function (c) { return c.d >= TODAY && c.c && c.v === "rotown" && qok(c); }), lc = "";
-    if (!cl.length) return html + '<div class="empty">Geen clubcard-concerten gevonden.</div>';
+    if (!cl.length) return html + '<div class="empty">Geen concerten met de Rotown clubkaart gevonden.</div>';
     cl.forEach(function (c) { if (c.d !== lc) { html += dayHead(c.d, cl.filter(function (x) { return x.d === c.d; }).length); lc = c.d; } html += row(c); });
     return html;
   }

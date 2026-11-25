@@ -49,7 +49,7 @@ def check(status, data_dir, root, min_events, skip=("ticketswap",)):
             why = "je pc heeft sinds " + (pc or "?") + " geen nieuwe lijst gestuurd (staat de pc uit?)"
         elif not st.get("ok"):
             why = "werkt niet: " + (st.get("error") or "onbekende fout")[:140]
-        elif st.get("manual") and (st.get("checked") or "") < (today - timedelta(days=7)).isoformat():
+        elif st.get("manual") and (st.get("checked") or "") < (today - timedelta(days=40 if key == "bitterzoet" else 7)).isoformat():   # Bitterzoet: maandelijks met de hand
             why = "je pc heeft sinds " + (st.get("checked") or "?") + " geen nieuwe lijst gestuurd (staat de pc uit?)"
         elif min_events.get(key, 3) > 0 and h.get("good", 0) >= MIN_BASE and cnt < DROP * h["good"]:
             why = f"veel minder concerten: normaal {h['good']}, nu {cnt}"

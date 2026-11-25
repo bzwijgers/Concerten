@@ -97,6 +97,52 @@ def o13_events():
     return out
 
 
+# Bitterzoet laat geen automatische bezoekers toe (ook niet vanaf de pc). Barry kopieert eens per maand de agenda
+# (Ctrl+A, Ctrl+C) naar een tekstbestand; dit leest het nieuwste .txt in de map uit ~/Concertagenda-pc/bitterzoet_map.txt.
+BZ_MON = {m: i + 1 for i, m in enumerate(["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"])}
+BZ_DATE = re.compile(r"^(?:(?:maandag|dinsdag|woensdag|donderdag|vrijdag|zaterdag|zondag)\s+)?(\d{1,2})\s+([a-z]+)\s+(20\d\d)\s*/\s*(\d{1,2}:\d\d)", re.I)
+BZ_REL = re.compile(r"^(vandaag|morgen|overmorgen)\s*/\s*(\d{1,2}:\d\d)", re.I)
+
+
+def bitterzoet_txt():
+    from datetime import timedelta
+    try:
+        folder = open(os.path.join(os.path.expanduser("~"), "Concertagenda-pc", "bitterzoet_map.txt"), encoding="utf-8-sig").read().strip()
+        txts = sorted((os.path.join(folder, f) for f in os.listdir(folder) if f.lower().endswith(".txt")), key=os.path.getmtime)
+    except Exception as ex:
+        print("bitterzoet: geen map of tekstbestand:", ex); return [], ""
+    if not txts: print("bitterzoet: geen tekstbestand in de map"); return [], ""
+    f = txts[-1]; saved = date.fromtimestamp(os.path.getmtime(f))
+    raw = open(f, "rb").read()
+    for enc in ("utf-8-sig", "utf-16", "cp1252"):
+        try: text = raw.decode(enc); break
+        except UnicodeDecodeError: continue
+    lines = [l.strip() for l in text.splitlines()]
+    out, seen = [], set()
+    for i, l in enumerate(lines):
+        m = BZ_DATE.match(l); r = None if m else BZ_REL.match(l)
+        if m and m.group(2).lower() in BZ_MON:
+            d = date(int(m.group(3)), BZ_MON[m.group(2).lower()], int(m.group(1))); t = m.group(4)
+        elif r:
+            d = saved + timedelta(days={"vandaag": 0, "morgen": 1, "overmorgen": 2}[r.group(1).lower()]); t = r.group(2)
+        else:
+            continue
+        nxt = [x for x in lines[i + 1:i + 4] if x]
+        if not nxt or BZ_DATE.match(nxt[0]) or BZ_REL.match(nxt[0]): continue
+        t = t.zfill(5)
+        if t >= "23:00" or t < "06:00": continue   # clubnachten niet (zoals de gewone Bitterzoet-lezer)
+        n = nxt[0]; so = bool(re.search(r"\[\s*sold\s*out", n, re.I))
+        n = re.sub(r"\s*\[[^\]]*\]\s*", " ", n).strip(" ⚡").strip()
+        if not n or re.search(r"cancel+ed|afgelast", n, re.I): continue
+        slug = re.sub(r"[^a-z0-9]+", "-", n.lower()).strip("-")[:60]
+        k = (d.isoformat(), slug)
+        if k in seen: continue
+        seen.add(k)
+        out.append({"v": "bitterzoet", "d": d.isoformat(), "n": n, "u": "https://www.bitterzoet.com/agenda/#" + slug, "t": t, "r": "", "s": so, "c": False})
+    print(f"bitterzoet: {len(out)} concerten uit {os.path.basename(f)} (opgeslagen {saved})")
+    return [e for e in out if e["d"] >= date.today().isoformat()], saved.isoformat()
+
+
 def keep(e):
     if NOT_MUSIC.search(e["n"]): return False
     return any(g in GOOD for g in e["g"])
@@ -184,6 +230,7 @@ def main():
             print(f"{key}: {len(spare[key])} concerten (reserve)")
         except Exception as ex:
             print(key, "niet gelukt:", ex)
+    bz, bz_saved = bitterzoet_txt()
 
     def write():
         os.makedirs(os.path.dirname(p), exist_ok=True)
@@ -193,13 +240,16 @@ def main():
                 json.dump({"format": 2, "fetched": bundle["fetched"], "events": evs},
                           open(os.path.join(repo, "data", "inbox", k + ".json"), "w", encoding="utf-8"),
                           ensure_ascii=False, separators=(",", ":"))
+        if len(bz) >= 5:   # 'fetched' = de dag dat Barry de agenda kopieerde: zo weet de app wanneer het weer tijd is
+            json.dump({"format": 2, "fetched": bz_saved, "events": bz}, open(os.path.join(repo, "data", "inbox", "bitterzoet.json"), "w", encoding="utf-8"),
+                      ensure_ascii=False, separators=(",", ":"))
     if dry:
         write(); print("geschreven naar", p, "(niet gecommit)")
         return
     for attempt in range(4):
         sync(repo); write()          # telkens op de nieuwste stand van GitHub, dan pas ons bestand erbij
         for f in ("data/inbox/tivoli.json", "data/inbox/o13.json", "data/inbox/bolwerk.json", "data/bolwerk_cache.json",
-                  "data/inbox/bibelot.json", "data/inbox/nor.json", "data/inbox/kade.json", "data/inbox/melkweg.json"):
+                  "data/inbox/bibelot.json", "data/inbox/nor.json", "data/inbox/kade.json", "data/inbox/melkweg.json", "data/inbox/bitterzoet.json"):
             if os.path.exists(os.path.join(repo, f)):
                 git(repo, "add", f)
         git(repo, "-c", "user.name=Barry (pc)", "-c", "user.email=bot@users.noreply.github.com",

@@ -149,7 +149,7 @@ def main():
                 status[key] = {"ok": True, "count": len(got), "at": now, "healed": True}
         except Exception as ex:
             print(f"{key}: zelfherstel mislukt", ex)
-    for _k in ("o13", "bolwerk", "bibelot", "nor", "kade", "melkweg"): merge_pc_inbox(_k)
+    for _k in ("o13", "bolwerk", "bibelot", "nor", "kade", "melkweg", "bitterzoet"): merge_pc_inbox(_k)
     merge_tivoli_inbox()
     # Tivoli komt van de eigen pc (data/manual/tivoli.json); is die lijst ouder dan 3 dagen, dan de oude feed
     tv = load(os.path.join(DATA, "manual", "tivoli.json"), {}) or {}
@@ -197,7 +197,7 @@ def main():
             if not fn_.endswith(".json"): continue
             m = load(os.path.join(mdir, fn_), None)
             if not m or m["venue"] in fresh: continue
-            if m["venue"] != "tivoli" and (m.get("checked") or "") < (date.today() - timedelta(days=10)).isoformat():   # pc een week uit (vakantie): lijst blijft bruikbaar
+            if m["venue"] != "tivoli" and (m.get("checked") or "") < (date.today() - timedelta(days=45 if m["venue"] == "bitterzoet" else 10)).isoformat():   # Bitterzoet: maandelijks met de hand   # pc een week uit (vakantie): lijst blijft bruikbaar
                 continue   # reservelijst van de pc te oud: dan liever de laatst bekende lijst laten staan
             got = [e for e in m["events"] if e["d"] >= today]
             fresh[m["venue"]] = got

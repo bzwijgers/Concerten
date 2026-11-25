@@ -136,6 +136,7 @@ nav [data-tab].dot{position:relative}nav [data-tab].dot::after{content:"";positi
 .bd.club{background:rgba(232,180,74,.16);color:var(--gold)}.clubk{margin-top:2px}.axrows{margin:0 0 10px 18px;border-left:2px solid var(--line)}.prijs input.pnote{width:auto;flex:1;min-width:160px}.clubk input{width:auto}
 .prijs{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:10px 0 4px;font-size:13.5px;color:var(--muted)}
 .prijs span{color:var(--fg)}.prijs input{width:90px;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);font:inherit}
+.bzsteps{margin:-4px 0 12px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;font-size:13.5px;color:var(--muted)}.bzsteps ol{margin:0 0 8px 18px;padding:0}.bzsteps li{margin:4px 0}.bzsteps a{color:var(--acc)}
 .pmiss{margin:2px 0 6px 10px;padding-left:10px;border-left:2px solid var(--line)}.pmiss .lnk{display:block;text-align:left;margin:4px 0}
 .clubfee{width:64px;padding:2px 6px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--fg);font:inherit}
 .prijs i{font-size:12px;color:var(--faint);font-style:normal;flex-basis:100%}
@@ -342,7 +343,7 @@ function iso(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + p
 function parse(s) { var p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
 var TODAY = iso(NOW), WEEK_AGO = iso(new Date(NOW.getTime() - 7 * 864e5)), IN7 = iso(new Date(NOW.getTime() + 7 * 864e5));
 var REGION_OF = {}, REGION_ORDER = [];
-var VENUES = {}, COORD = {}, LOGO = {}, ALL = [], NL = [], BE = [], marks = load("ca-marks", {}), mine = load("ca-mine", []);
+var STATUS = {}, VENUES = {}, COORD = {}, LOGO = {}, ALL = [], NL = [], BE = [], marks = load("ca-marks", {}), mine = load("ca-mine", []);
 var HOME = [51.958, 4.476];
 if (!marks || typeof marks !== "object" || Array.isArray(marks)) marks = {};
 Object.keys(marks).forEach(function (id) { var m = marks[id];   /* beschadigde of lege markeringen overslaan, zodat de rest gewoon werkt */
@@ -857,6 +858,18 @@ function dayCards() {
       (fil.length ? "" : '<button class="btn" data-dopen="' + esc(c.id) + '">🎟 Kaartje toevoegen</button>') + "</div>" + tourSet(c.id) + "</div>";
   }).join("");
 }
+/* Bitterzoet laat de app niet binnen: eens per maand zelf de agenda kopiëren (op de pc), de pc-taak leest het in */
+function bzReminder() {
+  var s = STATUS.bitterzoet, d0 = new Date(); d0.setDate(d0.getDate() - 30);
+  var due = !s || !s.manual || !s.checked || s.checked < iso(d0), snooze = load("ca-bzsnooze", "");
+  if (!due || (snooze && snooze >= TODAY)) return "";
+  return '<div class="since"><button data-bzinfo class="bn"><b>📋 Bitterzoet bijwerken</b><span>' + (s && s.checked ? "Laatst bijgewerkt " + fmtDY(s.checked) + ". " : "") +
+    (st.bzopen ? "" : "Eens per maand, op je pc. Tik voor de stappen.") + "</span></button></div>" +
+    (st.bzopen ? '<div class="bzsteps"><ol><li>Open de <a href="https://www.bitterzoet.com/agenda/" target="_blank" rel="noopener">agenda van Bitterzoet ↗</a> op je pc en wacht tot alle concerten er staan; scroll helemaal naar beneden.</li>' +
+      "<li>Druk <b>Ctrl+A</b> en dan <b>Ctrl+C</b>.</li><li>Open Kladblok, druk <b>Ctrl+V</b> en sla op als <b>bitterzoet.txt</b> in je Bitterzoet-map (overschrijven mag).</li>" +
+      "<li>De pc-taak leest het in; binnen een dag staan de concerten in de agenda.</li></ol>" +
+      '<button class="others" data-bzdone>Klaar, gedaan</button></div>' : "");
+}
 function renderAgenda() {
   var list = ALL.filter(function (c) { return c.d >= TODAY && pass(c); });
   var html = "", days = {}, order = [];
@@ -864,6 +877,7 @@ function renderAgenda() {
   var shown = 0;
   if (newVer) html += '<div class="since"><button data-newver><b>↻ Nieuwe versie van de agenda</b><span>Tik om te verversen; je blijft op dezelfde plek.</span></button></div>';
   if (SYNC && SYNC.token && SYNC.err) html += '<div class="since"><button data-syncfix style="border-color:rgba(255,107,107,.45);background:rgba(255,107,107,.08)"><b style="color:var(--red)">⚠ Synchroniseren werkt niet meer</b><span>' + esc(SYNC.err) + " Tik om het te herstellen.</span></button></div>";
+  if (!anyFilter()) html += bzReminder();
   if (!st.q.trim()) html += dayCards();
   var bn = bandNews(); if (st.q.trim() || st.venue || st.city) bn = [];   /* altijd rekenen: dit geeft ook je bands door aan de telefoon */
   if (bn.length) html += '<div class="since"><button data-bandnews class="bn"><b>🔔 ' + (bn.length === 1 ? "Nieuw van " + esc(bn[0].who) : bn.length + " nieuwe concerten van jouw bands") + "</b><span>" +
@@ -2693,6 +2707,8 @@ $("main").addEventListener("click", function (e) {
   var hb_ = t.closest("[data-hbar]");
   if (hb_) { var bx = hb_.parentNode; [].forEach.call(bx.querySelectorAll(".hb.on"), function (x) { x.classList.remove("on"); }); hb_.classList.add("on");
     var rd = bx.nextElementSibling; if (rd && rd.hasAttribute("data-hread")) rd.textContent = hb_.getAttribute("data-hbar"); return; }
+  if (t.closest("[data-bzinfo]")) { st.bzopen = !st.bzopen; var yb_ = scrollY; render(); window.scrollTo(0, yb_); return; }
+  if (t.closest("[data-bzdone]")) { var dz = new Date(); dz.setDate(dz.getDate() + 3); save("ca-bzsnooze", iso(dz)); st.bzopen = false; render(); return; }   /* de pc heeft even nodig */
   if (t.closest("[data-pmiss]")) { st.pmiss = !st.pmiss; var yp_ = scrollY; render(); window.scrollTo(0, yp_); return; }   /* welke concerten nog zonder prijs */
   if (t.closest("[data-yfirst]")) { st.yfirst = true; var yy_ = scrollY; render(); window.scrollTo(0, yy_); return; }
   if (t.closest("[data-hdate-x]")) { st.hfrom = st.hto = ""; render(); return; }
@@ -2983,7 +2999,7 @@ window.addEventListener("scroll", function () {
 Promise.all([fetch("app.js", { cache: "no-cache" }).then(function (r) { return r.text(); }),
   fetch("data/events.json", { cache: "no-cache" }).then(function (r) { return r.json(); }),
   fetch("data/logos.json", { cache: "no-cache" }).then(function (r) { return r.json(); }).catch(function () { return {}; })]).then(function (x) {
-  var js = x[0], data = x[1]; LOGO = x[2]; (LOGO._light || []).forEach(function (k) { LIGHT[k] = 1; });
+  var js = x[0], data = x[1]; LOGO = x[2]; STATUS = data.status || {}; (LOGO._light || []).forEach(function (k) { LIGHT[k] = 1; });
   js.replace(/^\s*([a-z0-9_]+):\{label:"([^"]*)",home:"([^"]*)",city:"([^"]*)"([^}]*)\}/gm, function (m, k, l, h, c, rest) {
     VENUES[k] = { label: l, home: h, city: c, fest: /fest:true/.test(rest), cc: (rest.match(/cc:"([A-Z]{2})"/) || [0, "NL"])[1] }; return m; });
   var rb = js.match(/var REGIONS = \[([\s\S]*?)\n\];/);

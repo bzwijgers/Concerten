@@ -3,13 +3,13 @@
 "bitterzoet"
 ],
 "ab": {
-"good": 224
+"good": 228
 },
 "acu": {
 "good": 14
 },
 "afasdome": {
-"good": 29
+"good": 30
 },
 "altenberg": {
 "good": 12
@@ -24,7 +24,7 @@
 "good": 33
 },
 "bibelot": {
-"good": 66
+"good": 67
 },
 "bird": {
 "good": 21
@@ -64,16 +64,16 @@
 "good": 17
 },
 "cinetol": {
-"good": 49
+"good": 50
 },
 "concertgebouw": {
 "good": 18
 },
 "corneel": {
-"good": 24
+"good": 25
 },
 "dbs": {
-"good": 47
+"good": 48
 },
 "depot": {
 "good": 97
@@ -85,7 +85,7 @@
 "good": 22
 },
 "dynamo": {
-"good": 38
+"good": 39
 },
 "effenaar": {
 "good": 102
@@ -211,10 +211,10 @@
 "good": 67
 },
 "hedon": {
-"good": 105
+"good": 106
 },
 "helling": {
-"good": 64
+"good": 65
 },
 "helvete": {
 "good": 15
@@ -232,7 +232,7 @@
 "good": 6
 },
 "kreun": {
-"good": 55
+"good": 56
 },
 "kroepoek": {
 "good": 26
@@ -241,7 +241,7 @@
 "good": 52
 },
 "lantaren": {
-"good": 68
+"good": 69
 },
 "littledevil": {
 "good": 18
@@ -268,13 +268,13 @@
 "good": 256
 },
 "metropool": {
-"good": 137
+"good": 138
 },
 "mezz": {
-"good": 139
+"good": 140
 },
 "musicon": {
-"good": 49
+"good": 51
 },
 "muziekgieterij": {
 "good": 90
@@ -283,14 +283,14 @@
 "good": 17
 },
 "neushoorn": {
-"good": 84
+"good": 85
 },
 "nobel": {
-"good": 95
+"good": 97
 },
 "nor": {},
 "o13": {
-"good": 145
+"good": 146
 },
 "occii": {
 "good": 17
@@ -299,16 +299,16 @@
 "good": 4
 },
 "p3": {
-"good": 60
+"good": 61
 },
 "paard": {
-"good": 135
+"good": 141
 },
 "paradiso": {
-"good": 423
+"good": 426
 },
 "patronaat": {
-"good": 140
+"good": 142
 },
 "pul": {
 "good": 58
@@ -317,7 +317,7 @@
 "good": 35
 },
 "reflektor": {
-"good": 69
+"good": 70
 },
 "roma": {
 "good": 21
@@ -329,7 +329,7 @@
 "good": 23
 },
 "simplon": {
-"good": 51
+"good": 54
 },
 "sounddog": {
 "good": 21
@@ -338,7 +338,7 @@
 "good": 24
 },
 "spot": {
-"good": 184
+"good": 186
 },
 "studiogonz": {
 "good": 15
@@ -347,7 +347,7 @@
 "good": 22
 },
 "ticketmaster": {
-"good": 676
+"good": 683
 },
 "tivoli": {
 "good": 324
@@ -371,7 +371,7 @@
 "good": 50
 },
 "victorie": {
-"good": 95
+"good": 102
 },
 "vierad": {
 "good": 15
@@ -383,7 +383,7 @@
 "good": 63
 },
 "vorstin": {
-"good": 59
+"good": 62
 },
 "w2": {
 "good": 14

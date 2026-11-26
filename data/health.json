@@ -1,7 +1,7 @@
 {
 "_last": [],
 "ab": {
-"good": 226
+"good": 225
 },
 "acu": {
 "good": 14
@@ -13,16 +13,16 @@
 "good": 12
 },
 "amare": {
-"good": 29
+"good": 30
 },
 "annabel": {
 "good": 8
 },
 "baroeg": {
-"good": 33
+"good": 34
 },
 "bibelot": {
-"good": 67
+"good": 69
 },
 "bird": {
 "good": 20
@@ -34,7 +34,7 @@
 "good": 62
 },
 "bolwerk": {
-"good": 47
+"good": 48
 },
 "bos": {
 "good": 32
@@ -64,7 +64,7 @@
 "good": 49
 },
 "concertgebouw": {
-"good": 18
+"good": 21
 },
 "corneel": {
 "good": 25
@@ -76,19 +76,19 @@
 "good": 96
 },
 "doornroosje": {
-"good": 182
+"good": 185
 },
 "druckluft": {
 "good": 22
 },
 "dynamo": {
-"good": 39
+"good": 40
 },
 "effenaar": {
-"good": 106
+"good": 107
 },
 "ekko": {
-"good": 57
+"good": 59
 },
 "engel": {
 "good": 98
@@ -193,10 +193,10 @@
 "good": 57
 },
 "gashouder": {
-"good": 28
+"good": 27
 },
 "gebouwt": {
-"good": 58
+"good": 59
 },
 "gigant": {
 "good": 35
@@ -208,7 +208,7 @@
 "good": 67
 },
 "hedon": {
-"good": 106
+"good": 108
 },
 "helling": {
 "good": 65
@@ -220,16 +220,16 @@
 "good": 25
 },
 "iduna": {
-"good": 35
+"good": 37
 },
 "kade": {
 "good": 11
 },
 "klokgebouw": {
-"good": 6
+"good": 7
 },
 "kreun": {
-"good": 56
+"good": 57
 },
 "kroepoek": {
 "good": 26
@@ -265,10 +265,10 @@
 "good": 256
 },
 "metropool": {
-"good": 139
+"good": 140
 },
 "mezz": {
-"good": 139
+"good": 140
 },
 "musicon": {
 "good": 51
@@ -280,32 +280,33 @@
 "good": 17
 },
 "neushoorn": {
-"good": 84
+"good": 85
 },
 "nobel": {
-"good": 98
+"good": 99
 },
 "nor": {},
 "o13": {
 "good": 144
 },
 "occii": {
-"good": 16
+"good": 17
 },
 "olt": {
 "good": 4
 },
 "p3": {
-"good": 61
+"good": 61,
+"since": "2026-11-26"
 },
 "paard": {
-"good": 140
+"good": 143
 },
 "paradiso": {
-"good": 423
+"good": 424
 },
 "patronaat": {
-"good": 140
+"good": 141
 },
 "pul": {
 "good": 58
@@ -314,28 +315,28 @@
 "good": 35
 },
 "reflektor": {
-"good": 68
+"good": 69
 },
 "roma": {
 "good": 21
 },
 "rotown": {
-"good": 111
+"good": 113
 },
 "rwa": {
 "good": 23
 },
 "simplon": {
-"good": 55
+"good": 56
 },
 "sounddog": {
 "good": 21
 },
 "sowhat": {
-"good": 24
+"good": 25
 },
 "spot": {
-"good": 186
+"good": 188
 },
 "studiogonz": {
 "good": 15
@@ -371,7 +372,7 @@
 "good": 100
 },
 "vierad": {
-"good": 15
+"good": 16
 },
 "volt": {
 "good": 24
@@ -383,7 +384,7 @@
 "good": 62
 },
 "w2": {
-"good": 14
+"good": 13
 },
 "walhalla": {
 "good": 38

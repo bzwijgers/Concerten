@@ -735,7 +735,7 @@ function where(c) { var v = venue(c), o = otherVenue(c);
 function row(c) {
   var v = venue(c), t = (c.t || "").replace("deuren ", "");
   return '<div class="ev' + (has(c.id, "i") ? " star" : "") + '" data-id="' + esc(c.id) + '">' + lg(c) +
-    '<div class="b"><div class="n">' + esc(nice(c.n)) + '</div><div class="s">' + badges(c) + where(c) + " · " + esc(v.city) + "</div>" +
+    '<div class="b"><div class="n">' + esc(nice(c.n)) + '</div><div class="s">' + badges(c) + where(c) + " · " + esc(v.city) + flag(v.cc) + "</div>" +
     (st.tab === "mine" && (marks[c.id] || {}).note ? '<div class="s" style="font-style:italic">✎ ' + esc(marks[c.id].note) + "</div>" : "") + "</div>" +
     (v.fest && c.e && c.e > c.d ? '<div class="tm">' + (Math.round((parse(c.e) - parse(c.d)) / 864e5) + 1) + "<small>dagen</small></div>" :   /* festival: hoe lang het duurt */
       t ? '<div class="tm">' + esc(t) + (/deuren/.test(c.t || "") ? "<small>deur</small>" : "") + "</div>" : '<div class="tm none">–</div>') + "</div>";
@@ -780,12 +780,12 @@ function openDate() {
 function setDate(a, b) { st.from = a || ""; st.to = b || ""; st.f.today = st.f.weekend = false; st.month = ""; closeSheet(); render(); window.scrollTo(0, 0); }
 function card(c, big) {
   var v = venue(c), d = parse(c.d), days = Math.round((parse(c.d) - parse(TODAY)) / 864e5), tt = travel(v.city);
-  if (!big) return '<div class="mc" data-id="' + esc(c.id) + '">' + lg(c) + '<div><b>' + esc(nice(c.n)) + "</b><span>" + DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()] + yr(c.d) + " · " + where(c) + "</span></div></div>";
+  if (!big) return '<div class="mc" data-id="' + esc(c.id) + '">' + lg(c) + '<div><b>' + esc(nice(c.n)) + "</b><span>" + DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()] + yr(c.d) + " · " + where(c) + flag(v.cc) + "</span></div></div>";
   var bg = c.th ? "" + c.th : logoSrc(c);
   return '<div class="next" data-id="' + esc(c.id) + '">' + (bg ? '<div class="bgimg" style="background-image:url(' + esc(bg) + ')"></div>' : "") +
     '<div class="cd">' + (days === 0 ? "VANDAAG" : days === 1 ? "MORGEN" : "nog " + days + " dagen") + "</div>" + lg(c) +
     '<div class="nn">' + esc(nice(c.n)) + '</div><div class="nv">' + DOWL[d.getDay()] + " " + d.getDate() + " " + MONL[d.getMonth()] + yr(c.d) + (c.t ? " · " + esc(c.t) : "") +
-    "<br>" + where(c) + " · " + esc(v.city) + (tt !== null ? " · ± " + fmtT(tt) + " rijden" : "") + "</div></div>";
+    "<br>" + where(c) + " · " + esc(v.city) + flag(v.cc) + (tt !== null ? " · ± " + fmtT(tt) + " rijden" : "") + "</div></div>";
 }
 function hero() {
   var tk = ALL.filter(function (c) { return c.d >= TODAY && has(c.id, "t"); });
@@ -2558,7 +2558,7 @@ function openSheet(id) {
     (!c.la && bandsOf(c).length ? '<div class="bandrow">' + bandsOf(c).map(function (n) { return '<button class="chip" data-band="' + esc(n) + '">' + esc(n) + " ›</button>"; }).join("") + "</div>" : "") +
     (c.seen ? '<div class="seenbox"><b>Je zag <button class="band" data-band="' + esc(nice(c.seen.a)) + '"><u>' + esc(nice(c.seen.a)) + "</u></button> al " + c.seen.n + "×</b>" + c.seen.x.slice().sort(function (a, b) { return a[0] < b[0] ? 1 : -1; }).slice(0, 12).map(function (x) { var dd = parse(x[0]); return "<div>" + dd.getDate() + " " + MON[dd.getMonth()] + " " + dd.getFullYear() + " · " + esc(x[1]) + "</div>"; }).join("") + (c.seen.x.length > 12 ? "<div>… en nog " + (c.seen.x.length - 12) + " keer</div>" : "") + "</div>" : "") +
     '<div class="facts"><div class="fact"><span>Wanneer</span><b>' + DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()] + yr(c.d) + (c.t ? " · " + esc(c.t.replace("deuren ", "")) + (/deuren/.test(c.t) ? " deur" : "") : " · tijd volgt") + "</b></div>" +
-    '<div class="fact"><span>Waar</span><b>' + where(c) + "</b><br><span>" + esc(v.city) + "</span></div>" +
+    '<div class="fact"><span>Waar</span><b>' + where(c) + "</b><br><span>" + esc(v.city) + flag(v.cc) + "</span></div>" +
     '<div class="fact"><span>Reistijd</span><b>' + (tt !== null ? "± " + fmtT(tt) : "–") + "</b></div>" +
     (c.s ? '<div class="fact"><span>Status</span><b style="color:var(--red)">uitverkocht</b></div>' : "") + "</div>" +
     '<div class="acts">' + (isOwn(id) ? '<button class="btn" data-ownedit>✎ Aanpassen</button><button class="btn" data-owndel>Verwijderen</button>' :
@@ -2919,6 +2919,17 @@ $("menu").addEventListener("click", function (e) { var b = e.target.closest("[da
 /* ===== zelf een concert met kaartje invoeren: voor wat niet in de agenda staat (buitenland, ontbrekende zaal) ===== */
 var OWNCC = [["NL", "Nederland"], ["BE", "België"], ["DE", "Duitsland"], ["GB", "Verenigd Koninkrijk"], ["IE", "Ierland"], ["FR", "Frankrijk"], ["ES", "Spanje"], ["PT", "Portugal"], ["IT", "Italië"],
   ["CH", "Zwitserland"], ["AT", "Oostenrijk"], ["DK", "Denemarken"], ["SE", "Zweden"], ["NO", "Noorwegen"], ["FI", "Finland"], ["PL", "Polen"], ["CZ", "Tsjechië"], ["HU", "Hongarije"], ["US", "Verenigde Staten"], ["CA", "Canada"], ["AU", "Australië"]];
+var CITYCC_ = { keulen: "DE", "köln": "DE", koln: "DE", cologne: "DE", "düsseldorf": "DE", dusseldorf: "DE", berlijn: "DE", berlin: "DE", hamburg: "DE", "münchen": "DE", munchen: "DE", munich: "DE",
+  essen: "DE", dortmund: "DE", bochum: "DE", oberhausen: "DE", gelsenkirchen: "DE", "mönchengladbach": "DE", aken: "DE", aachen: "DE", frankfurt: "DE", hannover: "DE", bremen: "DE", leipzig: "DE", stuttgart: "DE", bielefeld: "DE", "münster": "DE", munster: "DE",
+  londen: "GB", london: "GB", manchester: "GB", glasgow: "GB", birmingham: "GB", dublin: "IE", parijs: "FR", paris: "FR", rijsel: "FR", lille: "FR", luxemburg: "LU", luxembourg: "LU", kopenhagen: "DK", stockholm: "SE", oslo: "NO",
+  wenen: "AT", wien: "AT", "zürich": "CH", zurich: "CH", barcelona: "ES", madrid: "ES", lissabon: "PT", rome: "IT", milaan: "IT", praag: "CZ", "new york": "US", "los angeles": "US", nashville: "US", chicago: "US" };
+function cityCC(c) {   /* land bij een plaats: uit je historie, de zalen in de app, of een korte lijst grote steden */
+  c = String(c || "").trim().toLowerCase(); if (!c) return "";
+  var hit = ((HIST && HIST.ev) || []).filter(function (e) { return String(e.city).toLowerCase() === c && e.cc; })[0];
+  if (hit) return hit.cc;
+  var vk = Object.keys(VENUES).filter(function (k) { return String(VENUES[k].city).toLowerCase() === c; })[0];
+  return vk ? VENUES[vk].cc || "NL" : CITYCC_[c] || "";
+}
 function ownKey(l, c) {   /* bekende zaal (zelfde naam en plaats) -> sleutel uit de agenda, anders "" */
   l = String(l || "").trim().toLowerCase(); c = String(c || "").trim().toLowerCase();
   return Object.keys(VENUES).filter(function (k) { var v = VENUES[k]; return !v.fest && String(v.label).toLowerCase() === l && (!c || String(v.city).toLowerCase() === c); })[0] || "";
@@ -2942,6 +2953,7 @@ function openOwn(id) {
   showSheet(); $("panel").scrollTop = 0;
 }
 $("panel").addEventListener("input", function (e) {   /* bekende zaal gekozen: plaats en land invullen */
+  if (e.target.id === "ow_c") { var cc_ = cityCC(e.target.value); if (cc_ && $("ow_cc")) { if (![].some.call($("ow_cc").options, function (o) { return o.value === cc_; })) $("ow_cc").insertAdjacentHTML("beforeend", '<option value="' + cc_ + '">' + cc_ + "</option>"); $("ow_cc").value = cc_; } return; }
   if (e.target.id !== "ow_v") return; var k = ownKey(e.target.value, "");
   if (k) { $("ow_c").value = VENUES[k].city; $("ow_cc").value = VENUES[k].cc || "NL"; }
 });

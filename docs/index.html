@@ -12,9 +12,10 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&display=swap">
 <style>
 /* Voorstel nieuw uiterlijk, versie 2: donker zoals de startfoto, goud van de lampjes als accent */
+@font-face{font-family:"Flags";src:url(https://cdn.jsdelivr.net/npm/country-flag-emoji-polyfill@0.1.8/dist/TwemojiCountryFlags.woff2) format("woff2");unicode-range:U+1F1E6-1F1FF,U+1F3F4,U+E0062-E007F;font-display:swap}   /* vlaggen ook op Windows (Twemoji, CC-BY 4.0) */
 :root{--bg:#0d0c12;--bg2:#15131c;--card:#1c1a25;--card2:#24212f;--line:#2e2a3a;--fg:#f3efe6;--muted:#a49db3;--faint:#7a7389;
   --gold:#f2b84b;--acc:#ece6d8;--acc-ink:#15131c;--soft:#8e9bc4;--red:#ff6b6b;--green:#4fd18b;--blue:#8fb2ff;
-  --f-d:"Bricolage Grotesque",system-ui,sans-serif;--f-b:"Instrument Sans",system-ui,sans-serif;--nav:64px}
+  --f-d:"Flags","Bricolage Grotesque",system-ui,sans-serif;--f-b:"Flags","Instrument Sans",system-ui,sans-serif;--nav:64px}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 html,body{margin:0;background:var(--bg);color:var(--fg);font:400 15px/1.4 var(--f-b)}

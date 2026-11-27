@@ -6,12 +6,14 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap">
 <style>
+@font-face{font-family:"Flags";src:url(https://cdn.jsdelivr.net/npm/country-flag-emoji-polyfill@0.1.8/dist/TwemojiCountryFlags.woff2) format("woff2");unicode-range:U+1F1E6-1F1FF,U+1F3F4,U+E0062-E007F;font-display:swap}   /* vlaggen ook op Windows (Twemoji, CC-BY 4.0) */
+
 /* Layout: sticky header with three tabs, venue filter strip, then a day-grouped list of concert rows with mark buttons and two outbound links. */
 :root{
   --bg:#EEF0F3; --surface:#FFFFFF; --fg:#14171F; --muted:#5B6270; --line:#D8DCE3;
   --accent:#3341E8; --accent-fg:#FFFFFF; --ticket:#0B7F52; --interest:#9A5B00; --sold:#8A91A0;
-  --f-display:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;
-  --f-body:"Instrument Sans","Helvetica Neue",Arial,sans-serif;
+  --f-display:"Flags","Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Flags","Instrument Sans","Helvetica Neue",Arial,sans-serif;
   --f-mono:"DM Mono",ui-monospace,Menlo,monospace;
 }
 @media (prefers-color-scheme: dark){
@@ -299,6 +301,7 @@ document.getElementById("bk-restore").onchange=function(){var f=this.files&&this
 
 <h2>Privacy</h2>
 <p>De app heeft geen account en geen tracking. Je markeringen (Kaartje, Interesse, archief) staan alleen in de opslag van je eigen browser op dit toestel. Wis je de sitegegevens, dan zijn ze weg. De app gebruikt lettertypen van Google Fonts.</p>
+<p class="rooms">Vlaggen: <a href="https://github.com/jdecked/twemoji" target="_blank" rel="noopener">Twemoji</a> (CC-BY 4.0).</p>
 
 <h2>Copyright en disclaimer</h2>
 <p>Namen van artiesten, zalen en concerttitels, en de links naar kaartverkoop, zijn eigendom van de betreffende zalen, artiesten en organisaties. Deze app toont alleen feitelijke programmagegevens (titel, datum, zaal, status) met een link naar de oorspronkelijke pagina; afbeeldingen, teksten en andere inhoud van de zalen worden niet overgenomen. Alle rechten blijven bij de rechthebbenden. Deze app is een privéproject voor persoonlijk gebruik en is niet gelieerd aan of goedgekeurd door de genoemde zalen of door TicketSwap.</p>

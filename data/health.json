@@ -31,7 +31,8 @@
 "good": 7
 },
 "boerderij": {
-"good": 60
+"good": 60,
+"since": "2026-11-28"
 },
 "bolwerk": {
 "good": 47
@@ -76,13 +77,14 @@
 "good": 94
 },
 "doornroosje": {
-"good": 181
+"good": 180
 },
 "druckluft": {
 "good": 21
 },
 "dynamo": {
-"good": 38
+"good": 38,
+"since": "2026-11-28"
 },
 "effenaar": {
 "good": 106
@@ -127,7 +129,7 @@
 "good": 0
 },
 "fest_itg": {
-"good": 1
+"good": 0
 },
 "fest_itgwo": {
 "good": 1
@@ -166,7 +168,7 @@
 "good": 1
 },
 "fest_soh": {
-"good": 1
+"good": 0
 },
 "fest_suikerrock": {
 "good": 1
@@ -190,7 +192,8 @@
 "good": 0
 },
 "fluor": {
-"good": 57
+"good": 57,
+"since": "2026-11-28"
 },
 "gashouder": {
 "good": 27
@@ -214,7 +217,8 @@
 "good": 64
 },
 "helvete": {
-"good": 14
+"good": 14,
+"since": "2026-11-28"
 },
 "hof": {
 "good": 25
@@ -274,7 +278,7 @@
 "good": 49
 },
 "muziekgieterij": {
-"good": 89
+"good": 88
 },
 "n9": {
 "good": 16
@@ -305,10 +309,12 @@
 "good": 420
 },
 "patronaat": {
-"good": 135
+"good": 135,
+"since": "2026-11-28"
 },
 "pul": {
-"good": 58
+"good": 58,
+"since": "2026-11-28"
 },
 "qfactory": {
 "good": 34
@@ -338,7 +344,8 @@
 "good": 188
 },
 "studiogonz": {
-"good": 16
+"good": 16,
+"since": "2026-11-28"
 },
 "tbeest": {
 "good": 22
@@ -383,10 +390,11 @@
 "good": 63
 },
 "w2": {
-"good": 14
+"good": 16
 },
 "walhalla": {
-"good": 38
+"good": 38,
+"since": "2026-11-28"
 },
 "worm": {
 "good": 7

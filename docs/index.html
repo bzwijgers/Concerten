@@ -3010,7 +3010,7 @@ function tripOut() {
     (been.length ? '<p class="pstat">Je was in ' + esc(c) + " al eens bij " + been.length + (been.length === 1 ? " concert" : " concerten") + " (laatst " + fmtDY(been.map(function (e) { return e.d; }).sort().pop()) + ").</p>" : "") +
     '<div class="acts" style="margin-top:14px"><button class="btn pri wide" data-tripadd>＋ Concert toevoegen in ' + esc(c) + "</button></div>";
 }
-$("panel").addEventListener("input", function (e) { if (/^tr_/.test(e.target.id || "")) tripOut(); });
+["input", "change", "keyup"].forEach(function (ev) { $("panel").addEventListener(ev, function (e) { if (/^tr_/.test(e.target.id || "")) tripOut(); }); });   /* datumkiezers op telefoons geven soms alleen "change" */
 function openVenues() {   /* mijn zalen kiezen: per plaats, aangevinkt = in 'Mijn zalen' */
   var cnt = {}; ALL.forEach(function (c) { if (c.d >= TODAY) countV(cnt, c); });
   var ks = Object.keys(VENUES).filter(function (k) { return cnt[k] || VENUES[k].fest; }).sort(function (a, b) {

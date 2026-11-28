@@ -138,6 +138,7 @@ nav [data-tab].dot{position:relative}nav [data-tab].dot::after{content:"";positi
 .prijs{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:10px 0 4px;font-size:13.5px;color:var(--muted)}
 .prijs span{color:var(--fg)}.prijs input{width:90px;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);font:inherit}
 .bzsteps{margin:-4px 0 12px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;font-size:13.5px;color:var(--muted)}.bzsteps ol{margin:0 0 8px 18px;padding:0}.bzsteps li{margin:4px 0}.bzsteps a{color:var(--acc)}
+.trl{display:block;padding:10px 12px;margin:6px 0;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--fg);text-decoration:none}.trl b{display:block;font-weight:600}.trl span{font-size:12.5px;color:var(--muted)}
 .pmiss{margin:2px 0 6px 10px;padding-left:10px;border-left:2px solid var(--line)}.pmiss .lnk{display:block;text-align:left;margin:4px 0}
 .clubfee{width:64px;padding:2px 6px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--fg);font:inherit}
 .prijs i{font-size:12px;color:var(--faint);font-style:normal;flex-basis:100%}
@@ -282,6 +283,7 @@ window.onerror = function (msg, src, line) { try { var m = localStorage.getItem(
     <button class="ib" id="mb" aria-label="Menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button></div>
   <div class="menu" id="menu" hidden>
     <button data-m="zalen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V10l7-5 7 5v11M9 21v-6h6v6"/></svg>Mijn zalen kiezen</button>
+    <button data-m="reis"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 16l20-8-9 13-2-6z"/></svg>Op reis: concerten elders</button>
     <button data-m="other"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M7 12h10M10 17h4"/></svg><span id="otherlbl">Ook overige activiteiten tonen</span></button>
     <a href="klassiek.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Klassieke weergave</a>
     <a href="https://github.com/bzwijgers/Concerten/actions/workflows/update.yml" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5"/></svg>Nu bijwerken</a>
@@ -2883,6 +2885,8 @@ $("sheet").addEventListener("click", function (e) {
   var mu = e.target.closest("[data-mute]");
   if (mu) { var mk = "mute|" + mu.getAttribute("data-mute"); if (marks[mk]) delete marks[mk]; else marks[mk] = { mute: 1 }; save("ca-marks", marks);
     try { buildSeen(); } catch (x) {} var ys = scrollY; render(); window.scrollTo(0, ys); openBand(mu.getAttribute("data-mname")); return; }
+  if (e.target.closest("[data-tripadd]")) { var tr_ = load("ca-trip", {}) || {}; openOwn("");
+    if (tr_.c) { $("ow_c").value = tr_.c; $("ow_c").dispatchEvent(new Event("input", { bubbles: true })); } if (tr_.f) $("ow_d").value = tr_.f; return; }
   if (e.target.closest("[data-ownedit]")) { openOwn(st.open); return; }
   if (e.target.closest("[data-owndel]")) { if (confirm("Dit zelf ingevoerde concert verwijderen?")) { delete marks[st.open]; save("ca-marks", marks); closeSheet(); render(); } return; }
   var os = e.target.closest("[data-ownsave]"); if (os) { saveOwn(os.getAttribute("data-ownsave")); return; }
@@ -2913,7 +2917,7 @@ Array.prototype.forEach.call(document.querySelectorAll(".flagb"), function (b) {
 });
 $("mb").addEventListener("click", function (e) { e.stopPropagation(); var open = $("menu").hidden; $("menu").hidden = !open; $("mb").setAttribute("aria-expanded", String(open)); });
 document.addEventListener("click", function (e) { if (!$("menu").hidden && !e.target.closest("#menu")) { $("menu").hidden = true; $("mb").setAttribute("aria-expanded", "false"); } });
-$("menu").addEventListener("click", function (e) { var b = e.target.closest("[data-m]"); if (!b) return; $("menu").hidden = true; if (b.getAttribute("data-m") === "zalen") openVenues();
+$("menu").addEventListener("click", function (e) { var b = e.target.closest("[data-m]"); if (!b) return; $("menu").hidden = true; if (b.getAttribute("data-m") === "zalen") openVenues(); if (b.getAttribute("data-m") === "reis") openTrip();
   if (b.getAttribute("data-m") === "backup") makeBackup();
   if (b.getAttribute("data-m") === "sync") openSync();
   if (b.getAttribute("data-m") === "other") { st.other = !st.other; save("ca-other", st.other); render(); } });
@@ -2923,7 +2927,7 @@ var OWNCC = [["NL", "Nederland"], ["BE", "België"], ["DE", "Duitsland"], ["GB",
 var CITYCC_ = { keulen: "DE", "köln": "DE", koln: "DE", cologne: "DE", "düsseldorf": "DE", dusseldorf: "DE", berlijn: "DE", berlin: "DE", hamburg: "DE", "münchen": "DE", munchen: "DE", munich: "DE",
   essen: "DE", dortmund: "DE", bochum: "DE", oberhausen: "DE", gelsenkirchen: "DE", "mönchengladbach": "DE", aken: "DE", aachen: "DE", frankfurt: "DE", hannover: "DE", bremen: "DE", leipzig: "DE", stuttgart: "DE", bielefeld: "DE", "münster": "DE", munster: "DE",
   londen: "GB", london: "GB", manchester: "GB", glasgow: "GB", birmingham: "GB", dublin: "IE", parijs: "FR", paris: "FR", rijsel: "FR", lille: "FR", luxemburg: "LU", luxembourg: "LU", kopenhagen: "DK", stockholm: "SE", oslo: "NO",
-  wenen: "AT", wien: "AT", "zürich": "CH", zurich: "CH", barcelona: "ES", madrid: "ES", lissabon: "PT", rome: "IT", milaan: "IT", praag: "CZ", "new york": "US", "los angeles": "US", nashville: "US", chicago: "US" };
+  wenen: "AT", wien: "AT", "zürich": "CH", zurich: "CH", barcelona: "ES", madrid: "ES", lissabon: "PT", rome: "IT", milaan: "IT", praag: "CZ", montreal: "CA", "montréal": "CA", toronto: "CA", vancouver: "CA", ottawa: "CA", "québec": "CA", quebec: "CA", boston: "US", "san francisco": "US", austin: "US", seattle: "US", "new york": "US", "los angeles": "US", nashville: "US", chicago: "US" };
 function cityCC(c) {   /* land bij een plaats: uit je historie, de zalen in de app, of een korte lijst grote steden */
   c = String(c || "").trim().toLowerCase(); if (!c) return "";
   var hit = ((HIST && HIST.ev) || []).filter(function (e) { return String(e.city).toLowerCase() === c && e.cc; })[0];
@@ -2977,6 +2981,36 @@ function saveOwn(id) {
   var m = marks[id] || {}; m.t = true; m.s = s; marks[id] = m; save("ca-marks", marks); st.sub = "t"; render(); openSheet(id);
   setTimeout(function () { posterRequest(id); }, 6000);
 }
+/* ===== op reis: geen agenda van de hele wereld, wel de juiste zoekpagina's voor die stad en die dagen ===== */
+function openTrip() {
+  var tr = load("ca-trip", {}) || {}, f = function (lbl, inp) { return "<label>" + lbl + inp + "</label>"; };
+  $("panel").innerHTML = '<div class="pb" style="margin-top:0;padding-top:22px"><h2>Op reis</h2><p style="color:var(--muted);margin:4px 0 6px">Ga je naar een andere stad? Vul de stad en je data in; je krijgt de zoekpagina\'s voor concerten daar. Kaartje gekocht? Zet het erin met <b>＋ Concert toevoegen</b>.</p><div class="ownf">' +
+    f("Stad", '<input type="text" id="tr_c" value="' + esc(tr.c || "") + '" placeholder="bijv. Montreal" autocomplete="off">') +
+    '<div class="ownr">' + f("Van", '<input type="date" id="tr_f" value="' + esc(tr.f || "") + '">') + f("Tot en met", '<input type="date" id="tr_t" value="' + esc(tr.t || "") + '">') + "</div>" +
+    '</div><div id="tr_out"></div></div>';
+  showSheet(); $("panel").scrollTop = 0; tripOut();
+}
+function tripOut() {
+  var o = $("tr_out"); if (!o) return;
+  var c = String($("tr_c").value || "").trim(), fr = $("tr_f").value, to = $("tr_t").value || fr; save("ca-trip", { c: c, f: fr, t: to });
+  if (!c) { o.innerHTML = ""; return; }
+  var ec = encodeURIComponent(c), dd = function (k) { var d = parse(k); return d.getDate() + " " + MONL[d.getMonth()] + yr(k); };
+  var when = fr ? (to && to !== fr ? dd(fr) + " – " + dd(to) : dd(fr)) : "";
+  var mon = fr ? MONL[parse(fr).getMonth()] + " " + fr.slice(0, 4) : "";
+  var L = [["Songkick", "concerten per stad en maand; kies de stad in de lijst", "https://www.songkick.com/search?query=" + ec + "&type=locations"],
+    ["Google", "concerten in " + c + (when ? ", " + when : ""), "https://www.google.com/search?q=" + encodeURIComponent("concerts " + c + (fr ? " " + when.replace(" – ", " to ") : ""))],
+    ["Ticketmaster", "zalen die via Ticketmaster verkopen", "https://www.ticketmaster.com/search?q=" + ec],
+    ["Bandsintown", "wie er speelt, ook kleine zalen", "https://www.bandsintown.com/search?search_term=" + ec],
+    ["Setlist.fm", "wie er onlangs speelde (en welke zalen er zijn)", "https://www.setlist.fm/search?query=" + encodeURIComponent('city:"' + c + '"')]];
+  var lc = c.toLowerCase(), mine_ = fr ? ticketList().filter(function (x) { return x.d >= fr && x.d <= to; }) : [];
+  var been = ((HIST && HIST.ev) || []).filter(function (e) { return String(e.city).toLowerCase() === lc; });
+  o.innerHTML = '<div class="hl" style="margin-top:16px">Zoeken in ' + esc(c) + (when ? " · " + esc(when) : "") + "</div>" +
+    L.map(function (x) { return '<a class="trl" href="' + esc(x[2]) + '" target="_blank" rel="noopener"><b>' + x[0] + " ↗</b><span>" + esc(x[1]) + "</span></a>"; }).join("") +
+    (mine_.length ? '<div class="hl" style="margin-top:16px">Je kaartjes in die dagen</div>' + mine_.map(row).join("") : "") +
+    (been.length ? '<p class="pstat">Je was in ' + esc(c) + " al eens bij " + been.length + (been.length === 1 ? " concert" : " concerten") + " (laatst " + fmtDY(been.map(function (e) { return e.d; }).sort().pop()) + ").</p>" : "") +
+    '<div class="acts" style="margin-top:14px"><button class="btn pri wide" data-tripadd>＋ Concert toevoegen in ' + esc(c) + "</button></div>";
+}
+$("panel").addEventListener("input", function (e) { if (/^tr_/.test(e.target.id || "")) tripOut(); });
 function openVenues() {   /* mijn zalen kiezen: per plaats, aangevinkt = in 'Mijn zalen' */
   var cnt = {}; ALL.forEach(function (c) { if (c.d >= TODAY) countV(cnt, c); });
   var ks = Object.keys(VENUES).filter(function (k) { return cnt[k] || VENUES[k].fest; }).sort(function (a, b) {

@@ -31,8 +31,7 @@
 "good": 7
 },
 "boerderij": {
-"good": 60,
-"since": "2026-11-28"
+"good": 60
 },
 "bolwerk": {
 "good": 47
@@ -83,8 +82,7 @@
 "good": 21
 },
 "dynamo": {
-"good": 38,
-"since": "2026-11-28"
+"good": 38
 },
 "effenaar": {
 "good": 106
@@ -192,8 +190,7 @@
 "good": 0
 },
 "fluor": {
-"good": 57,
-"since": "2026-11-28"
+"good": 57
 },
 "gashouder": {
 "good": 27
@@ -266,7 +263,7 @@
 "good": 17
 },
 "melkweg": {
-"good": 256
+"good": 254
 },
 "metropool": {
 "good": 137
@@ -309,12 +306,10 @@
 "good": 420
 },
 "patronaat": {
-"good": 135,
-"since": "2026-11-28"
+"good": 135
 },
 "pul": {
-"good": 58,
-"since": "2026-11-28"
+"good": 58
 },
 "qfactory": {
 "good": 34

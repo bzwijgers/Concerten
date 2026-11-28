@@ -138,6 +138,7 @@ nav [data-tab].dot{position:relative}nav [data-tab].dot::after{content:"";positi
 .prijs{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:10px 0 4px;font-size:13.5px;color:var(--muted)}
 .prijs span{color:var(--fg)}.prijs input{width:90px;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);font:inherit}
 .bzsteps{margin:-4px 0 12px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;font-size:13.5px;color:var(--muted)}.bzsteps ol{margin:0 0 8px 18px;padding:0}.bzsteps li{margin:4px 0}.bzsteps a{color:var(--acc)}
+.trwarn{margin:16px 0 6px;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,107,107,.45);background:rgba(255,107,107,.08);font-size:13.5px;color:var(--fg)}.trwarn b{display:block;color:var(--red);margin-bottom:2px}
 .trl{display:block;padding:10px 12px;margin:6px 0;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--fg);text-decoration:none}.trl b{display:block;font-weight:600}.trl span{font-size:12.5px;color:var(--muted)}
 .pmiss{margin:2px 0 6px 10px;padding-left:10px;border-left:2px solid var(--line)}.pmiss .lnk{display:block;text-align:left;margin:4px 0}
 .clubfee{width:64px;padding:2px 6px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--fg);font:inherit}
@@ -2997,16 +2998,17 @@ function tripOut() {
   var ec = encodeURIComponent(c), dd = function (k) { var d = parse(k); return d.getDate() + " " + MONL[d.getMonth()] + yr(k); };
   var when = fr ? (to && to !== fr ? dd(fr) + " – " + dd(to) : dd(fr)) : "";
   var mon = fr ? MONL[parse(fr).getMonth()] + " " + fr.slice(0, 4) : "";
-  var L = [["Songkick", "concerten per stad en maand; kies de stad in de lijst", "https://www.songkick.com/search?query=" + ec + "&type=locations"],
-    ["Google", "concerten in " + c + (when ? ", " + when : ""), "https://www.google.com/search?q=" + encodeURIComponent("concerts " + c + (fr ? " " + when.replace(" – ", " to ") : ""))],
-    ["Ticketmaster", "zalen die via Ticketmaster verkopen", "https://www.ticketmaster.com/search?q=" + ec],
-    ["Bandsintown", "wie er speelt, ook kleine zalen", "https://www.bandsintown.com/search?search_term=" + ec],
-    ["Setlist.fm", "wie er onlangs speelde (en welke zalen er zijn)", "https://www.setlist.fm/search?query=" + encodeURIComponent('city:"' + c + '"')]];
+  var L = [["Google", "concerten in " + c + (when ? ", " + when : "") + "; meestal staat bovenaan een lijst met datums", "https://www.google.com/search?q=" + encodeURIComponent("concerts " + c + (fr ? " " + when.replace(" – ", " to ") : ""))],
+    ["Songkick", "komende concerten in " + c + " (niet op datum gesorteerd)", "https://www.songkick.com/search?query=" + ec + "&type=upcoming"],
+    ["Setlist.fm", "wie er onlangs speelde, en in welke zalen", "https://www.setlist.fm/search?query=" + encodeURIComponent('city:"' + c + '"')]];   /* Bandsintown en Ticketmaster gaven geen bruikbare uitkomst op een stadsnaam */
   var lc = c.toLowerCase(), mine_ = fr ? ticketList().filter(function (x) { return x.d >= fr && x.d <= to; }) : [];
   var been = ((HIST && HIST.ev) || []).filter(function (e) { return String(e.city).toLowerCase() === lc; });
   o.innerHTML = '<div class="hl" style="margin-top:16px">Zoeken in ' + esc(c) + (when ? " · " + esc(when) : "") + "</div>" +
     L.map(function (x) { return '<a class="trl" href="' + esc(x[2]) + '" target="_blank" rel="noopener"><b>' + x[0] + " ↗</b><span>" + esc(x[1]) + "</span></a>"; }).join("") +
-    (mine_.length ? '<div class="hl" style="margin-top:16px">Je kaartjes in die dagen</div>' + mine_.map(row).join("") : "") +
+    (function () {   /* kaartjes in die dagen: elders = botst met je reis */
+      var here = mine_.filter(function (x) { return String(venue(x).city).toLowerCase() === lc; }), away = mine_.filter(function (x) { return here.indexOf(x) < 0; });
+      return (away.length ? '<div class="trwarn"><b>⚠ Botst met je reis</b>Je hebt in die dagen ' + (away.length === 1 ? "een kaartje" : away.length + " kaartjes") + " voor een concert ergens anders:</div>" + away.map(row).join("") : "") +
+        (here.length ? '<div class="hl" style="margin-top:16px">Je kaartjes in ' + esc(c) + "</div>" + here.map(row).join("") : ""); })() +
     (been.length ? '<p class="pstat">Je was in ' + esc(c) + " al eens bij " + been.length + (been.length === 1 ? " concert" : " concerten") + " (laatst " + fmtDY(been.map(function (e) { return e.d; }).sort().pop()) + ").</p>" : "") +
     '<div class="acts" style="margin-top:14px"><button class="btn pri wide" data-tripadd>＋ Concert toevoegen in ' + esc(c) + "</button></div>";
 }
